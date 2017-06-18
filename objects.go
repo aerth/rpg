@@ -27,10 +27,10 @@ func (o Object) String() string {
 }
 
 type ObjectProperties struct {
-	Invisible bool `json:',omitempty'`
-	Tile      bool `json:',omitempty'`
-	Block     bool `json:',omitempty'`
-	Special   bool `json:',omitempty'`
+	Invisible bool `json:",omitempty"`
+	Tile      bool `json:",omitempty"`
+	Block     bool `json:",omitempty"`
+	Special   bool `json:",omitempty"`
 }
 
 func NewTile(loc pixel.Vec) Object {

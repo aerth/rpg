@@ -176,23 +176,23 @@ func (char *Character) Update(dt float64, dir Direction, collide []*Object) {
 	}
 }
 
-func (c *Character) Damage(n uint8, from string) {
+func (char *Character) Damage(n uint8, from string) {
 	if from != "" {
 		from = fmt.Sprintln("from", from)
 	}
 
-	if c.Health < n {
-		c.Health = 0
+	if char.Health < n {
+		char.Health = 0
 		log.Println("Player took critical hit", from, "!")
 		return
 	}
 	//log.Printf("Player took %v damage %s!", n, from)
-	c.Health -= n
+	char.Health -= n
 }
 
-func (c *Character) ResetLocation() {
-	c.Rect = DefaultPhys.Rect
-	c.Phys.Vel = pixel.ZV
+func (char *Character) ResetLocation() {
+	char.Rect = DefaultPhys.Rect
+	char.Phys.Vel = pixel.ZV
 
 }
 

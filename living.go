@@ -149,21 +149,6 @@ type ItemProperties struct {
 	Weight uint8
 }
 
-/*
-type Character struct {
-	Phys    ePhys                   // properties
-	Sprite  *pixel.Sprite              // current stamp
-	Matrix  pixel.Matrix               // location in canvas/map
-	Frame   pixel.Rect                 // size (for animation)
-	Rect    pixel.Rect                 // size (for collision)
-	Dir     Direction                  // Running direction (Idle down)
-	Sheet   pixel.Picture              // all frames of animation (4 for each 4 direction, total 16)
-	Anims   map[Direction][]pixel.Rect // animation
-	Rate    float64                    // animation
-	counter float64                    // in animation
-	State   animState                  // Idle or Running
-}
-*/
 type ePhys struct {
 	RunSpeed float64
 	Rect     pixel.Rect
@@ -180,26 +165,6 @@ var DefaultMobPhys = ePhys{
 	Gravity: 50.00,
 	Rate:    2,
 }
-
-/*
-func NewCharacter() *Character {
-	// get main eacter asset
-	sheet, anims, err := LoadCharacterSheet("sprites/e.png", 32)
-	if err != nil {
-		panic(fmt.Errorf("error loading eacter sheet: %v", err))
-	}
-	c := new(Character)
-	c.Sheet = sheet
-	c.Anims = anims
-	log.Printf("Anims: %v", len(anims))
-	c.Sprite = pixel.NewSprite(nil, pixel.Rect{})
-	c.State = Idle
-	c.Frame = c.Anims[DOWN][0]
-	c.Phys = DefaultPhys
-	c.Rate = 0.1
-	return c
-}
-*/
 
 func (e *Entity) Draw(t pixel.Target, w *World) {
 
