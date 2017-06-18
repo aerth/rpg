@@ -1,0 +1,27 @@
+language: go
+sudo: false
+addons:
+    apt:
+        packages:
+            - xorg-dev
+            - libx11-dev
+            - libxrandr-dev
+            - libxinerama-dev
+            - libxcursor-dev
+            - libxi-dev
+go:
+- 1.8
+- 1.7.4
+- tip 
+install:
+- go get -v github.com/jteeuwen/go-bindata
+- go get -t ./...
+before_script:
+- gofmt -l -s -w .
+- make
+script:
+- go test -i -race ./...
+- go test -v -race ./...
+after_script:
+- make clean
+
