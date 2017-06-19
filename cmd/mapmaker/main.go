@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"log"
 	"math"
-	"math/rand"
 	"os"
 	"time"
 
@@ -37,6 +36,8 @@ var (
 	IM = pixel.IM
 	ZV = pixel.ZV
 )
+
+var helpText = "ENTER=save LEFT=block RIGHT=tile SHIFT=batch SPACE=del CAPS=highlight U=undo R=redo 4=turbo B=dontreplace"
 
 func loadSpriteSheet() (pixel.Picture, []*pixel.Sprite) {
 	spritesheet, err := rpg.LoadPicture("sprites/tileset.png")
@@ -81,40 +82,38 @@ func run() {
 	}
 	win.SetSmooth(true)
 	imd := imdraw.New(nil)
-	canvas := pixelgl.NewCanvas(pixel.R(-1000.00, -1000.00, 1000.00, 1000.00))
-	var oldthings = []rpg.Object{}
+	var things = []rpg.Object{}
 
 	if b, err := ioutil.ReadFile(LEVEL); err == nil {
-		err = json.Unmarshal(b, &oldthings)
+		err = json.Unmarshal(b, &things)
 		if err != nil {
 			panic(err)
 		}
 
 	}
+	/*
+		// convert old map to new map style (object types)
+		var things = []rpg.Object{}
+		for _, v := range oldthings {
+			if v.P.Tile || v.Type == rpg.O_TILE {
+				v.P.Tile = true
+				v.P.Block = false
+				v.Type = rpg.O_TILE
+			}
+			if v.P.Block || v.Type == rpg.O_BLOCK {
+				v.P.Block = true
+				v.P.Tile = false
+				v.Type = rpg.O_BLOCK
 
-	// convert old map to new map style (object types)
-	var things = []rpg.Object{}
-	for _, v := range oldthings {
-		if v.P.Tile || v.Type == rpg.O_TILE {
-			v.P.Tile = true
-			v.P.Block = false
-			v.Type = rpg.O_TILE
+			}
+			things = append(things, v)
 		}
-		if v.P.Block || v.Type == rpg.O_BLOCK {
-			v.P.Block = true
-			v.P.Tile = false
-			v.Type = rpg.O_BLOCK
-
-		}
-		things = append(things, v)
-	}
-
+	*/
 	spritesheet, spritemap := loadSpriteSheet()
 
 	batch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
 	start := time.Now()
 	second := time.Tick(time.Second)
-	tick := time.Tick(time.Millisecond * 200)
 	last := start
 	frames := 0
 
@@ -126,7 +125,7 @@ func run() {
 	)
 	currentThing := 20 // 20 is grass,  0 should be transparent sprite
 	text := rpg.NewTextSmooth(14)
-	rpg.DrawText(win.Bounds(), text, win, "ENTER=save LEFT=block RIGHT=tile SHIFT=batch CAPS=highlight U=undo R=redo 4=turbo B=dontreplace")
+	fmt.Fprint(text, helpText)
 	cursor := rpg.GetCursor(0)
 	undobuffer := []rpg.Object{}
 	var turbo = false
@@ -138,16 +137,15 @@ func run() {
 		last = time.Now()
 		frames++
 
-		camZoom *= math.Pow(camZoomSpeed, win.MouseScroll().Y)
 		cam := pixel.IM.Scaled(camPos, camZoom).Moved(win.Bounds().Center().Sub(camPos))
+		camZoom *= math.Pow(camZoomSpeed, win.MouseScroll().Y)
 		//cam := pixel.IM.Moved(win.Bounds().Center()).Scaled(camPos, camZoom)
 		//		cam := pixel.IM.Moved(win.Bounds().Center()).Moved(camPos.Scaled(-camZoom))
 		//.Scaled(pixel.ZV, camZoom)
 		//		cam := pixel.IM.Scaled(pixel.ZV, camZoom).Moved(win.Bounds().Center()).Moved(camPos.Scaled(-1))
 		win.SetMatrix(cam)
+		snap := 32.00 // 16 for half grid ?
 		mouse := cam.Unproject(win.MousePosition())
-		//.Add(pixel.V(16, 16))
-		snap := 32.00
 		mouse.X = float64(int(mouse.X/snap)) * snap
 		mouse.Y = float64(int(mouse.Y/snap)) * snap // 'snap to grid'
 
@@ -204,7 +202,6 @@ func run() {
 			box.Max.X = mouse.X
 		}
 		// need real tiles though
-
 		if win.Pressed(pixelgl.KeyLeftShift) && win.Pressed(pixelgl.MouseButtonRight) ||
 			win.JustPressed(pixelgl.MouseButtonRight) {
 			thing := rpg.NewTile(mouse)
@@ -261,7 +258,6 @@ func run() {
 
 		//	canvas.Clear(pixel.Alpha(0))
 		win.Clear(colornames.Green)
-		canvas.Clear(colornames.Green)
 		batch.Clear()
 		for i := range things {
 			if things[i].SpriteNum == 0 {
@@ -274,8 +270,8 @@ func run() {
 
 		}
 
-		batch.Draw(canvas)
-		rpg.DrawPattern(canvas, spritemap[20], box, 100)
+		batch.Draw(win)
+		rpg.DrawPattern(win, spritemap[20], box, 100)
 		if b := box.Size(); b.Len() != 0 {
 			imd.Clear()
 			imd.Color = pixel.RGB(0, 1, 0)
@@ -283,21 +279,14 @@ func run() {
 			imd.Rectangle(1)
 			imd.Draw(win)
 		}
-		canvas.Draw(win, IM.Scaled(ZV, camZoom))
+		//.Draw(win, IM.Scaled(ZV, camZoom))
 		spritemap[182].Draw(win, IM.Scaled(ZV, 2).Moved(pixel.V(16, 16)))
 		win.SetMatrix(IM)
 		spritemap[currentThing].Draw(win, IM.Scaled(ZV, 2).Moved(pixel.V(64, 64)).Moved(spritemap[0].Frame().Center()))
-		text.Draw(win, IM.Moved(pixel.V(80, 10)))
+		text.Draw(win, IM.Moved(pixel.V(10, 10)))
 		cursor.Draw(win, IM.Moved(win.MousePosition()).Moved(pixel.V(32, -32)))
 
 		win.Update()
-
-		select {
-		default:
-		case <-tick:
-			//	things = append(things, NewThing(spritemap))
-
-		}
 
 		select {
 		default: //
@@ -311,28 +300,7 @@ func run() {
 		}
 	}
 }
-func OldNewBlock(spritemap []*pixel.Sprite, r int) rpg.Object {
-	return rpg.Object{
-		Loc:       randomLocation(),
-		SpriteNum: r,
-		P: rpg.ObjectProperties{
-			Block: true,
-		},
-	}
-}
-
-func NewThing(spritemap []*pixel.Sprite) rpg.Object {
-	r := rand.Intn(len(spritemap))
-
-	return rpg.Object{
-		Loc:       randomLocation(),
-		SpriteNum: r,
-	}
-}
 
 func main() {
 	pixelgl.Run(run)
-}
-func randomLocation() pixel.Vec {
-	return pixel.Vec{float64(rand.Intn(1000)), float64(rand.Intn(1000))}
 }
