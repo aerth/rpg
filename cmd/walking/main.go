@@ -88,13 +88,14 @@ func run() {
 		{Name: "manastorm", Frame: pixel.R(10, 42, 42, 42+32)},
 	}
 	// START
-	char := rpg.NewCharacter()
-	char.Rect = char.Rect.Moved(V(33, 33))
-	char.Inventory = []rpg.Item{rpg.MakeGold(uint64(rand.Intn(7)))}
+	//char.Rect = char.Rect.Moved(V(33, 33))
 	// load world
 	worldbounds := pixel.R(float64(-3000), float64(-3000), float64(3000), float64(3000))
 	//	worldbounds = pixel.R(float64(-4000), float64(-4000), float64(4000), float64(4000))
 	world := rpg.NewWorld(strconv.Itoa(LEVEL), worldbounds, TESTLVL)
+	char := rpg.NewCharacter()
+	char.Inventory = []rpg.Item{rpg.MakeGold(uint64(rand.Intn(7)))} // start with some loot
+	char.Rect = char.Rect.Moved(rpg.FindRandomTile(world.Objects))
 	world.Char = char
 
 	// sprite sheet
@@ -338,7 +339,7 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, char *rpg.Cha
 	if win.JustPressed(pixelgl.KeyEnter) {
 		log.Println("RESET GAME")
 		char.Health = 255
-		char.Rect = rpg.DefaultPhys.Rect
+		char.Rect = rpg.DefaultPhys.Rect.Moved(rpg.FindRandomTile(w.Objects))
 		char.Phys.Vel = pixel.ZV
 	}
 	return dir

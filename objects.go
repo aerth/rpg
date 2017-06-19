@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"time"
 
 	"golang.org/x/image/colornames"
 
@@ -13,6 +14,10 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 type Object struct {
 	Loc       pixel.Vec        `json:", omitempty"`
@@ -158,7 +163,8 @@ func FindRandomTile(os []*Object) pixel.Vec {
 
 	for i := 0; i < len(os); i++ {
 		o := os[rand.Intn(len(os))]
-		if o.Type == O_TILE {
+		if n := len(o.PathNeighbors()); n > 2 {
+			log.Println("returning", o.Rect.Center())
 			return o.Rect.Center()
 		}
 	}

@@ -2,6 +2,7 @@ package rpg
 
 import (
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/faiface/pixel"
@@ -9,6 +10,10 @@ import (
 	"github.com/faiface/pixel/pixelgl"
 	"golang.org/x/image/colornames"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 type Animation struct {
 	Name    string

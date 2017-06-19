@@ -198,7 +198,20 @@ func (e *Entity) ChangeMind(dt float64) {
 		//log.Println("got vel:", e.Phys.Vel, e.Phys.Vel.Len())
 	} else {
 		if !e.w.Char.Invisible {
-			e.pathcalc(e.w.Tile(e.w.Char.Rect.Center()).Rect.Center())
+			char := e.w.Char
+			if char == nil {
+				log.Println("nil character")
+				return
+			}
+
+			target := e.w.Tile(char.Rect.Center())
+			if target == nil {
+				log.Println("nil target tile")
+				return
+			}
+
+			e.pathcalc(target.Rect.Center())
+
 			if len(e.paths) == 0 {
 				log.Println("no paths?!")
 			}
