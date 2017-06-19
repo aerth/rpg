@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/faiface/pixel"
+	"github.com/faiface/pixel/text"
 )
 
 func init() {
@@ -38,6 +39,7 @@ type Character struct {
 	Invisible bool                       // hidden from enemies
 	Level     int
 	tick      time.Time
+	textbuf   *text.Text
 }
 
 type charPhys struct {

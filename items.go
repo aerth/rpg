@@ -79,7 +79,10 @@ func FormatItemList(items []Item) string {
 		return "none"
 	}
 	var s string
-	for _, item := range items {
+	for i, item := range items {
+		if i%5 == 0 {
+			s += "\n"
+		}
 		s += item.String() + ", "
 	}
 

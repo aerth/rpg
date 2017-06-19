@@ -101,6 +101,13 @@ func (c *Character) DrawBars(target pixel.Target) {
 	xp := float64(c.Stats.XP)
 	next := float64(c.NextLevel())
 	percent := xp / next
+	if c.textbuf == nil {
+		c.textbuf = NewText(28)
+	}
+	c.textbuf.Clear()
+	c.textbuf.Dot = c.textbuf.Orig
+	fmt.Fprintf(c.textbuf, "L%v", c.Level)
+	c.textbuf.Draw(target, pixel.IM.Moved(pixel.V(115, 90)))
 
 	// XP
 	imd.Color = colornames.Purple

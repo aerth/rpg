@@ -66,9 +66,25 @@ func run() {
 	defer pprof.StopCPUProfile()
 
 	rand.Seed(time.Now().UnixNano())
+
 	winbounds := pixel.R(0, 0, 800, 600)
-	//	winbounds = pixel.R(0, 0, 1024, 768)
-	//	winbounds = pixel.R(0, 0, 1280, 720)
+
+	fmt.Println("which screen resolution?")
+	fmt.Println("1. 800x600")
+	fmt.Println("2. 1024x768")
+	fmt.Println("3. 1280x720")
+	var screenres int
+	_, err = fmt.Scanf("%d", &screenres)
+	if err != nil {
+		screenres = 0
+	}
+	switch screenres {
+	default:
+	case 2:
+		winbounds = pixel.R(0, 0, 1024, 768)
+	case 3:
+		winbounds = pixel.R(0, 0, 1280, 720)
+	}
 	// window options
 	cfg := pixelgl.WindowConfig{
 		Title:  "AERPG",
