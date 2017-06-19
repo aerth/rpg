@@ -177,13 +177,16 @@ func (w *World) GetSpecial(dot pixel.Vec) *Object {
 }
 
 func (w *World) Tile(dot pixel.Vec) *Object {
+	var ob *Object
 	for i := range w.Objects {
 		if w.Objects[i].Rect.Contains(dot) {
-			//log.Println("found", w.Objects[i])
-			return w.Objects[i]
+			ob = w.Objects[i]
+			if ob.Type == O_BLOCK {
+				return ob
+			}
 		}
 	}
-	return nil
+	return ob
 
 }
 

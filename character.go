@@ -110,7 +110,7 @@ func (char *Character) Update(dt float64, dir Direction, world *World) {
 			}
 		}
 	}
-	if time.Since(char.tick) >= time.Second*3 {
+	if time.Since(char.tick) >= time.Second*1 {
 		if char.Mana < 255 {
 			char.Mana++
 		}

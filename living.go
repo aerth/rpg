@@ -298,8 +298,8 @@ func (e *Entity) Update(dt float64) {
 		//log.Println(e.Name, "passed:", next)
 		e.Rect = next
 	} else {
-		log.Println("cant move", e.Name, "to ", next.Center(), w.Tile(next.Center()), e.paths[0])
-		if len(e.paths) > 1 {
+		//log.Println("cant move", e.Name, "to ", next.Center(), w.Tile(next.Center()), e.paths[0])
+		if len(e.paths) > 0 {
 			e.paths = e.paths[:len(e.paths)-1]
 		} else {
 			e.pathcalc(w.Char.Rect.Center())
