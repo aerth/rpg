@@ -149,6 +149,7 @@ func run() {
 	var latest string
 	for !win.Closed() {
 		rpg.TitleMenu(world, win)
+		world.Reset()
 		char.Health = 255
 		for !win.Closed() {
 
@@ -170,7 +171,7 @@ func run() {
 			if win.JustPressed(pixelgl.KeyQ) {
 				break
 			}
-			if win.JustReleased(pixelgl.KeyI) || win.JustReleased(pixelgl.KeyEscape) {
+			if win.JustReleased(pixelgl.KeyI) {
 				rpg.InventoryLoop(win, world)
 			}
 
@@ -336,10 +337,9 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, char *rpg.Cha
 	}
 
 	// restart the level on pressing enter
-	if win.JustPressed(pixelgl.KeyEnter) {
-		log.Println("RESET GAME")
-		w.Reset()
-	}
+	//	if win.JustPressed(pixelgl.KeyEnter) {
+	//		rpg.InventoryLoop(win, w)
+	//	}
 	return dir
 }
 func main() {
