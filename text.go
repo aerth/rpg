@@ -43,6 +43,8 @@ func NewText(size float64) *text.Text {
 	// font := basicfont.Face7x13
 	basicAtlas := text.NewAtlas(font, text.ASCII, text.RangeTable(unicode.Common))
 	basicTxt := text.New(pixel.V(0, 0), basicAtlas)
+	basicTxt.Dot = pixel.V(10, 10)
+	basicTxt.Orig = pixel.V(10, 10)
 	return basicTxt
 }
 

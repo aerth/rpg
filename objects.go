@@ -35,55 +35,47 @@ func (o Object) String() string {
 
 type ObjectProperties struct {
 	Invisible bool `json:",omitempty"`
-	Tile      bool `json:",omitempty"`
-	Block     bool `json:",omitempty"`
-	Special   bool `json:",omitempty"`
+	//	Tile      bool `json:",omitempty"`
+	//	Block     bool `json:",omitempty"`
+	Special bool `json:",omitempty"`
 }
 
 func NewTile(loc pixel.Vec) Object {
 	return Object{
 		Loc:  loc,
 		Rect: pixel.Rect{loc.Sub(pixel.V(16, 16)), loc.Add(pixel.V(16, 16))},
-		P: ObjectProperties{
-			Tile: true,
-		},
+		Type: O_TILE,
 	}
 }
 func NewBlock(loc pixel.Vec) Object {
 	return Object{
 		Loc:  loc,
 		Rect: pixel.Rect{loc.Sub(pixel.V(16, 16)), loc.Add(pixel.V(16, 16))},
-		P: ObjectProperties{
-			Block: true,
-		},
+		Type: O_BLOCK,
 	}
 }
 
 func NewTileBox(rect pixel.Rect) Object {
 	return Object{
 		Rect: rect,
-		P: ObjectProperties{
-			Tile: true,
-		},
+		Type: O_TILE,
 	}
 }
 func NewBlockBox(rect pixel.Rect) Object {
 	return Object{
 		Rect: rect,
-		P: ObjectProperties{
-			Block: true,
-		},
+		Type: O_BLOCK,
 	}
 }
 func (o Object) Highlight(win pixel.Target) {
 	imd := imdraw.New(nil)
 	color := pixel.ToRGBA(colornames.Red)
-	if o.P.Tile {
+	if o.Type == O_TILE {
 		color = pixel.ToRGBA(colornames.Blue)
 	}
 	imd.Color = color.Scaled(0.3)
 	imd.Push(o.Rect.Min, o.Rect.Max)
-	imd.Rectangle(0)
+	imd.Rectangle(4)
 	imd.Draw(win)
 }
 func (o Object) Draw(win pixel.Target, spritesheet pixel.Picture, sheetFrames []*pixel.Sprite) {
@@ -133,12 +125,12 @@ func (w *World) loadmap(b []byte) {
 		t := new(Object)
 		*t = thing
 		t.w = w
-		if t.P.Block {
-			t.Type = O_BLOCK
-		}
-		if t.P.Tile {
-			t.Type = O_TILE
-		}
+		/*		if t.P.Block {
+					t.Type = O_BLOCK
+				}
+				if t.P.Tile {
+					t.Type = O_TILE
+				} */
 		w.Objects = append(w.Objects, t)
 	}
 	return
@@ -216,4 +208,23 @@ func GetBlocks(objects []*Object, position pixel.Vec) []*Object {
 		}
 	}
 	return bad
+}
+
+func (o *Object) GetNeighbors() []*Object {
+	neighbors := []*Object{}
+	of := 32.0
+	for _, offset := range [][]float64{
+		{-of, 0},
+		{of, 0},
+		{0, -of},
+		{0, of},
+	} {
+		if n := o.w.Tile(pixel.V(o.Rect.Center().X+offset[0], o.Rect.Center().Y+offset[1])); n != nil {
+			if n.Type == O_TILE {
+				neighbors = append(neighbors, n)
+			}
+		}
+	}
+	return neighbors
+
 }

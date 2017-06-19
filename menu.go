@@ -70,9 +70,9 @@ func (w *World) IsButton(buttons []Button, point pixel.Vec) (Button, func(win pi
 	for _, button := range buttons {
 		if button.Frame.Contains(point) {
 			switch button.Name {
-			case "manastorm", "magic":
+			case "manastorm":
 				return button, func(win pixel.Target, world *World) {
-					world.Action(w.Char, w.Char.Rect.Center(), Magic)
+					world.Action(w.Char, w.Char.Rect.Center(), ManaStorm)
 				}, true
 			default:
 				return button, func(win pixel.Target, world *World) {
@@ -80,7 +80,7 @@ func (w *World) IsButton(buttons []Button, point pixel.Vec) (Button, func(win pi
 				}, true
 			case "reset":
 				return button, func(win pixel.Target, world *World) {
-					world.Char.ResetLocation()
+					world.Reset()
 					//					world.Char.Inventory = []Item{}
 				}, true
 

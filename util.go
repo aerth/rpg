@@ -31,6 +31,12 @@ const (
 	RIGHT
 	DOWN
 	UP
+	IN
+	OUT
+	WEST  = LEFT
+	EAST  = RIGHT
+	NORTH = UP
+	SOUTH = DOWN
 )
 
 const (

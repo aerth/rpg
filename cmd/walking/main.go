@@ -84,8 +84,8 @@ func run() {
 	}
 	win.SetSmooth(false)
 	buttons := []rpg.Button{
-		{Name: "reset", Frame: pixel.R(10, 10, 42, 42)},
-		{Name: "manastorm", Frame: pixel.R(10, 42, 42, 42+32)},
+		{Name: "manastorm", Frame: pixel.R(10, 10, 42, 42)},
+		{Name: "magicbullet", Frame: pixel.R(42, 10, 42+42, 42)},
 	}
 	// START
 	//char.Rect = char.Rect.Moved(V(33, 33))
@@ -110,8 +110,8 @@ func run() {
 	// water world 67 wood, 114 117 182 special, 121 135 dirt, 128 blank, 20 grass
 	//	rpg.DrawPattern(batch, spritemap[53], pixel.R(-3000, -3000, 3000, 3000), 100)
 
-	rpg.DrawPattern(menubatch, spritemap[67], pixel.R(0, 0, win.Bounds().W()+20, 100), 100)
-	rpg.DrawPattern(menubatch, spritemap[230], pixel.R(20, 20, win.Bounds().W()+20, 80), 100)
+	rpg.DrawPattern(menubatch, spritemap[67], pixel.R(0, 0, win.Bounds().W()+20, 60), 100)
+	//rpg.DrawPattern(menubatch, spritemap[230], pixel.R(20, 20, win.Bounds().W()+20, 80), 100)
 	for _, btn := range buttons {
 		spritemap[200].Draw(menubatch, IM.Moved(btn.Frame.Center()))
 	}
@@ -139,15 +139,14 @@ func run() {
 	var dt *float64 = &delda
 	t1 := time.Now()
 	text := rpg.NewText(36)
-	fmt.Fprint(text, "[tab=slow] [shift=fast] [q=quit]")
-	text.Color = colornames.Red
-	//text.Draw(textbuf, pixel.IM.Scaled(pixel.ZV, 1))
+	texthelp := rpg.NewTextSmooth(18)
+	texthelp.Color = colornames.Red
+	fmt.Fprint(texthelp, "[tab=slow] [shift=fast] [q=quit] [space=manastorm] [enter=reset]")
 	redrawWorld()
 	// start loop
 	imd := imdraw.New(nil)
 	rand.Seed(time.Now().UnixNano())
 	var latest string
-	_ = latest
 	for !win.Closed() {
 		rpg.TitleMenu(world, win)
 		char.Health = 255
@@ -204,14 +203,25 @@ func run() {
 			char.Draw(win)
 			text.Clear()
 			rpg.DrawScore(winbounds, text, win,
-				"[%vHP·%vMP·%sGP LVL%v %vXP] %s", char.Health, char.Mana, char.CountGold(), char.Level, char.Stats.XP, latest)
+				"[%vHP·%vMP·%sGP LVL%v %vXP %vKills] %s", char.Health, char.Mana, char.CountGold(), char.Level, char.Stats.XP, char.Stats.Kills, latest)
+
 			menubatch.Draw(win)
+
+			mouseloc := win.MousePosition()
+			if win.JustPressed(pixelgl.MouseButtonLeft) {
+				if b, f, ok := world.IsButton(buttons, mouseloc); ok {
+					if debug {
+						log.Printf("Clicked button: %q", b.Name)
+					}
+					f(win, world)
+				}
+			}
 			select {
 			default: //
 			case <-tick:
-
 				if len(world.Messages) > 100 {
-					world.Messages = []string{}
+					log.Println("truncating messages")
+					world.Messages = []string{world.Messages[len(world.Messages)-1]}
 				}
 				if len(world.Messages) > 0 {
 					latest = world.Messages[0]
@@ -224,6 +234,13 @@ func run() {
 				}
 
 			}
+			if b, _, ok := world.IsButton(buttons, mouseloc); ok {
+				texthelp.Clear()
+				texthelp.Dot = texthelp.Orig
+				fmt.Fprintf(texthelp, "%q", b.Name)
+			}
+
+			texthelp.Draw(win, pixel.IM.Moved(pixel.V(200, 60)))
 
 			//spritemap[20].Draw(menubar, pixel.IM.Scaled(ZV, 10).Moved(pixel.V(30, 30)))
 			//menubar.Draw(win, pixel.IM)
@@ -249,12 +266,13 @@ func run() {
 		log.Println("Inventory:", rpg.FormatItemList(char.Inventory))
 		log.Printf("Skeletons killed: %v", char.Stats.Kills)
 	}
+
 }
 
 func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, char *rpg.Character, buttons []rpg.Button, buf pixel.Target) rpg.Direction {
 	if win.JustPressed(pixelgl.KeySpace) {
 		if char.Mana > 0 {
-			w.Action(char, char.Rect.Center(), rpg.Magic)
+			w.Action(char, char.Rect.Center(), rpg.ManaStorm)
 		} else {
 			log.Println("Not enough mana")
 		}

@@ -117,12 +117,6 @@ func (w *World) Update(dt float64) {
 	if len(w.Animations) > 0 {
 		for i := range w.Animations {
 			w.Animations[i].update(dt)
-
-			if w.Animations[i].Type == Magic {
-				for _, enemy := range w.Entities {
-					w.Animations[i].rect.Contains(enemy.Rect.Center())
-				}
-			}
 		}
 
 	}
@@ -146,17 +140,17 @@ func (w *World) Update(dt float64) {
 					w.Char.Stats.Kills++
 
 					log.Println("Got new loot!:", FormatItemList(v.P.Loot))
-					w.Message(" Loot: " + FormatItemList(v.P.Loot))
+					//w.Message(" Loot: " + FormatItemList(v.P.Loot))
 
 					w.Char.Inventory = StackItems(w.Char.Inventory, v.P.Loot)
-					log.Println("New inventory:", w.Char.Inventory)
+					//log.Println("New inventory:", w.Char.Inventory)
 					w.Char.ExpUp(1)
 					w.checkLevel()
 
 				}
-
-				log.Printf("%s took %v damage, now at %v HP",
-					w.Entities[i].Name, a.damage, w.Entities[i].P.Health)
+				//
+				//log.Printf("%s took %v damage, now at %v HP",
+				//	w.Entities[i].Name, a.damage, w.Entities[i].P.Health)
 			}
 		}
 	}
@@ -264,5 +258,6 @@ func (w *World) Reset() {
 	npc2 := w.NewEntity(SKELETON)
 	npc2.Rect = npc.Rect.Moved(FindRandomTile(w.Objects))
 	w.Entities = []*Entity{npc, npc2}
+	w.Animations = nil
 
 }

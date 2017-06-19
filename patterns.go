@@ -30,7 +30,7 @@ type Animation struct {
 }
 
 func (a *Animation) update(dt float64) {
-	if time.Since(a.until) > time.Second {
+	if time.Since(a.until) > time.Millisecond {
 		a = nil
 		return
 	}
@@ -56,12 +56,12 @@ func (a *Animation) draw(imd *imdraw.IMDraw) {
 		imd.Circle(float64(i+2)*a.radius/float64(len(a.cols)), 0)
 	}
 }
-func (w *World) NewAnimation(loc pixel.Vec, kind string) {
+func (w *World) NewAnimation(loc pixel.Vec, kind string, direction Direction) {
 	switch kind {
 	default: //
 		log.Println("invalid animation type")
 		return
-	case "magic":
+	case "manastorm":
 		a := new(Animation)
 		a.loc = loc
 		a.radius = 140 * w.Char.Stats.Intelligence / 100
@@ -72,9 +72,9 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string) {
 		a.start = time.Now()
 		a.until = time.Now().Add(4 * time.Second)
 		w.Animations = append(w.Animations, a)
-		for _, a := range w.Animations {
-			for i, v := range w.Entities {
-				if a.rect.Contains(v.Rect.Center()) {
+		/*for _, a := range w.Animations {
+		 	for i, v := range w.Entities {
+			if a.rect.Contains(v.Rect.Center()) {
 					w.Entities[i].P.Health -= a.damage
 					if w.Entities[i].P.Health <= 0 {
 						// damage func should be function
@@ -101,7 +101,7 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string) {
 				}
 			}
 		}
-
+		*/
 	}
 
 }

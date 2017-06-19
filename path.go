@@ -8,30 +8,20 @@ import (
 )
 
 func (e *Entity) pathcalc(target pixel.Vec) {
-	/*
-		if e.paths != nil && len(e.paths) > 0 {
-			return e.Phys.Vel
-		} */
 	tile := e.w.Tile(e.Rect.Center())
 	targett := e.w.Tile(target)
 	if tile == nil || targett == nil {
 		if tile == nil {
 			e.P.Health = 0
+			e.P.IsDead = true
 			log.Println("killing bad entity")
 			return
 		}
-		//		log.Println(e.Name, "no target")
 		return
 	}
-
-	//	log.Println(e.Name, "path cost to target:", tile.PathEstimatedCost(targett))
 	path, distance, found := astar.Path(tile, targett)
 	if found {
-		//		log.Println(e.Name, "found paths:", len(path))
-		//for i, v := range path {
-		//	log.Println(e.Name, i, v.(*Object).Rect.Center())
-		//	}
-		if distance > 10 {
+		if distance > 15 {
 			e.paths = nil
 			return
 		}
@@ -70,7 +60,7 @@ func (o Object) PathNeighbors() []astar.Pather {
 		//{-of, of},
 	} {
 		if n := o.w.Tile(pixel.V(o.Rect.Center().X+offset[0], o.Rect.Center().Y+offset[1])); n != nil {
-			if n.P.Tile || n.Type == O_TILE {
+			if n.Type == O_TILE {
 				neighbors = append(neighbors, n)
 			}
 		}

@@ -14,4 +14,5 @@ func init() {
 func TestCreateLoot(t *testing.T) {
 	i := createLoot()
 	log.Println(i)
+
 }

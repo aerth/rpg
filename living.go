@@ -249,7 +249,7 @@ func (e *Entity) Update(dt float64) {
 			return true
 		}
 		for _, c := range collide {
-			if c.P.Block && c.Rect.Contains(dot) {
+			if c.Type == O_BLOCK && c.Rect.Contains(dot) {
 				return false
 			}
 		}

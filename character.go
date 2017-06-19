@@ -149,7 +149,7 @@ func (char *Character) Update(dt float64, dir Direction, world *World) {
 
 		f := func(dot pixel.Vec) bool {
 			for _, c := range world.Objects {
-				if c.Rect.Contains(dot) && c.P.Block {
+				if c.Rect.Contains(dot) && c.Type == O_BLOCK {
 					//log.Printf("blocked by: %v at rect: %s, dot: %s", c.SpriteNum, c.Rect, dot)
 					return false
 				}
@@ -163,7 +163,7 @@ func (char *Character) Update(dt float64, dir Direction, world *World) {
 		// only walk on tiles
 		f2 := func(dot pixel.Vec) bool {
 			for _, c := range world.Objects {
-				if (c.P.Tile || c.Type == O_TILE) && c.Rect.Contains(dot) {
+				if c.Type == O_TILE && c.Rect.Contains(dot) {
 					return true
 				}
 			}
@@ -208,7 +208,8 @@ type ActionType int
 const (
 	Talk ActionType = iota
 	Slash
-	Magic
+	ManaStorm
+	MagicBullet
 )
 
 func (w *World) Action(char *Character, loc pixel.Vec, t ActionType) {
@@ -217,15 +218,16 @@ func (w *World) Action(char *Character, loc pixel.Vec, t ActionType) {
 		log.Println("nothing to say yet")
 	case Slash:
 		log.Println("no weapon yet")
-	case Magic:
+	case ManaStorm:
 		cost := uint8(1)
 		if char.Mana < cost {
 			w.Message(" not enough mana")
 			return
 		}
 		char.Mana -= cost
-		w.NewAnimation(char.Rect.Center(), "magic")
-
+		w.NewAnimation(char.Rect.Center(), "manastorm", OUT)
+	case MagicBullet:
+		log.Println("Soon")
 	}
 }
 
@@ -244,16 +246,18 @@ func (char *Character) ExpUp(amount uint64) {
 }
 
 func (w *World) checkLevel() {
-	// hardcoded level xp for now
-	if w.Char.Stats.XP > 10 {
+	if w.Char.Stats.XP == 0 {
+		return
+	}
+	if w.Char.Stats.XP > uint64(10*w.Char.Level) {
 		w.Char.Level++
 		w.Message("LVL UP")
-		log.Println("level up!")
+		log.Println("level up!", w.Char.Level)
 		w.Char.Stats.XP = 0
 		switch w.Char.Level {
 		default:
-			w.Char.Stats.Intelligence += 10
-
+			w.Char.Stats.Intelligence += float64(10 * w.Char.Level)
 		}
+		log.Println(w.Char.Stats)
 	}
 }
