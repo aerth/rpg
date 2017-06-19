@@ -141,7 +141,7 @@ func run() {
 	text := rpg.NewText(36)
 	texthelp := rpg.NewTextSmooth(18)
 	texthelp.Color = colornames.Red
-	fmt.Fprint(texthelp, "[tab=slow] [shift=fast] [q=quit] [space=manastorm] [enter=reset]")
+	fmt.Fprint(texthelp, "[tab=slow] [shift=fast] [q=quit] [space=manastorm] [enter=reset] [i=inventory]")
 	redrawWorld()
 	// start loop
 	imd := imdraw.New(nil)
@@ -170,6 +170,10 @@ func run() {
 			if win.JustPressed(pixelgl.KeyQ) {
 				break
 			}
+			if win.JustPressed(pixelgl.KeyI) || win.JustPressed(pixelgl.KeyEscape) {
+				rpg.InventoryLoop(win, world)
+			}
+
 			if win.JustPressed(pixelgl.KeyEqual) {
 				debug = !debug
 			}
@@ -240,7 +244,7 @@ func run() {
 				fmt.Fprintf(texthelp, "%q", b.Name)
 			}
 
-			texthelp.Draw(win, pixel.IM.Moved(pixel.V(200, 60)))
+			texthelp.Draw(win, pixel.IM.Moved(pixel.V(150, 60)))
 
 			//spritemap[20].Draw(menubar, pixel.IM.Scaled(ZV, 10).Moved(pixel.V(30, 30)))
 			//menubar.Draw(win, pixel.IM)
