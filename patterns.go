@@ -106,6 +106,23 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string, direction Direction) {
 
 }
 
+func DrawPatternObject(spritenum int, objecttype ObjectType, bounds pixel.Rect, width float64) []Object {
+	var objects []Object
+	size := pixel.Rect{pixel.V(-16, -16), pixel.V(16, 16)}
+	for y := bounds.Min.Y; y < bounds.Max.Y; y = y + size.H() {
+		for x := bounds.Min.X; x < bounds.Max.X; x = x + size.W() {
+			o := Object{
+				Loc:       pixel.V(x, y),
+				Rect:      size.Moved(pixel.V(x, y)),
+				Type:      objecttype,
+				SpriteNum: spritenum,
+			}
+			objects = append(objects, o)
+		}
+	}
+	return objects
+}
+
 func DrawPattern(canvas pixel.Target, sprite *pixel.Sprite, bounds pixel.Rect, width float64) {
 	if bounds.Size() == pixel.ZV {
 		return

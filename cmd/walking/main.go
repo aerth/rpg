@@ -112,6 +112,7 @@ func run() {
 	char := rpg.NewCharacter()
 	char.Inventory = []rpg.Item{rpg.MakeGold(uint64(rand.Intn(7)))} // start with some loot
 	char.Rect = char.Rect.Moved(rpg.FindRandomTile(world.Objects))
+	char.W = world
 	world.Char = char
 
 	// sprite sheet
@@ -231,12 +232,20 @@ func run() {
 
 			mouseloc := win.MousePosition()
 			if win.JustPressed(pixelgl.MouseButtonLeft) {
-				if b, f, ok := world.IsButton(buttons, mouseloc); ok {
+
+				b, f, ok := world.IsButton(buttons, mouseloc)
+				if ok {
 					if debug {
 						log.Printf("Clicked button: %q", b.Name)
 					}
 					f(win, world)
+				} else {
+					tile := world.Tile(cam.Unproject(mouseloc))
+					if tile != nil {
+						log.Println(tile)
+					}
 				}
+
 			}
 			select {
 			default: //
@@ -249,6 +258,7 @@ func run() {
 					latest = world.Messages[0]
 					if len(world.Messages) > 1 {
 						world.Messages = world.Messages[1:]
+						log.Println(world.Messages)
 					} else {
 						world.Messages = []string{}
 					}

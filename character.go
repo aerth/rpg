@@ -34,12 +34,13 @@ type Character struct {
 	counter   float64                    // in animation
 	State     animState                  // Idle or Running
 	Inventory []Item                     // inventory
-	Health    uint8                      // hp
-	Mana      uint8                      // mp
+	Health    uint                       // hp
+	Mana      uint                       // mp
 	Invisible bool                       // hidden from enemies
 	Level     int
 	tick      time.Time
 	textbuf   *text.Text
+	W         *World
 }
 
 type charPhys struct {
@@ -185,14 +186,15 @@ func (char *Character) Update(dt float64, dir Direction, world *World) {
 	}
 }
 
-func (char *Character) Damage(n uint8, from string) {
+func (char *Character) Damage(n uint, from string) {
+	char.W.Message(fmt.Sprintf("ouch! took %v damage", n))
 	if from != "" {
 		from = fmt.Sprintln("from", from)
 	}
 
 	if char.Health < n {
 		char.Health = 0
-		log.Println("Player took critical hit", from, "!")
+		log.Printf("Player took critical hit %s!", from)
 		return
 	}
 	//log.Printf("Player took %v damage %s!", n, from)
@@ -221,7 +223,7 @@ func (w *World) Action(char *Character, loc pixel.Vec, t ActionType) {
 	case Slash:
 		log.Println("no weapon yet")
 	case ManaStorm:
-		cost := uint8(1)
+		cost := uint(1)
 		if char.Mana < cost {
 			w.Message(" not enough mana")
 			return
@@ -230,6 +232,7 @@ func (w *World) Action(char *Character, loc pixel.Vec, t ActionType) {
 		w.NewAnimation(char.Rect.Center(), "manastorm", OUT)
 	case MagicBullet:
 		log.Println("Soon")
+	default: //
 	}
 }
 
@@ -255,6 +258,7 @@ func (w *World) checkLevel() {
 	nextlvl := w.Char.NextLevel()
 	if w.Char.Stats.XP > nextlvl {
 		w.Char.Level++
+		w.Char.Health = uint(255 * w.Char.Stats.Vitality / 100)
 		w.Message("LVL UP")
 		log.Printf("level up (%v)! next lvl at %v xp", w.Char.Level, nextlvl)
 		w.Char.Stats.XP = 0

@@ -2,6 +2,7 @@ package rpg
 
 import (
 	"fmt"
+	"log"
 	"unicode"
 
 	"github.com/aerth/rpg/assets"
@@ -89,5 +90,9 @@ func DrawScore(winbounds pixel.Rect, t *text.Text, canvas pixel.Target, format s
 }
 
 func (w *World) Message(s string) {
+	if len(w.Messages) > 10 {
+		w.Messages = []string{}
+	}
+	log.Println(s)
 	w.Messages = append(w.Messages, s)
 }

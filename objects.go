@@ -125,6 +125,12 @@ func (w *World) loadmap(b []byte) {
 		t := new(Object)
 		*t = thing
 		t.w = w
+		switch t.SpriteNum {
+		case 53:
+			t.Type = O_BLOCK
+
+		default:
+		}
 		/*		if t.P.Block {
 					t.Type = O_BLOCK
 				}

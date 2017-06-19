@@ -45,10 +45,11 @@ const (
 )
 
 type EntityProperties struct {
-	Health float64
-	Mana   float64
-	Loot   []Item
-	IsDead bool
+	Health   float64
+	Mana     float64
+	Loot     []Item
+	IsDead   bool
+	Strength float64
 }
 
 const (
@@ -85,8 +86,9 @@ func (w *World) NewEntity(t EntityType) *Entity {
 			w:    w,
 			Type: t,
 			P: EntityProperties{
-				Health: float64(rand.Intn(255) + 1),
-				Mana:   float64(rand.Intn(255)),
+				Health:   float64(rand.Intn(255) + 1),
+				Mana:     float64(rand.Intn(255)),
+				Strength: 1,
 			},
 			Rect:  pixel.R(-16, -16, 16, 16),
 			State: Running,
@@ -184,7 +186,7 @@ func (e *Entity) ChangeMind(dt float64) {
 
 	r := pixel.Rect{e.Rect.Center(), e.w.Char.Rect.Center()}
 	if r.Size().Len() < 48 {
-		e.w.Char.Damage(uint8(rand.Intn(10)), e.Name)
+		e.w.Char.Damage(uint(rand.Intn(10*int(e.P.Strength))), e.Name)
 		return
 	}
 
