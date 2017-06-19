@@ -4,9 +4,9 @@ package rpg
 
 import "fmt"
 
-const _EntityType_name = "SKELETONSKELETON_GUARD"
+const _EntityType_name = "SKELETONSKELETON_GUARDDOBJECT"
 
-var _EntityType_index = [...]uint8{0, 8, 22}
+var _EntityType_index = [...]uint8{0, 8, 22, 29}
 
 func (i EntityType) String() string {
 	if i < 0 || i >= EntityType(len(_EntityType_index)-1) {

@@ -126,18 +126,7 @@ func run() {
 
 	// create NPC
 
-	if NUMENEMY != 0 {
-		npc := world.NewEntity(rpg.SKELETON_GUARD)
-		npc.Phys.RunSpeed = 100
-		// npc.CanFly = true
-		npc.Rect = npc.Rect.Moved(rpg.FindRandomTile(world.Objects))
-
-		for i := 1; i < NUMENEMY; i++ {
-			npc = world.NewEntity(rpg.SKELETON)
-			npc.Rect = npc.Rect.Moved(rpg.FindRandomTile(world.Objects))
-		}
-
-	}
+	world.NewMobs(NUMENEMY)
 	l := time.Now()
 	var last = &l
 	second := time.Tick(time.Second)
@@ -188,7 +177,7 @@ func run() {
 			}
 
 			dir := controlswitch(dt, world, win, char, buttons, win)
-			char.Update(*dt, dir, world.Objects)
+			char.Update(*dt, dir, world)
 			world.Update(*dt)
 
 			char.Matrix = pixel.IM.Scaled(pixel.ZV, *camZoom).Moved(win.Bounds().Center())
@@ -201,7 +190,6 @@ func run() {
 
 			// draw entities and objects (not tiles and blocks)
 			world.Draw(win) // was win
-
 			// highlight paths
 			if debug {
 				world.HighlightPaths(win)
@@ -217,7 +205,7 @@ func run() {
 			char.Draw(win)
 			text.Clear()
 			rpg.DrawScore(winbounds, text, win,
-				"[%vHP·%vMP·%sGP %vLVL %vXP] %s", char.Health, char.Mana, char.CountGold(), char.Level, char.Stats.XP, latest)
+				"[%vHP·%vMP·%sGP LVL%v %vXP] %s", char.Health, char.Mana, char.CountGold(), char.Level, char.Stats.XP, latest)
 			//	menubatch.Draw(win, pixel.IM.Moved(win.Bounds().Center()))
 			menubatch.Draw(win)
 			select {
@@ -255,12 +243,12 @@ func run() {
 					if !added {
 						added = true
 						o := &rpg.Object{
-							Loc:       pixel.V(200, 200),
-							Rect:      rpg.SpriteFrame.Moved(pixel.V(200, 200)),
+							Loc:       rpg.FindRandomTile(world.Objects),
 							SpriteNum: 182,
 						}
+						o.Rect = rpg.SpriteFrame.Moved(o.Loc)
+
 						world.NewSpecial(o)
-						redrawWorld()
 					}
 				}
 				str := fmt.Sprintf(""+
@@ -295,7 +283,12 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, char *rpg.Cha
 	if win.Pressed(pixelgl.KeyLeftShift) {
 		*dt *= 15
 	}
-
+	if win.Pressed(pixelgl.Key1) {
+		char.Mana += 1
+		if char.Mana > 255 {
+			char.Mana = 255
+		}
+	}
 	if win.Pressed(pixelgl.KeyCapsLock) {
 		char.Phys.CanFly = !char.Phys.CanFly
 	}
@@ -338,9 +331,7 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, char *rpg.Cha
 	// restart the level on pressing enter
 	if win.JustPressed(pixelgl.KeyEnter) {
 		log.Println("RESET GAME")
-		char.Health = 255
-		char.Rect = rpg.DefaultPhys.Rect.Moved(rpg.FindRandomTile(w.Objects))
-		char.Phys.Vel = pixel.ZV
+		w.Reset()
 	}
 	return dir
 }

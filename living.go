@@ -41,6 +41,7 @@ type EntityState int
 const (
 	SKELETON EntityType = iota
 	SKELETON_GUARD
+	DOBJECT
 )
 
 type EntityProperties struct {
@@ -159,7 +160,7 @@ type ePhys struct {
 
 // DefaultPhys character
 var DefaultMobPhys = ePhys{
-	RunSpeed: 180.5,
+	RunSpeed: 100.5,
 	//Rect:     pixel.R(-8, -8, 8, 8),
 	Rect:    pixel.R(98, 98, 108, 108),
 	Gravity: 50.00,
@@ -175,11 +176,17 @@ func (e *Entity) Draw(t pixel.Target, w *World) {
 }
 
 func (e *Entity) ChangeMind(dt float64) {
+	tile := e.w.Tile(e.Rect.Center())
+	if tile == nil || tile.Type != O_TILE {
+		e.Rect = DefaultMobPhys.Rect.Moved(FindRandomTile(e.w.Objects))
+	}
+
 	r := pixel.Rect{e.Rect.Center(), e.w.Char.Rect.Center()}
 	if r.Size().Len() < 48 {
 		e.w.Char.Damage(uint8(rand.Intn(10)), e.Name)
 		return
 	}
+
 	if e.CanFly {
 		if !e.w.Char.Invisible {
 			e.Phys.Vel = e.Rect.Center().Sub(e.w.Char.Rect.Center()).Unit().Scaled(e.Phys.RunSpeed)
@@ -223,14 +230,17 @@ func (e *Entity) ChangeMind(dt float64) {
 }
 
 func (e *Entity) Update(dt float64) {
-	if e.w.Tile(e.Rect.Center()) == nil {
-
-		log.Println("bad entity spot, killing:", e.Name)
-		e.P.Health = 0
-
+	for {
+		tile := e.w.Tile(e.Rect.Center())
+		if tile == nil || tile.Type == O_BLOCK {
+			e.Rect = DefaultMobPhys.Rect.Moved(FindRandomTile(e.w.Objects))
+		} else {
+			break
+		}
 	}
+
 	e.counter += dt
-	collide := e.w.Objects
+	collide := append(e.w.Objects, e.w.DObjects...)
 	w := e.w
 	i := int(math.Floor(e.counter / e.Rate))
 	//frame := i % len(e.Anims[e.Program][e.Dir])
@@ -249,6 +259,7 @@ func (e *Entity) Update(dt float64) {
 	next := e.Rect.Moved(e.Phys.Vel.Scaled(-dt))
 	t := w.Tile(next.Center())
 	if t == nil && !e.CanFly {
+
 		return
 	}
 	if !e.CanFly && t.Type == O_BLOCK {
@@ -344,4 +355,24 @@ func LoadEntitySheet(sheetPath string, framesx, framesy uint8) (sheet pixel.Pict
 	anims[S_RUN][RIGHT] = frames[169:178]
 	anims[S_RUN][DOWN] = frames[182:191]
 	return sheet, anims, nil
+}
+
+func (w *World) NewMobs(n int) {
+	if w.Settings.NumEnemy == 0 {
+		w.Settings.NumEnemy = n
+	}
+	if n != 0 {
+		npc := w.NewEntity(SKELETON_GUARD)
+		npc.Phys.RunSpeed = 10
+		npc.P.Health = 2000
+		// npc.CanFly = true
+		npc.Rect = npc.Rect.Moved(FindRandomTile(w.Objects))
+
+		for i := 1; i < n; i++ {
+			npc = w.NewEntity(SKELETON)
+			npc.Rect = npc.Rect.Moved(FindRandomTile(w.Objects))
+		}
+
+	}
+
 }

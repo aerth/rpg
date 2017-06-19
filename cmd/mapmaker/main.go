@@ -82,19 +82,36 @@ func run() {
 	win.SetSmooth(true)
 	imd := imdraw.New(nil)
 	canvas := pixelgl.NewCanvas(pixel.R(-1000.00, -1000.00, 1000.00, 1000.00))
-	var things = []rpg.Object{}
+	var oldthings = []rpg.Object{}
 
 	if b, err := ioutil.ReadFile(LEVEL); err == nil {
-		err = json.Unmarshal(b, &things)
+		err = json.Unmarshal(b, &oldthings)
 		if err != nil {
 			panic(err)
 		}
 
 	}
+
+	// convert old map to new map style (object types)
+	var things = []rpg.Object{}
+	for _, v := range oldthings {
+		if v.P.Tile || v.Type == rpg.O_TILE {
+			v.P.Tile = true
+			v.P.Block = false
+			v.Type = rpg.O_TILE
+		}
+		if v.P.Block || v.Type == rpg.O_BLOCK {
+			v.P.Block = true
+			v.P.Tile = false
+			v.Type = rpg.O_BLOCK
+
+		}
+		things = append(things, v)
+	}
+
 	spritesheet, spritemap := loadSpriteSheet()
 
 	batch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
-
 	start := time.Now()
 	second := time.Tick(time.Second)
 	tick := time.Tick(time.Millisecond * 200)
@@ -289,6 +306,7 @@ func run() {
 			log.Println("Last DT", dt)
 			log.Println("FPS:", frames)
 			log.Printf("things: %v", len(things))
+			//log.Printf("dynamic things: %v", len(world.DObjects))
 			frames = 0
 		}
 	}

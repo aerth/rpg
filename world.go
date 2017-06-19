@@ -17,6 +17,7 @@ type World struct {
 	Name       string
 	Bounds     pixel.Rect
 	Objects    []*Object
+	DObjects   []*Object
 	Background string        // path to pic, will be repeated xy if not empty
 	background *pixel.Sprite // sprite to repeat xy
 	Batches    map[EntityType]*pixel.Batch
@@ -27,6 +28,11 @@ type World struct {
 	Char       *Character
 	Animations []*Animation
 	Messages   []string
+	Settings   WorldSettings
+}
+
+type WorldSettings struct {
+	NumEnemy int
 }
 
 func NewWorld(name string, bounds pixel.Rect, testing string) *World {
@@ -67,7 +73,7 @@ func NewWorld(name string, bounds pixel.Rect, testing string) *World {
 
 func (w *World) NewSpecial(o *Object) {
 	o.Type = O_SPECIAL
-	w.Objects = append(w.Objects, o)
+	w.DObjects = append(w.DObjects, o)
 }
 func (w World) String() string {
 	return w.Name
@@ -149,7 +155,6 @@ func (w *World) Draw(target pixel.Target) {
 		w.DrawEntity(i)
 
 	}
-
 	for i := range w.Batches {
 		w.Batches[i].Draw(target)
 	}
@@ -199,4 +204,15 @@ func (w *World) CleanAnimations() {
 		}
 	}
 	w.Animations = anims
+}
+func (w *World) Reset() {
+	w.Char.Health = 255
+	w.Char.Rect = DefaultPhys.Rect.Moved(FindRandomTile(w.Objects))
+	w.Char.Phys.Vel = pixel.ZV
+	npc := w.NewEntity(SKELETON_GUARD)
+	npc.Rect = npc.Rect.Moved(FindRandomTile(w.Objects))
+	npc2 := w.NewEntity(SKELETON)
+	npc2.Rect = npc.Rect.Moved(FindRandomTile(w.Objects))
+	w.Entities = []*Entity{npc, npc2}
+
 }

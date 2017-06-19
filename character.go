@@ -94,7 +94,22 @@ func (char *Character) Draw(t pixel.Target) {
 	char.Sprite.Draw(t, char.Matrix)
 }
 
-func (char *Character) Update(dt float64, dir Direction, collide []*Object) {
+func (char *Character) Update(dt float64, dir Direction, world *World) {
+
+	collide := append(world.Objects, world.DObjects...)
+	tile := world.Tile(char.Rect.Center())
+	if tile == nil && !char.Phys.CanFly {
+		new := FindRandomTile(collide)
+
+		newtile := world.Tile(new)
+		if newtile != nil {
+			if n := len(newtile.PathNeighbors()); n > 3 {
+				char.Rect = DefaultPhys.Rect.Moved(new)
+			} else {
+				panic("what tile")
+			}
+		}
+	}
 	if time.Since(char.tick) >= time.Second*3 {
 		if char.Mana < 255 {
 			char.Mana++

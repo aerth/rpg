@@ -163,7 +163,13 @@ func FindRandomTile(os []*Object) pixel.Vec {
 
 	for i := 0; i < len(os); i++ {
 		o := os[rand.Intn(len(os))]
-		if n := len(o.PathNeighbors()); n > 2 {
+		if o == nil {
+			continue
+		}
+		if o.Type != O_TILE {
+			continue
+		}
+		if n := len(o.PathNeighbors()); n > 3 {
 			log.Println("returning", o.Rect.Center())
 			return o.Rect.Center()
 		}

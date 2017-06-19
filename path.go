@@ -15,11 +15,16 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 	tile := e.w.Tile(e.Rect.Center())
 	targett := e.w.Tile(target)
 	if tile == nil || targett == nil {
-		log.Println(e.Name, "nil target, nil tile")
+		if tile == nil {
+			e.P.Health = 0
+			log.Println("killing bad entity")
+			return
+		}
+		//		log.Println(e.Name, "no target")
 		return
 	}
 
-	log.Println(e.Name, "path cost to target:", tile.PathEstimatedCost(targett))
+	//	log.Println(e.Name, "path cost to target:", tile.PathEstimatedCost(targett))
 	path, distance, found := astar.Path(tile, targett)
 	if found {
 		//		log.Println(e.Name, "found paths:", len(path))
