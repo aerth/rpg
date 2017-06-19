@@ -9,7 +9,7 @@ build:
 dev: clean generate embed-assets build
 
 generate:
-	stringer -output strings.go -type EntityType,EntityState,ItemType,ObjectType
+	stringer -output strings.go -type EntityType,EntityState,ItemType,ObjectType,animState,ActionType
 
 embed-assets:
 	@test -x ${shell which go-bindata} && \
