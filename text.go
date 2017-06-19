@@ -15,14 +15,6 @@ import (
 	"golang.org/x/image/font/gofont/goregular"
 )
 
-func getrunes() []rune {
-	RUNES := make([]rune, unicode.MaxRune-32)
-	for i := range RUNES {
-		RUNES[i] = rune(32 + i)
-	}
-	return RUNES
-}
-
 var GraphicRanges = []*unicode.RangeTable{
 	unicode.L, unicode.M, unicode.N, unicode.P, unicode.S, unicode.Zs,
 }
@@ -90,9 +82,5 @@ func DrawScore(winbounds pixel.Rect, t *text.Text, canvas pixel.Target, format s
 }
 
 func (w *World) Message(s string) {
-	if len(w.Messages) > 10 {
-		w.Messages = []string{}
-	}
 	log.Println(s)
-	w.Messages = append(w.Messages, s)
 }

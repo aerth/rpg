@@ -133,11 +133,14 @@ func run() {
 		spritemap[200].Draw(menubatch, IM.Moved(btn.Frame.Center()))
 	}
 
-	redrawWorld := func() {
+	redrawWorld := func(w *rpg.World) {
 		globebatch.Clear()
 		// draw it on to canvasglobe
-		for i := range world.Objects {
-			world.Objects[i].Draw(globebatch, spritesheet, spritemap)
+		for i, v := range w.Objects {
+			if pixel.R(-300, -300, 300, 300).Moved(w.Char.Rect.Center()).Contains(v.Loc) {
+
+				w.Objects[i].Draw(globebatch, spritesheet, spritemap)
+			}
 		}
 	}
 
@@ -159,7 +162,7 @@ func run() {
 	texthelp := rpg.NewTextSmooth(18)
 	texthelp.Color = colornames.Red
 	fmt.Fprint(texthelp, "[tab=slow] [shift=fast] [q=quit] [space=manastorm] [enter=reset] [i=inventory]")
-	redrawWorld()
+	redrawWorld(world)
 	// start loop
 	imd := imdraw.New(nil)
 	rand.Seed(time.Now().UnixNano())
@@ -250,21 +253,6 @@ func run() {
 			select {
 			default: //
 			case <-tick:
-				if len(world.Messages) > 100 {
-					log.Println("truncating messages")
-					world.Messages = []string{world.Messages[len(world.Messages)-1]}
-				}
-				if len(world.Messages) > 0 {
-					latest = world.Messages[0]
-					if len(world.Messages) > 1 {
-						world.Messages = world.Messages[1:]
-						log.Println(world.Messages)
-					} else {
-						world.Messages = []string{}
-					}
-
-				}
-
 			}
 			if b, _, ok := world.IsButton(buttons, mouseloc); ok {
 				texthelp.Clear()
@@ -285,6 +273,7 @@ func run() {
 			select {
 			default: //keep going
 			case <-second:
+				redrawWorld(world)
 				latest = ""
 				str := fmt.Sprintf(""+
 					"FPS: %d | GPS: (%v,%v) | VEL: (%v) | HP: (%v) ",

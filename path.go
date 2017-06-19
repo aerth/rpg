@@ -21,7 +21,7 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 	}
 	path, distance, found := astar.Path(tile, targett)
 	if found {
-		if distance > 100 { // cost path
+		if distance > 20 { // cost path
 			e.paths = nil
 			return
 		}
