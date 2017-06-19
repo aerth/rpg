@@ -32,12 +32,11 @@ type Character struct {
 	Rate      float64                    // animation
 	counter   float64                    // in animation
 	State     animState                  // Idle or Running
-	Inventory []Item
-	Score     uint64
-	Health    uint8
-	Mana      uint8
-	Gold      uint64 // bankin
-	Invisible bool
+	Inventory []Item                     // inventory
+	Health    uint8                      // hp
+	Mana      uint8                      // mp
+	Invisible bool                       // hidden from enemies
+	Level     int
 	tick      time.Time
 }
 
@@ -96,7 +95,7 @@ func (char *Character) Draw(t pixel.Target) {
 }
 
 func (char *Character) Update(dt float64, dir Direction, collide []*Object) {
-	if time.Since(char.tick) >= time.Second {
+	if time.Since(char.tick) >= time.Second*3 {
 		if char.Mana < 255 {
 			char.Mana++
 		}
@@ -222,12 +221,31 @@ func (w *World) Action(char *Character, loc pixel.Vec, t ActionType) {
 	}
 }
 
-func (c *Character) CountGold() string {
+func (char *Character) CountGold() string {
 	var madlootyo uint64
-	for _, item := range c.Inventory {
+	for _, item := range char.Inventory {
 		if item.Type == GOLD {
 			madlootyo += item.Quantity
 		}
 	}
 	return strconv.FormatInt(int64(madlootyo), 10)
+}
+
+func (char *Character) ExpUp(amount uint64) {
+	char.Stats.XP += amount
+}
+
+func (w *World) checkLevel() {
+	// hardcoded level xp for now
+	if w.Char.Stats.XP > 10 {
+		w.Char.Level++
+		w.Message("LVL UP")
+		log.Println("level up!")
+		w.Char.Stats.XP = 0
+		switch w.Char.Level {
+		default:
+			w.Char.Stats.Intelligence += 10
+
+		}
+	}
 }

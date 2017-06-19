@@ -210,6 +210,12 @@ func (e *Entity) ChangeMind(dt float64) {
 }
 
 func (e *Entity) Update(dt float64) {
+	if e.w.Tile(e.Rect.Center()) == nil {
+
+		log.Println("bad entity spot, killing:", e.Name)
+		e.P.Health = 0
+
+	}
 	e.counter += dt
 	collide := e.w.Objects
 	w := e.w

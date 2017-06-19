@@ -25,6 +25,12 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+var (
+	flagenemies   = flag.Int("e", 2, "number of enemies to begin with")
+	flaglevel     = flag.Int("lvl", 1, "starting level (1)")
+	flagcustomlvl = flag.String("test", "", "custom world test (filename)")
+)
+
 const (
 	LEFT  = rpg.LEFT
 	RIGHT = rpg.RIGHT
@@ -48,26 +54,10 @@ var (
 	camZoomSpeed = 1.20
 )
 
-func Init() {
-	if flag.NArg() > 1 {
-
-		f := flag.Arg(0)
-		if n, err := strconv.Atoi(f); err == nil {
-			log.Println("ENEMIES:", n)
-			NUMENEMY = n
-
-		}
-		if flag.NArg() > 1 {
-			if n, err := strconv.Atoi(flag.Arg(1)); err == nil {
-				log.Println("LEVEL:", n)
-				LEVEL = n
-			}
-		}
-
-	}
-}
 func run() {
-	Init()
+	NUMENEMY := *flagenemies
+	LEVEL := *flaglevel
+	TESTLVL := *flagcustomlvl
 	f, err := os.Create("p.debug")
 	if err != nil {
 		log.Fatal(err)
@@ -104,7 +94,7 @@ func run() {
 	// load world
 	worldbounds := pixel.R(float64(-3000), float64(-3000), float64(3000), float64(3000))
 	//	worldbounds = pixel.R(float64(-4000), float64(-4000), float64(4000), float64(4000))
-	world := rpg.NewWorld(strconv.Itoa(LEVEL), worldbounds)
+	world := rpg.NewWorld(strconv.Itoa(LEVEL), worldbounds, TESTLVL)
 	world.Char = char
 
 	// sprite sheet
@@ -139,10 +129,11 @@ func run() {
 		npc := world.NewEntity(rpg.SKELETON_GUARD)
 		npc.Phys.RunSpeed = 100
 		// npc.CanFly = true
-		npc.Rect = npc.Rect.Moved(pixel.V(-680, 550))
+		npc.Rect = npc.Rect.Moved(rpg.FindRandomTile(world.Objects))
+
 		for i := 1; i < NUMENEMY; i++ {
 			npc = world.NewEntity(rpg.SKELETON)
-			npc.Rect = npc.Rect.Moved(pixel.V(-680, 550-float64(i)))
+			npc.Rect = npc.Rect.Moved(rpg.FindRandomTile(world.Objects))
 		}
 
 	}
@@ -225,7 +216,7 @@ func run() {
 			char.Draw(win)
 			text.Clear()
 			rpg.DrawScore(winbounds, text, win,
-				"[%vHP·%vMP·%sGP] %s", char.Health, char.Mana, char.CountGold(), latest)
+				"[%vHP·%vMP·%sGP %vLVL %vXP] %s", char.Health, char.Mana, char.CountGold(), char.Level, char.Stats.XP, latest)
 			//	menubatch.Draw(win, pixel.IM.Moved(win.Bounds().Center()))
 			menubatch.Draw(win)
 			select {

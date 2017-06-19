@@ -46,7 +46,7 @@ func TitleMenu(w *World, win *pixelgl.Window) {
 		imd.Draw(win)*/
 
 		if win.JustPressed(pixelgl.KeyEscape) || win.JustPressed(pixelgl.KeyQ) {
-			os.Exit(0)
+			w.Exit(0)
 		}
 		if win.JustPressed(pixelgl.MouseButtonLeft) || win.JustPressed(pixelgl.KeyEnter) {
 			break
@@ -89,4 +89,8 @@ func (w *World) IsButton(buttons []Button, point pixel.Vec) (Button, func(win pi
 	}
 
 	return Button{}, nil, false
+}
+
+func (w *World) Exit(code int) {
+	os.Exit(code)
 }

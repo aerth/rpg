@@ -71,6 +71,7 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string) {
 			if a.rect.Contains(v.Rect.Center()) {
 				w.Entities[i].P.Health -= a.damage
 				if w.Entities[i].P.Health <= 0 {
+					// damage func should be function
 					if w.Entities[i].P.IsDead {
 						w.Entities[i].P.Health = 0
 						continue
@@ -84,10 +85,13 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string) {
 
 					w.Char.Inventory = StackItems(w.Char.Inventory, v.P.Loot)
 					log.Println("New inventory:", w.Char.Inventory)
+					w.Char.ExpUp(1)
+					w.checkLevel()
 
 				}
 
-				log.Printf("%s took %v damage, now at %v HP", w.Entities[i].Name, a.damage, w.Entities[i].P.Health)
+				log.Printf("%s took %v damage, now at %v HP",
+					w.Entities[i].Name, a.damage, w.Entities[i].P.Health)
 			}
 		}
 

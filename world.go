@@ -29,7 +29,7 @@ type World struct {
 	Messages   []string
 }
 
-func NewWorld(name string, bounds pixel.Rect) *World {
+func NewWorld(name string, bounds pixel.Rect, testing string) *World {
 
 	w := new(World)
 	w.Name = name
@@ -55,7 +55,12 @@ func NewWorld(name string, bounds pixel.Rect) *World {
 		SKELETON:       batchskel,
 		SKELETON_GUARD: batchguard,
 	}
-	w.LoadMap("maps/" + name + ".map")
+	if testing != "" {
+		w.LoadMapFile(testing)
+
+	} else {
+		w.LoadMap("maps/" + name + ".map")
+	}
 	w.Messages = []string{"welcome"}
 	return w
 }
@@ -70,16 +75,22 @@ func (w World) String() string {
 func (w *World) Update(dt float64) {
 	entities := []*Entity{}
 	for i := range w.Entities {
+		if w.Entities[i] == nil {
+			continue
+		}
 		w.Entities[i].ChangeMind(dt)
 		w.Entities[i].Update(dt)
 		if w.Entities[i].P.Health > 0 {
 			entities = append(entities, w.Entities[i])
 		} else {
+			if len(w.Entities) > 64 {
+				continue
+			}
 			npc := w.NewEntity(SKELETON_GUARD)
-			npc.Rect = npc.Rect.Moved(pixel.V(-680, 550))
+			npc.Rect = npc.Rect.Moved(FindRandomTile(w.Objects))
 			entities = append(entities, npc)
 			npc = w.NewEntity(SKELETON)
-			npc.Rect = npc.Rect.Moved(pixel.V(-680, 550-float64(i)))
+			npc.Rect = npc.Rect.Moved(FindRandomTile(w.Objects))
 			entities = append(entities, npc)
 
 		}

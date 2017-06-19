@@ -19,7 +19,7 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 		return
 	}
 
-	//log.Println(e.Name, "path cost to target:", tile.PathEstimatedCost(targett))
+	log.Println(e.Name, "path cost to target:", tile.PathEstimatedCost(targett))
 	path, distance, found := astar.Path(tile, targett)
 	if found {
 		//		log.Println(e.Name, "found paths:", len(path))

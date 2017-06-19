@@ -3,7 +3,9 @@ package rpg
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"math/rand"
 
 	"golang.org/x/image/colornames"
 
@@ -99,18 +101,28 @@ func (o Object) Draw(win pixel.Target, spritesheet pixel.Picture, sheetFrames []
 	}
 
 }
-
+func (w *World) LoadMapFile(path string) {
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Println("error loading map:", err)
+		w.Exit(111)
+	}
+	w.loadmap(b)
+}
 func (w *World) LoadMap(path string) {
-	var things = []Object{}
 	b, err := assets.Asset(path)
 	if err != nil {
-		log.Println("missing map", path)
-		panic(err)
+		log.Println("error loading map:", err)
+		w.Exit(111)
 	}
-	err = json.Unmarshal(b, &things)
+	w.loadmap(b)
+}
+func (w *World) loadmap(b []byte) {
+	var things = []Object{}
+	err := json.Unmarshal(b, &things)
 	if err != nil {
-		log.Println("invalid map", path)
-		panic(err)
+		log.Println("invalid map:", err)
+		w.Exit(111)
 	}
 	for _, thing := range things {
 		t := new(Object)
@@ -140,4 +152,21 @@ func (o ObjectType) UnmarshalJSON(b []byte) error {
 	}
 	o = ObjectType(i)
 	return nil
+}
+
+func FindRandomTile(os []*Object) pixel.Vec {
+
+	for i := 0; i < len(os); i++ {
+		o := os[rand.Intn(len(os))]
+		if o.Type == O_TILE {
+			return o.Rect.Center()
+		}
+	}
+	log.Println("no tiles? looking again:", len(os))
+	for _, o := range os {
+		if o.Type == O_TILE && rand.Intn(100) < 10 {
+			return o.Rect.Center()
+		}
+	}
+	return pixel.ZV
 }
