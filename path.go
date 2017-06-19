@@ -31,6 +31,11 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 		//for i, v := range path {
 		//	log.Println(e.Name, i, v.(*Object).Rect.Center())
 		//	}
+		if distance > 10 {
+			e.paths = nil
+			return
+		}
+		//log.Println("distance:", distance)
 		var paths []pixel.Vec
 
 		for _, p := range path {
@@ -44,7 +49,7 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 
 		return
 	}
-	log.Println(e.Name, "no path found, distance:", distance)
+	//log.Println(e.Name, "no path found, distance:", distance)
 }
 
 // PathNeighbors returns the neighbors of the tile, excluding blockers and
@@ -107,8 +112,8 @@ const (
 
 var tileCosts = map[ObjectType]float64{
 	O_BLOCK:     30.00,
-	O_INVISIBLE: 1.00,
+	O_INVISIBLE: 3.00,
 	O_SPECIAL:   0.00,
-	O_TILE:      0.00,
+	O_TILE:      1.00,
 	O_WIN:       0.00,
 }

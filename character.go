@@ -95,19 +95,12 @@ func (char *Character) Draw(t pixel.Target) {
 }
 
 func (char *Character) Update(dt float64, dir Direction, world *World) {
-
-	collide := append(world.Objects, world.DObjects...)
-	tile := world.Tile(char.Rect.Center())
-	if tile == nil && !char.Phys.CanFly {
-		new := FindRandomTile(collide)
-
-		newtile := world.Tile(new)
-		if newtile != nil {
-			if n := len(newtile.PathNeighbors()); n > 3 {
-				char.Rect = DefaultPhys.Rect.Moved(new)
-			} else {
-				panic("what tile")
-			}
+	for i := 0; i < 3; i++ {
+		collide := append(world.Objects, world.DObjects...)
+		tile := world.Tile(char.Rect.Center())
+		if tile == nil && !char.Phys.CanFly {
+			new := FindRandomTile(collide)
+			char.Rect = DefaultPhys.Rect.Moved(new)
 		}
 	}
 	if time.Since(char.tick) >= time.Second*1 {
@@ -155,7 +148,7 @@ func (char *Character) Update(dt float64, dir Direction, world *World) {
 		next := char.Rect.Moved(char.Phys.Vel.Scaled(dt))
 
 		f := func(dot pixel.Vec) bool {
-			for _, c := range collide {
+			for _, c := range world.Objects {
 				if c.Rect.Contains(dot) && c.P.Block {
 					//log.Printf("blocked by: %v at rect: %s, dot: %s", c.SpriteNum, c.Rect, dot)
 					return false
@@ -169,7 +162,7 @@ func (char *Character) Update(dt float64, dir Direction, world *World) {
 		}
 		// only walk on tiles
 		f2 := func(dot pixel.Vec) bool {
-			for _, c := range collide {
+			for _, c := range world.Objects {
 				if (c.P.Tile || c.Type == O_TILE) && c.Rect.Contains(dot) {
 					return true
 				}

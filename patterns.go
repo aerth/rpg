@@ -53,7 +53,7 @@ func (a *Animation) draw(imd *imdraw.IMDraw) {
 	for i := len(a.cols) - 1; i >= 0; i-- {
 		imd.Color = a.cols[i]
 		imd.Push(a.loc)
-		imd.Circle(float64(i+1)*a.radius/float64(len(a.cols)), 0)
+		imd.Circle(float64(i+2)*a.radius/float64(len(a.cols)), 0)
 	}
 }
 func (w *World) NewAnimation(loc pixel.Vec, kind string) {
@@ -64,7 +64,7 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string) {
 	case "magic":
 		a := new(Animation)
 		a.loc = loc
-		a.radius = 160 * w.Char.Stats.Intelligence / 100
+		a.radius = 140 * w.Char.Stats.Intelligence / 100
 		a.step = 1.0 / 7
 		a.damage = w.Char.Stats.Intelligence * 1.3
 		a.rect = pixel.R(-a.radius, -a.radius, a.radius, a.radius).Moved(a.loc)

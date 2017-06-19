@@ -137,7 +137,6 @@ func run() {
 	var camZoom = &defaultzoom
 	var debug bool
 	var dt *float64 = &delda
-	var added bool
 	t1 := time.Now()
 	text := rpg.NewText(36)
 	fmt.Fprint(text, "[tab=slow] [shift=fast] [q=quit]")
@@ -206,7 +205,6 @@ func run() {
 			text.Clear()
 			rpg.DrawScore(winbounds, text, win,
 				"[%vHP·%vMP·%sGP LVL%v %vXP] %s", char.Health, char.Mana, char.CountGold(), char.Level, char.Stats.XP, latest)
-			//	menubatch.Draw(win, pixel.IM.Moved(win.Bounds().Center()))
 			menubatch.Draw(win)
 			select {
 			default: //
@@ -239,23 +237,10 @@ func run() {
 			default: //keep going
 			case <-second:
 				latest = ""
-				if time.Since(t1) > time.Second*10 {
-					if !added {
-						added = true
-						o := &rpg.Object{
-							Loc:       rpg.FindRandomTile(world.Objects),
-							SpriteNum: 182,
-						}
-						o.Rect = rpg.SpriteFrame.Moved(o.Loc)
-
-						world.NewSpecial(o)
-					}
-				}
 				str := fmt.Sprintf(""+
 					"FPS: %d | GPS: (%v,%v) | VEL: (%v) | HP: (%v) ",
 					frames, int(gps.X), int(gps.Y), int(char.Phys.Vel.Len()), char.Health)
 				win.SetTitle(str)
-				log.Println(str)
 				frames = 0
 			}
 

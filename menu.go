@@ -17,7 +17,7 @@ type Button struct {
 	Frame pixel.Rect
 }
 
-var version = "0.0.90"
+var version = "0.0.91"
 
 func TitleMenu(w *World, win *pixelgl.Window) {
 	text := NewText(40)

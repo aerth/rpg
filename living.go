@@ -177,6 +177,12 @@ func (e *Entity) Center() pixel.Vec {
 }
 
 func (e *Entity) ChangeMind(dt float64) {
+
+	if e.w.Char.Invisible {
+		e.Phys.Vel = pixel.ZV
+		return
+	}
+
 	r := pixel.Rect{e.Rect.Center(), e.w.Char.Rect.Center()}
 	if r.Size().Len() < 48 {
 		e.w.Char.Damage(uint8(rand.Intn(10)), e.Name)
@@ -194,39 +200,9 @@ func (e *Entity) ChangeMind(dt float64) {
 
 		return
 	}
-	//log.Println("finding path", e.Name)
-
-	//offset := pixel.V(-8, 8)
+	e.pathcalc(e.w.Char.Rect.Center())
 	if len(e.paths) > 2 {
 		e.Phys.Vel = e.Rect.Center().Sub(e.paths[len(e.paths)-2]).Unit().Scaled(e.Phys.RunSpeed)
-		e.pathcalc(e.w.Char.Rect.Center())
-		//e.paths = e.paths[:len(e.paths)-1]
-		//e.Phys.Vel = e.Rect.Center().Sub(e.paths[1].Sub(offset).Unit().Scaled(e.Phys.RunSpeed))
-		//		e.Phys.Vel = e.paths[0].Unit().Scaled(e.Phys.RunSpeed)
-		//log.Println("got vel:", e.Phys.Vel, e.Phys.Vel.Len())
-	} else {
-		if !e.w.Char.Invisible {
-			char := e.w.Char
-			if char == nil {
-				log.Println("nil character")
-				return
-			}
-
-			target := e.w.Tile(char.Rect.Center())
-			if target == nil {
-				log.Println("nil target tile")
-				return
-			}
-
-			e.pathcalc(target.Rect.Center())
-
-			if len(e.paths) == 0 {
-				log.Println("no paths?!")
-			}
-		} else {
-			e.Phys.Vel = pixel.ZV
-
-		}
 	}
 }
 
@@ -299,8 +275,6 @@ func (e *Entity) Update(dt float64) {
 		//log.Println("cant move", e.Name, "to ", next.Center(), w.Tile(next.Center()), e.paths[0])
 		if len(e.paths) > 0 {
 			e.paths = e.paths[:len(e.paths)-1]
-		} else {
-			e.pathcalc(w.Char.Rect.Center())
 		}
 	}
 
