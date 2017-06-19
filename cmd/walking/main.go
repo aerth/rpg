@@ -170,7 +170,7 @@ func run() {
 			if win.JustPressed(pixelgl.KeyQ) {
 				break
 			}
-			if win.JustPressed(pixelgl.KeyI) || win.JustPressed(pixelgl.KeyEscape) {
+			if win.JustReleased(pixelgl.KeyI) || win.JustReleased(pixelgl.KeyEscape) {
 				rpg.InventoryLoop(win, world)
 			}
 

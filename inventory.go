@@ -11,7 +11,7 @@ func InventoryLoop(win *pixelgl.Window, world *World) {
 	x, y := win.Bounds().Center().XY()
 	text := NewTextSmooth(14)
 	text.WriteString("\tGAME PAUSED\n\n")
-	text.WriteString("\tESC to return\n\n")
+	text.WriteString("\tESC or any key to return\n\n")
 	text.WriteString(world.Char.Stats.String())
 	text.WriteString("\n\n===INVENTORY===\n" + FormatItemList(world.Char.Inventory))
 	for !win.Closed() {
@@ -35,7 +35,8 @@ func InventoryLoop(win *pixelgl.Window, world *World) {
 		imd.Push(pixel.V(x, y), pixel.V(x+10, y+10))
 		imd.Rectangle(0)
 		imd.Draw(win)
-		if win.JustPressed(pixelgl.KeyEscape) {
+
+		if win.Typed() != "" || win.JustPressed(pixelgl.KeyEscape) {
 			break
 		}
 		text.Draw(win, pixel.IM.Moved(pixel.V(30, 500)))
