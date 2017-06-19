@@ -128,7 +128,7 @@ func (w *World) Update(dt float64) {
 	}
 
 	for _, a := range w.Animations {
-		if a == nil || time.Since(a.start) < time.Millisecond {
+		if a == nil || time.Since(a.start) < time.Millisecond || time.Since(a.until) > time.Millisecond {
 			continue
 		}
 

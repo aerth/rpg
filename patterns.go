@@ -64,41 +64,43 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string) {
 	case "magic":
 		a := new(Animation)
 		a.loc = loc
-		a.radius = 180
+		a.radius = 160 * w.Char.Stats.Intelligence / 100
 		a.step = 1.0 / 7
 		a.damage = w.Char.Stats.Intelligence * 1.3
-		a.rect = pixel.R(-180, -180, 180, 180).Moved(a.loc)
+		a.rect = pixel.R(-a.radius, -a.radius, a.radius, a.radius).Moved(a.loc)
 		a.cols = [5]pixel.RGBA{}
 		a.start = time.Now()
 		a.until = time.Now().Add(4 * time.Second)
 		w.Animations = append(w.Animations, a)
-		/*for i, v := range w.Entities {
-			if a.rect.Contains(v.Rect.Center()) {
-				w.Entities[i].P.Health -= a.damage
-				if w.Entities[i].P.Health <= 0 {
-					// damage func should be function
-					if w.Entities[i].P.IsDead {
+		for _, a := range w.Animations {
+			for i, v := range w.Entities {
+				if a.rect.Contains(v.Rect.Center()) {
+					w.Entities[i].P.Health -= a.damage
+					if w.Entities[i].P.Health <= 0 {
+						// damage func should be function
+						if w.Entities[i].P.IsDead {
+							w.Entities[i].P.Health = 0
+							continue
+						}
 						w.Entities[i].P.Health = 0
-						continue
+						w.Entities[i].P.IsDead = true
+						w.Char.Stats.Kills++
+
+						log.Println("Got new loot!:", FormatItemList(v.P.Loot))
+						w.Message(" Loot: " + FormatItemList(v.P.Loot))
+
+						w.Char.Inventory = StackItems(w.Char.Inventory, v.P.Loot)
+						log.Println("New inventory:", w.Char.Inventory)
+						w.Char.ExpUp(1)
+						w.checkLevel()
+
 					}
-					w.Entities[i].P.Health = 0
-					w.Entities[i].P.IsDead = true
-					w.Char.Stats.Kills++
 
-					log.Println("Got new loot!:", FormatItemList(v.P.Loot))
-					w.Message(" Loot: " + FormatItemList(v.P.Loot))
-
-					w.Char.Inventory = StackItems(w.Char.Inventory, v.P.Loot)
-					log.Println("New inventory:", w.Char.Inventory)
-					w.Char.ExpUp(1)
-					w.checkLevel()
-
+					log.Printf("%s took %v damage, now at %v HP",
+						w.Entities[i].Name, a.damage, w.Entities[i].P.Health)
 				}
-
-				log.Printf("%s took %v damage, now at %v HP",
-					w.Entities[i].Name, a.damage, w.Entities[i].P.Health)
 			}
-		} */
+		}
 
 	}
 
