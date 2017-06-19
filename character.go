@@ -246,13 +246,15 @@ func (char *Character) ExpUp(amount uint64) {
 }
 
 func (w *World) checkLevel() {
+
 	if w.Char.Stats.XP == 0 {
 		return
 	}
-	if w.Char.Stats.XP > uint64(10*w.Char.Level) {
+	nextlvl := w.Char.NextLevel()
+	if w.Char.Stats.XP > nextlvl {
 		w.Char.Level++
 		w.Message("LVL UP")
-		log.Printf("level up (%v)! next lvl at %v xp", w.Char.Level, uint64(10*w.Char.Level))
+		log.Printf("level up (%v)! next lvl at %v xp", w.Char.Level, nextlvl)
 		w.Char.Stats.XP = 0
 		switch w.Char.Level {
 		default:
@@ -260,4 +262,8 @@ func (w *World) checkLevel() {
 		}
 		log.Println(w.Char.Stats)
 	}
+}
+
+func (c *Character) NextLevel() uint64 {
+	return uint64(10 * c.Level)
 }

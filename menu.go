@@ -9,6 +9,7 @@ import (
 	"golang.org/x/image/colornames"
 
 	"github.com/faiface/pixel"
+	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
 )
 
@@ -93,4 +94,58 @@ func (w *World) IsButton(buttons []Button, point pixel.Vec) (Button, func(win pi
 
 func (w *World) Exit(code int) {
 	os.Exit(code)
+}
+
+func (c *Character) DrawBars(target pixel.Target) {
+	imd := imdraw.New(nil)
+	xp := float64(c.Stats.XP)
+	next := float64(c.NextLevel())
+	percent := xp / next
+
+	// XP
+	imd.Color = colornames.Purple
+	imd.Push(pixel.V(10, 100))
+	imd.Push(pixel.V(110, 120))
+	imd.Rectangle(4)
+	if xp > 0 {
+		imd.Color = colornames.Purple
+		imd.Push(pixel.V(10, 100))
+		imd.Push(pixel.V(115*percent, 120))
+		imd.Rectangle(0)
+	}
+
+	// HP
+	pt := (110 * float64(c.Health) / 255)
+	if c.Health == 0 {
+		pt = 10
+	}
+	imd.Color = colornames.Red
+	imd.Push(pixel.V(10, 130))
+	imd.Push(pixel.V(110, 150))
+	imd.Rectangle(4)
+
+	imd.Color = colornames.Red
+	imd.Push(pixel.V(10, 130))
+	imd.Push(pixel.V(pt, 150))
+	imd.Rectangle(0)
+
+	// MP
+	pt = (110 * float64(c.Mana) / 255)
+	if c.Mana == 0 {
+		pt = 10
+	}
+	imd.Color = colornames.Blue
+	imd.Push(pixel.V(10, 160))
+	imd.Push(pixel.V(110, 180))
+	imd.Rectangle(4)
+	imd.Color = colornames.Blue
+
+	if pt > 10 {
+		imd.Push(pixel.V(10, 160))
+		imd.Push(pixel.V(pt, 180))
+		imd.Rectangle(0)
+	}
+
+	imd.Draw(target)
+
 }

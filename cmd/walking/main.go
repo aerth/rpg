@@ -206,9 +206,10 @@ func run() {
 			// back to window cam
 			win.SetMatrix(pixel.IM)
 			char.Draw(win)
+			char.DrawBars(win)
 			text.Clear()
 			rpg.DrawScore(winbounds, text, win,
-				"[%vHP·%vMP·%sGP LVL%v %vXP %vKills] %s", char.Health, char.Mana, char.CountGold(), char.Level, char.Stats.XP, char.Stats.Kills, latest)
+				"[%vHP·%vMP·%sGP LVL%v %v/%vXP %vKills] %s", char.Health, char.Mana, char.CountGold(), char.Level, char.Stats.XP, char.NextLevel(), char.Stats.Kills, latest)
 
 			menubatch.Draw(win)
 
