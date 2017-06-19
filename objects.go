@@ -81,7 +81,7 @@ func (o Object) Highlight(win pixel.Target) {
 	if o.P.Tile {
 		color = pixel.ToRGBA(colornames.Blue)
 	}
-	imd.Color = color.Scaled(0.2)
+	imd.Color = color.Scaled(0.3)
 	imd.Push(o.Rect.Min, o.Rect.Max)
 	imd.Rectangle(0)
 	imd.Draw(win)
@@ -159,26 +159,61 @@ func (o ObjectType) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// never returns blocks
 func FindRandomTile(os []*Object) pixel.Vec {
 
-	for i := 0; i < len(os); i++ {
-		o := os[rand.Intn(len(os))]
-		if o == nil {
-			continue
-		}
-		if o.Type != O_TILE {
-			continue
-		}
-		if n := len(o.PathNeighbors()); n > 3 {
-			log.Println("returning", o.Rect.Center())
-			return o.Rect.Center()
+	tiles := GetTiles(os)
+	if len(tiles) == 0 {
+		return pixel.ZV
+	}
+	return tiles[rand.Intn(len(tiles))].Rect.Center()
+}
+
+func GetObjects(objects []*Object, position pixel.Vec) []*Object {
+	var good []*Object
+	for _, o := range objects {
+		if o.Rect.Contains(position) {
+			good = append(good, o)
 		}
 	}
-	log.Println("no tiles? looking again:", len(os))
-	for _, o := range os {
-		if o.Type == O_TILE && rand.Intn(100) < 10 {
-			return o.Rect.Center()
+	return good
+}
+
+func GetTiles(objects []*Object) []*Object {
+
+	var tiles []*Object
+	for _, o := range objects {
+		if o.Type == O_TILE {
+			tiles = append(tiles, o)
 		}
 	}
-	return pixel.ZV
+	return tiles
+}
+
+func GetTilesAt(objects []*Object, position pixel.Vec) []*Object {
+	var good []*Object
+	all := GetObjects(objects, position)
+	if len(all) > 0 {
+		for _, o := range all {
+			if o.Type == O_BLOCK {
+				good = append(good, o)
+			}
+
+		}
+	}
+	return good
+
+}
+func GetBlocks(objects []*Object, position pixel.Vec) []*Object {
+	var bad []*Object
+	all := GetObjects(objects, position)
+	if len(all) > 0 {
+		for _, o := range all {
+			if o.Type == O_BLOCK {
+				bad = append(bad, o)
+			}
+
+		}
+	}
+	return bad
 }

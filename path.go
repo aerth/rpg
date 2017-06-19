@@ -31,11 +31,17 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 		//for i, v := range path {
 		//	log.Println(e.Name, i, v.(*Object).Rect.Center())
 		//	}
-		e.paths = []pixel.Vec{}
-		//log.Printf("Calculated: %s, %v paths", o.Rect.Center(), len(path))
+		var paths []pixel.Vec
+
 		for _, p := range path {
-			e.paths = append(e.paths, p.(*Object).Loc)
+
+			//log.Println(p)
+			center := p.(*Object).Rect.Center()
+			paths = append(paths, center)
 		}
+
+		e.paths = paths
+
 		return
 	}
 	log.Println(e.Name, "no path found, distance:", distance)
@@ -47,11 +53,16 @@ func (o Object) PathNeighbors() []astar.Pather {
 	neighbors := []astar.Pather{}
 	of := 32.0
 	//of = 24.0
+
 	for _, offset := range [][]float64{
 		{-of, 0},
 		{of, 0},
 		{0, -of},
 		{0, of},
+		//{of, -of},
+		//{-of, -of},
+		//{of, of},
+		//{-of, of},
 	} {
 		if n := o.w.Tile(pixel.V(o.Rect.Center().X+offset[0], o.Rect.Center().Y+offset[1])); n != nil {
 			if n.P.Tile || n.Type == O_TILE {

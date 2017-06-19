@@ -86,7 +86,7 @@ func (w *World) NewEntity(t EntityType) *Entity {
 			w:    w,
 			Type: t,
 			P: EntityProperties{
-				Health: float64(rand.Intn(255)),
+				Health: float64(rand.Intn(255) + 1),
 				Mana:   float64(rand.Intn(255)),
 			},
 			Rect:  pixel.R(-16, -16, 16, 16),
@@ -152,7 +152,6 @@ type ItemProperties struct {
 
 type ePhys struct {
 	RunSpeed float64
-	Rect     pixel.Rect
 	Vel      pixel.Vec
 	Gravity  float64
 	Rate     float64
@@ -161,10 +160,8 @@ type ePhys struct {
 // DefaultPhys character
 var DefaultMobPhys = ePhys{
 	RunSpeed: 100.5,
-	//Rect:     pixel.R(-8, -8, 8, 8),
-	Rect:    pixel.R(98, 98, 108, 108),
-	Gravity: 50.00,
-	Rate:    2,
+	Gravity:  50.00,
+	Rate:     2,
 }
 
 func (e *Entity) Draw(t pixel.Target, w *World) {
@@ -175,12 +172,11 @@ func (e *Entity) Draw(t pixel.Target, w *World) {
 	sprite.Draw(t, pixel.IM.Moved(e.Rect.Center()))
 }
 
-func (e *Entity) ChangeMind(dt float64) {
-	tile := e.w.Tile(e.Rect.Center())
-	if tile == nil || tile.Type != O_TILE {
-		e.Rect = DefaultMobPhys.Rect.Moved(FindRandomTile(e.w.Objects))
-	}
+func (e *Entity) Center() pixel.Vec {
+	return e.Rect.Center()
+}
 
+func (e *Entity) ChangeMind(dt float64) {
 	r := pixel.Rect{e.Rect.Center(), e.w.Char.Rect.Center()}
 	if r.Size().Len() < 48 {
 		e.w.Char.Damage(uint8(rand.Intn(10)), e.Name)
@@ -188,7 +184,9 @@ func (e *Entity) ChangeMind(dt float64) {
 	}
 
 	if e.CanFly {
+		log.Println("FLYING", e.Name)
 		if !e.w.Char.Invisible {
+
 			e.Phys.Vel = e.Rect.Center().Sub(e.w.Char.Rect.Center()).Unit().Scaled(e.Phys.RunSpeed)
 		} else {
 			e.Phys.Vel = pixel.ZV
@@ -198,9 +196,12 @@ func (e *Entity) ChangeMind(dt float64) {
 	}
 	//log.Println("finding path", e.Name)
 
+	//offset := pixel.V(-8, 8)
 	if len(e.paths) > 2 {
 		e.Phys.Vel = e.Rect.Center().Sub(e.paths[len(e.paths)-2]).Unit().Scaled(e.Phys.RunSpeed)
-		e.paths = e.paths[:len(e.paths)-1]
+		e.pathcalc(e.w.Char.Rect.Center())
+		//e.paths = e.paths[:len(e.paths)-1]
+		//e.Phys.Vel = e.Rect.Center().Sub(e.paths[1].Sub(offset).Unit().Scaled(e.Phys.RunSpeed))
 		//		e.Phys.Vel = e.paths[0].Unit().Scaled(e.Phys.RunSpeed)
 		//log.Println("got vel:", e.Phys.Vel, e.Phys.Vel.Len())
 	} else {
@@ -230,13 +231,10 @@ func (e *Entity) ChangeMind(dt float64) {
 }
 
 func (e *Entity) Update(dt float64) {
-	for {
-		tile := e.w.Tile(e.Rect.Center())
-		if tile == nil || tile.Type == O_BLOCK {
-			e.Rect = DefaultMobPhys.Rect.Moved(FindRandomTile(e.w.Objects))
-		} else {
-			break
-		}
+	tile := e.w.Tile(e.Rect.Center())
+	if tile == nil || tile.Type == O_BLOCK {
+		e.Rect = e.Rect.Moved(FindRandomTile(e.w.Objects))
+		return
 	}
 
 	e.counter += dt

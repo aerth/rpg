@@ -80,6 +80,7 @@ func (w World) String() string {
 	return w.Name
 }
 func (w *World) Update(dt float64) {
+	// clean mobs
 	entities := []*Entity{}
 	for i := range w.Entities {
 		if w.Entities[i] == nil {
@@ -89,18 +90,19 @@ func (w *World) Update(dt float64) {
 		w.Entities[i].Update(dt)
 		if w.Entities[i].P.Health > 0 {
 			entities = append(entities, w.Entities[i])
-		} else {
-			if len(w.Entities) > 64 {
-				continue
-			}
-			npc := w.NewEntity(SKELETON_GUARD)
-			npc.Rect = npc.Rect.Moved(FindRandomTile(w.Objects))
-			entities = append(entities, npc)
-			npc = w.NewEntity(SKELETON)
-			npc.Rect = npc.Rect.Moved(FindRandomTile(w.Objects))
-			entities = append(entities, npc)
-
+			continue
 		}
+
+		if len(w.Entities) > 5 {
+			continue
+		}
+		npc := w.NewEntity(SKELETON_GUARD)
+		npc.Rect = npc.Rect.Moved(FindRandomTile(w.Objects))
+		entities = append(entities, npc)
+		npc = w.NewEntity(SKELETON)
+		npc.Rect = npc.Rect.Moved(FindRandomTile(w.Objects))
+		entities = append(entities, npc)
+
 	}
 	w.Entities = entities
 	tile := w.GetSpecial(w.Char.Rect.Center())
@@ -213,10 +215,14 @@ func (w *World) ShowAnimations(imd *imdraw.IMDraw) {
 func (w *World) HighlightPaths(target pixel.Target) {
 	imd := imdraw.New(nil)
 	color := pixel.ToRGBA(colornames.Red)
-	imd.Color = color.Mul(pixel.Alpha(0.2))
 	for i := range w.Entities {
+		imd.Color = color.Mul(pixel.Alpha(0.8))
 		if len(w.Entities[i].paths) != 0 {
-			for _, vv := range w.Entities[i].paths {
+			imd.Color = color.Mul(pixel.Alpha(0.5))
+			for i, vv := range w.Entities[i].paths {
+				if i < 3 {
+					continue
+				}
 				v := w.Tile(vv)
 				imd.Push(v.Rect.Min, v.Rect.Max)
 				imd.Rectangle(0)
