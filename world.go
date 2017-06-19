@@ -2,6 +2,7 @@ package rpg
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"golang.org/x/image/colornames"
@@ -121,7 +122,43 @@ func (w *World) Update(dt float64) {
 				}
 			}
 		}
+
 	}
+
+	for _, a := range w.Animations {
+		if a == nil || time.Since(a.start) < time.Millisecond {
+			continue
+		}
+
+		for i, v := range w.Entities {
+			if a.rect.Contains(v.Rect.Center()) {
+				w.Entities[i].P.Health -= a.damage
+				if w.Entities[i].P.Health <= 0 {
+					// damage func should be function
+					if w.Entities[i].P.IsDead {
+						w.Entities[i].P.Health = 0
+						continue
+					}
+					w.Entities[i].P.Health = 0
+					w.Entities[i].P.IsDead = true
+					w.Char.Stats.Kills++
+
+					log.Println("Got new loot!:", FormatItemList(v.P.Loot))
+					w.Message(" Loot: " + FormatItemList(v.P.Loot))
+
+					w.Char.Inventory = StackItems(w.Char.Inventory, v.P.Loot)
+					log.Println("New inventory:", w.Char.Inventory)
+					w.Char.ExpUp(1)
+					w.checkLevel()
+
+				}
+
+				log.Printf("%s took %v damage, now at %v HP",
+					w.Entities[i].Name, a.damage, w.Entities[i].P.Health)
+			}
+		}
+	}
+
 }
 
 func (w *World) DrawEntity(n int) {

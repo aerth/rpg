@@ -46,7 +46,7 @@ func (a *Animation) update(dt float64) {
 }
 
 func (a *Animation) draw(imd *imdraw.IMDraw) {
-	if a == nil || time.Since(a.start) > time.Millisecond {
+	if a == nil || time.Since(a.start) < time.Millisecond {
 		return
 	}
 
@@ -69,10 +69,10 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string) {
 		a.damage = w.Char.Stats.Intelligence * 1.3
 		a.rect = pixel.R(-180, -180, 180, 180).Moved(a.loc)
 		a.cols = [5]pixel.RGBA{}
-		a.start = time.Now().Add(1 * time.Second)
-		a.until = time.Now().Add(3 * time.Second)
+		a.start = time.Now()
+		a.until = time.Now().Add(4 * time.Second)
 		w.Animations = append(w.Animations, a)
-		for i, v := range w.Entities {
+		/*for i, v := range w.Entities {
 			if a.rect.Contains(v.Rect.Center()) {
 				w.Entities[i].P.Health -= a.damage
 				if w.Entities[i].P.Health <= 0 {
@@ -98,7 +98,7 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string) {
 				log.Printf("%s took %v damage, now at %v HP",
 					w.Entities[i].Name, a.damage, w.Entities[i].P.Health)
 			}
-		}
+		} */
 
 	}
 
