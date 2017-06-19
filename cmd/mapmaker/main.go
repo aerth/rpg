@@ -167,7 +167,9 @@ func run() {
 		if win.JustPressed(pixelgl.KeyR) {
 			if len(undobuffer) > 0 {
 				things = append(things, undobuffer[len(undobuffer)-1])
-				undobuffer = undobuffer[:len(undobuffer)-1]
+				if !win.Pressed(pixelgl.KeyLeftShift) {
+					undobuffer = undobuffer[:len(undobuffer)-1]
+				}
 			} else {
 				log.Println("no undo buffer")
 			}
@@ -189,40 +191,42 @@ func run() {
 			things = deleteThing(mouse)
 		}
 		var replace bool
-		if !win.Pressed(pixelgl.KeyB) {
-			replace = true
+		if win.JustPressed(pixelgl.KeyB) {
+			replace = !replace
 		}
 		// draw big patch of grass
-		if win.JustPressed(pixelgl.MouseButtonMiddle) {
+		if win.Pressed(pixelgl.KeyLeftControl) && win.JustPressed(pixelgl.MouseButtonLeft) {
 			box.Min.X = mouse.X
 			box.Max.Y = mouse.Y
 		}
-		if win.Pressed(pixelgl.MouseButtonMiddle) {
+		if win.Pressed(pixelgl.KeyLeftControl) {
 			box.Min.Y = mouse.Y
 			box.Max.X = mouse.X
-		}
-		// need real tiles though
-		if win.Pressed(pixelgl.KeyLeftShift) && win.Pressed(pixelgl.MouseButtonRight) ||
-			win.JustPressed(pixelgl.MouseButtonRight) {
-			thing := rpg.NewTile(mouse)
-			thing.SpriteNum = currentThing
-			log.Println("Stamping Tile", mouse, thing.SpriteNum)
-			if replace {
-				things = append(deleteThing(mouse), thing)
-			} else {
-				things = append(things, thing)
+		} else {
+			if win.Pressed(pixelgl.KeyLeftShift) && win.Pressed(pixelgl.MouseButtonRight) ||
+				win.JustPressed(pixelgl.MouseButtonRight) {
+				thing := rpg.NewBlock(mouse)
+				thing.SpriteNum = currentThing
+				log.Println("Stamping Block", mouse, thing.SpriteNum)
+				if replace {
+					undobuffer = append(undobuffer, thing)
+					things = append(deleteThing(mouse), thing)
+				} else {
+					things = append(things, thing)
 
+				}
 			}
-		}
-		if win.Pressed(pixelgl.KeyLeftShift) && win.Pressed(pixelgl.MouseButtonLeft) ||
-			win.JustPressed(pixelgl.MouseButtonLeft) {
-			thing := rpg.NewBlock(mouse)
-			thing.SpriteNum = currentThing
-			log.Println("Stamping Block", mouse, thing.SpriteNum)
-			if replace {
-				things = append(deleteThing(mouse), thing)
-			} else {
-				things = append(things, thing)
+			if win.Pressed(pixelgl.KeyLeftShift) && win.Pressed(pixelgl.MouseButtonLeft) ||
+				win.JustPressed(pixelgl.MouseButtonLeft) {
+				thing := rpg.NewTile(mouse)
+				thing.SpriteNum = currentThing
+				log.Println("Stamping Tile", mouse, thing.SpriteNum)
+				if replace {
+					undobuffer = append(undobuffer, thing)
+					things = append(deleteThing(mouse), thing)
+				} else {
+					things = append(things, thing)
+				}
 			}
 		}
 		if win.JustPressed(pixelgl.KeyEnter) {
@@ -259,6 +263,26 @@ func run() {
 		//	canvas.Clear(pixel.Alpha(0))
 		win.Clear(colornames.Green)
 		batch.Clear()
+
+		batch.Draw(win)
+
+		if b := box.Size(); b.Len() != 0 {
+			imd.Clear()
+			imd.Color = pixel.RGB(0, 1, 0)
+			imd.Push(box.Min, box.Max)
+			imd.Rectangle(1)
+			imd.Draw(win)
+			if win.JustReleased(pixelgl.MouseButtonLeft) {
+				log.Println("drawing rectangle:", box, currentThing)
+				things = append(things, rpg.DrawPatternObject(currentThing, rpg.O_TILE, box, 100)...)
+			}
+			if win.JustReleased(pixelgl.MouseButtonRight) {
+				log.Println("drawing rectangle:", box, currentThing)
+				things = append(things, rpg.DrawPatternObject(currentThing, rpg.O_BLOCK, box, 100)...)
+
+			}
+		}
+
 		for i := range things {
 			if things[i].SpriteNum == 0 {
 				things[i].Sprite = spritemap[2]
@@ -271,16 +295,11 @@ func run() {
 		}
 
 		batch.Draw(win)
-		rpg.DrawPattern(win, spritemap[20], box, 100)
-		if b := box.Size(); b.Len() != 0 {
-			imd.Clear()
-			imd.Color = pixel.RGB(0, 1, 0)
-			imd.Push(box.Min, box.Max)
-			imd.Rectangle(1)
-			imd.Draw(win)
-		}
-		//.Draw(win, IM.Scaled(ZV, camZoom))
-		spritemap[182].Draw(win, IM.Scaled(ZV, 2).Moved(pixel.V(16, 16)))
+
+		// draw player spawn
+		spritemap[182].Draw(win, IM.Scaled(ZV, 2).Moved(pixel.V(16, 16))) // incorrect offset
+
+		// return cam
 		win.SetMatrix(IM)
 		spritemap[currentThing].Draw(win, IM.Scaled(ZV, 2).Moved(pixel.V(64, 64)).Moved(spritemap[0].Frame().Center()))
 		text.Draw(win, IM.Moved(pixel.V(10, 10)))
