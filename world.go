@@ -247,7 +247,7 @@ func (w *World) CleanAnimations() {
 }
 func (w *World) Reset() {
 	w.Char.Health = 255
-	w.Char.Stats.XP = 0
+	w.Char.Stats = DefaultStats
 	w.Char.Level = 0
 	w.Char.Mana = 0
 	w.Char.Inventory = []Item{createLoot()}

@@ -252,7 +252,7 @@ func (w *World) checkLevel() {
 	if w.Char.Stats.XP > uint64(10*w.Char.Level) {
 		w.Char.Level++
 		w.Message("LVL UP")
-		log.Println("level up!", w.Char.Level)
+		log.Printf("level up (%v)! next lvl at %v xp", w.Char.Level, uint64(10*w.Char.Level))
 		w.Char.Stats.XP = 0
 		switch w.Char.Level {
 		default:

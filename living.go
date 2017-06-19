@@ -61,7 +61,6 @@ const (
 )
 
 func (e *Entity) String() string {
-
 	return fmt.Sprintf("%s at %v,%v", e.Name, int(e.Rect.Center().X), int(e.Rect.Center().Y))
 }
 

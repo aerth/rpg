@@ -59,13 +59,6 @@ func (d Direction) String() string {
 	}
 }
 
-func (a animState) String() string {
-	if a == Running {
-		return "Running"
-	}
-	return "Idle"
-}
-
 func RandomColor() pixel.RGBA {
 
 	r := rand.Float64()
