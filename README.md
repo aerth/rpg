@@ -1,17 +1,8 @@
 lets make a game
 
-  * cam/movement like pokemon red
-  * world like legend of zelda
-
 2D, top-down, pixelized RPG
 
-Usage:
-
-Spawn 10 enemies, world #2
-
-```./walking 10 2```
-
-contributions very welcome, join [gitter](https://gitter.im/aerpg/) or start an issue before coding
+contributions very welcome 
 
 [![Build Status](https://travis-ci.org/aerth/rpg.svg?branch=master)](https://travis-ci.org/aerth/rpg)
 
@@ -45,8 +36,10 @@ roadmap:
 
   * [x] Loot / Gold
 
-  * [ ] Map editor improvements
+  * [ ] Doors
 
+  * [ ] Map editor improvements (issue with zoom / grid snap)
+ 
   * [ ] Text boxes (space to speed past conversations, pgup pgdown scroll)
   
   * [ ] Text Input (cheat codes, debug, chat, user input)
