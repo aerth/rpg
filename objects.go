@@ -81,6 +81,11 @@ func (o Object) Highlight(win pixel.Target) {
 	imd.Draw(win)
 }
 func (o Object) Draw(win pixel.Target, spritesheet pixel.Picture, sheetFrames []*pixel.Sprite) {
+	//	r := pixel.Rect{o.Loc, o.w.Char.Rect.Center()}
+	//	sz := r.Size()
+	//	if sz.X > 1000 || sz.Y > 1000 {
+	//		return
+	//	}
 	if o.Type != O_BLOCK && o.Type != O_TILE {
 		log.Println("UNKNOWN TILE", o)
 	}
@@ -94,12 +99,12 @@ func (o Object) Draw(win pixel.Target, spritesheet pixel.Picture, sheetFrames []
 		}
 		o.Sprite = sheetFrames[o.SpriteNum]
 	}
-	if o.Loc == pixel.ZV && o.Rect.Size().Y != 32 {
-		log.Println(o.Rect.Size(), "cool rectangle", o.SpriteNum)
-		DrawPattern(win, o.Sprite, o.Rect, 0)
-	} else {
-		o.Sprite.Draw(win, pixel.IM.Moved(o.Loc))
-	}
+	//	if o.Loc == pixel.ZV && o.Rect.Size().Y != 32 {
+	//		log.Println(o.Rect.Size(), "cool rectangle", o.SpriteNum)
+	//		DrawPattern(win, o.Sprite, o.Rect, 0)
+	//	} else {
+	o.Sprite.Draw(win, pixel.IM.Moved(o.Loc))
+	//	}
 
 }
 func (w *World) LoadMapFile(path string) {
@@ -130,7 +135,7 @@ func (w *World) loadmap(b []byte) {
 		t.w = w
 		t.Rect = DefaultSpriteRectangle.Moved(t.Loc)
 		switch t.SpriteNum {
-		case 53:
+		case 53: // water
 			t.Type = O_BLOCK
 		default:
 		}
@@ -148,26 +153,9 @@ func (w *World) loadmap(b []byte) {
 		}
 	}
 	log.Printf("map has %v blocks, %v tiles", len(w.Blocks), len(w.Tiles))
-	//log.Println(w.Blocks, w.Tiles)
 	return
 }
 
-/*
-func (o ObjectType) MarshalJSON() ([]byte, error) {
-	i := int(o)
-	return json.Marshal(i)
-}
-
-func (o ObjectType) UnmarshalJSON(b []byte) error {
-	var i int
-	err := json.Unmarshal(b, &i)
-	if err != nil {
-		return err
-	}
-	o = ObjectType(i)
-	return nil
-}
-*/
 // assumes only tiles are given
 func FindRandomTile(os []Object) pixel.Vec {
 	if len(os) == 0 {
