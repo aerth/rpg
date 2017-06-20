@@ -10,7 +10,7 @@ import (
 
 func (e *Entity) pathcalc(target pixel.Vec) {
 	var (
-		maxcost = 100.00 // 100 regular tiles away
+		maxcost = 200.00 // 100 regular tiles away
 	)
 	if len(e.paths) == 0 && time.Since(e.calculated) < time.Second*3 {
 		return
@@ -29,7 +29,6 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 			log.Println("killing bad entity")
 			return
 		}
-		return
 	}
 	/*	t2 := time.Now()
 		defer func(t time.Time) {
@@ -38,6 +37,7 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 	*/path, distance, found := astar.Path(tile, targett)
 	if found {
 		if distance > maxcost { // cost path
+			e.calculated = time.Now().Add(-time.Minute)
 			log.Println("too far")
 			e.paths = nil
 			return
