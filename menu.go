@@ -19,7 +19,11 @@ type Button struct {
 	Frame pixel.Rect
 }
 
-var version = "0.0.92"
+var version = "0.0.93"
+
+func Version() string {
+	return "AERPG " + version
+}
 
 func TitleMenu(w *World, win *pixelgl.Window) {
 	title := NewText(40)
