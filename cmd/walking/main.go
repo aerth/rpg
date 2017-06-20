@@ -167,6 +167,7 @@ func run() {
 	imd := imdraw.New(nil)
 	rand.Seed(time.Now().UnixNano())
 	var latest string
+	redrawWorld(world)
 	for !win.Closed() {
 		rpg.TitleMenu(world, win)
 		world.Reset()

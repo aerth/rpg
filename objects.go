@@ -131,12 +131,15 @@ func (w *World) loadmap(b []byte) {
 
 		default:
 		}
-		/*		if t.P.Block {
-					t.Type = O_BLOCK
-				}
-				if t.P.Tile {
-					t.Type = O_TILE
-				} */
+
+		switch t.Type {
+		case O_BLOCK:
+			w.Blocks = append(w.Blocks, t)
+		case O_TILE:
+			w.Tiles = append(w.Tiles, t)
+		default: //
+		}
+
 		w.Objects = append(w.Objects, t)
 	}
 	return
@@ -193,7 +196,7 @@ func GetTilesAt(objects []*Object, position pixel.Vec) []*Object {
 	all := GetObjects(objects, position)
 	if len(all) > 0 {
 		for _, o := range all {
-			if o.Type == O_BLOCK {
+			if o.Type == O_TILE {
 				good = append(good, o)
 			}
 
@@ -216,6 +219,7 @@ func GetBlocks(objects []*Object, position pixel.Vec) []*Object {
 	return bad
 }
 
+// GetNeighbors gets the neighboring tiles of the same time
 func (o *Object) GetNeighbors() []*Object {
 	neighbors := []*Object{}
 	of := 32.0
@@ -226,7 +230,7 @@ func (o *Object) GetNeighbors() []*Object {
 		{0, of},
 	} {
 		if n := o.w.Tile(pixel.V(o.Rect.Center().X+offset[0], o.Rect.Center().Y+offset[1])); n != nil {
-			if n.Type == O_TILE {
+			if n.Type == o.Type {
 				neighbors = append(neighbors, n)
 			}
 		}

@@ -15,21 +15,20 @@ var SpriteFrame = pixel.R(-100, -100, 100, 100)
 
 // World holds all information about a world
 type World struct {
-	Name       string
-	Bounds     pixel.Rect
-	Objects    []*Object
-	DObjects   []*Object
-	Background string        // path to pic, will be repeated xy if not empty
-	background *pixel.Sprite // sprite to repeat xy
-	Batches    map[EntityType]*pixel.Batch
-	Color      pixel.RGBA
-	Entities   []*Entity
-	Sheets     map[EntityType]pixel.Picture
-	Anims      map[EntityType]map[EntityState]map[Direction][]pixel.Rect // frankenmap
-	Char       *Character
-	Animations []*Animation
-	Messages   []string
-	Settings   WorldSettings
+	Name                             string
+	Bounds                           pixel.Rect
+	Objects, DObjects, Tiles, Blocks []*Object     // sorted
+	Background                       string        // path to pic, will be repeated xy if not empty
+	background                       *pixel.Sprite // sprite to repeat xy
+	Batches                          map[EntityType]*pixel.Batch
+	Color                            pixel.RGBA
+	Entities                         []*Entity
+	Sheets                           map[EntityType]pixel.Picture
+	Anims                            map[EntityType]map[EntityState]map[Direction][]pixel.Rect // frankenmap
+	Char                             *Character
+	Animations                       []*Animation
+	Messages                         []string
+	Settings                         WorldSettings
 }
 
 type WorldSettings struct {
@@ -173,12 +172,24 @@ func (w *World) GetSpecial(dot pixel.Vec) *Object {
 
 }
 
+// Tile scans tiles and returns the first tile located at dot
 func (w *World) Tile(dot pixel.Vec) *Object {
+	for i := range w.Tiles {
+		if w.Tiles[i].Rect.Contains(dot) {
+			return w.Tiles[i]
+		}
+	}
+	return nil
+}
+
+// Object returns the object at dot, very expensive
+func (w *World) Object(dot pixel.Vec) *Object {
+
 	var ob *Object
 	for i := range w.Objects {
 		if w.Objects[i].Rect.Contains(dot) {
 			ob = w.Objects[i]
-			if ob.Type == O_BLOCK {
+			if ob.Type == O_BLOCK { // prefer block over tile
 				return ob
 			}
 		}
