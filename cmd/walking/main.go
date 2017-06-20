@@ -81,7 +81,7 @@ func run() {
 	}
 	// window options
 	cfg := pixelgl.WindowConfig{
-		Title:  "AERPG",
+		Title:  rpg.Version(),
 		Bounds: winbounds,
 		//Undecorated: true,
 		VSync: false,
@@ -131,9 +131,6 @@ func run() {
 			v.Draw(globebatch, spritesheet, spritemap)
 		}
 
-		if *debug {
-			world.HighlightPaths(globebatch)
-		}
 	}
 
 	// create NPC
@@ -190,6 +187,7 @@ func run() {
 			dir := controlswitch(dt, world, win, buttons, win)
 			world.Char.Update(*dt, dir, world)
 			world.Update(*dt)
+			world.Clean()
 
 			world.Char.Matrix = pixel.IM.Scaled(pixel.ZV, *camZoom).Moved(win.Bounds().Center())
 			cam := world.Char.Matrix.Moved(world.Char.Rect.Center().Scaled(-*camZoom))
@@ -198,6 +196,9 @@ func run() {
 			// draw map (tiles and blocks) (never updated for now)
 			globebatch.Draw(win)
 
+			if *debug {
+				world.HighlightPaths(win)
+			}
 			// draw entities and objects (not tiles and blocks)
 			world.Draw(win)
 
@@ -248,7 +249,6 @@ func run() {
 			//spritemap[20].Draw(menubar, pixel.IM.Scaled(ZV, 10).Moved(pixel.V(30, 30)))
 			//menubar.Draw(win, pixel.IM)
 			win.Update()
-			world.Clean()
 
 			// fps, gps
 			frames++
