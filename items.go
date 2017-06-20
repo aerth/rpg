@@ -175,18 +175,18 @@ func RandomItemEffect() func(Stats) Stats {
 		}
 	case 1:
 		return func(s Stats) Stats {
-			s.Strength = 0
-			s.Intelligence += 1000
+			s.Strength += 0.1
+			s.Intelligence += 0.1
 			return s
 		}
 	case 2:
 		return func(s Stats) Stats {
-			s.Strength += 10
+			s.Strength += 0.1
 			return s
 		}
 	case 3:
 		return func(s Stats) Stats {
-			s.Intelligence += 10
+			s.Intelligence += 0.1
 			return s
 		}
 
