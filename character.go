@@ -62,10 +62,9 @@ var DefaultStats = Stats{
 // DefaultPhys character
 var DefaultPhys = charPhys{
 	RunSpeed: 200.5,
-	//Rect:     pixel.R(-8, -8, 8, 8),
-	Rect:    pixel.R(98, 98, 108, 108),
-	Gravity: 50.00,
-	Rate:    2,
+	Rect:     pixel.R(-8, -8, 8, 8),
+	Gravity:  50.00,
+	Rate:     2,
 }
 
 func NewCharacter() *Character {
@@ -98,14 +97,6 @@ func (char *Character) Draw(t pixel.Target) {
 }
 
 func (char *Character) Update(dt float64, dir Direction, world *World) {
-	for i := 0; i < 3; i++ {
-		collide := append(world.Objects, world.DObjects...)
-		tile := world.Tile(char.Rect.Center())
-		if tile == nil && !char.Phys.CanFly {
-			new := FindRandomTile(collide)
-			char.Rect = DefaultPhys.Rect.Moved(new)
-		}
-	}
 	if time.Since(char.tick) >= time.Second*1 {
 		if char.Mana < 255 {
 			char.Mana++
@@ -151,7 +142,7 @@ func (char *Character) Update(dt float64, dir Direction, world *World) {
 		next := char.Rect.Moved(char.Phys.Vel.Scaled(dt))
 
 		f := func(dot pixel.Vec) bool {
-			for _, c := range world.Objects {
+			for _, c := range world.Blocks {
 				if c.Rect.Contains(dot) && c.Type == O_BLOCK {
 					//log.Printf("blocked by: %v at rect: %s, dot: %s", c.SpriteNum, c.Rect, dot)
 					return false
@@ -165,7 +156,7 @@ func (char *Character) Update(dt float64, dir Direction, world *World) {
 		}
 		// only walk on tiles
 		f2 := func(dot pixel.Vec) bool {
-			for _, c := range world.Objects {
+			for _, c := range world.Tiles {
 				if c.Type == O_TILE && c.Rect.Contains(dot) {
 					return true
 				}
@@ -187,7 +178,6 @@ func (char *Character) Update(dt float64, dir Direction, world *World) {
 }
 
 func (char *Character) Damage(n uint, from string) {
-	char.W.Message(fmt.Sprintf("ouch! took %v damage", n))
 	if from != "" {
 		from = fmt.Sprintln("from", from)
 	}
@@ -199,6 +189,7 @@ func (char *Character) Damage(n uint, from string) {
 	}
 	//log.Printf("Player took %v damage %s!", n, from)
 	char.Health -= n
+	char.W.Message(fmt.Sprintf("ouch! took %v damage, now at %v", n, char.Health))
 }
 
 func (char *Character) ResetLocation() {
@@ -271,5 +262,5 @@ func (w *World) checkLevel() {
 }
 
 func (c *Character) NextLevel() uint64 {
-	return uint64(10 * c.Level)
+	return uint64(150 * c.Level)
 }

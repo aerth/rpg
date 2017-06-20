@@ -4,6 +4,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -21,17 +22,18 @@ import (
 
 var LEVEL string
 
-func init() {
+func FlagInit() {
 	log.SetFlags(log.Lshortfile)
 	log.SetPrefix("> ")
-	if len(os.Args) != 2 {
+	if flag.NArg() != 1 {
 		fmt.Println("Which map name?")
 		os.Exit(111)
 	}
-	LEVEL = os.Args[1]
+	LEVEL = flag.Arg(0)
 
 }
 
+var convert = flag.Bool("danger", false, "convert old to new (experimental)")
 var (
 	IM = pixel.IM
 	ZV = pixel.ZV
@@ -65,50 +67,47 @@ func loadSpriteSheet() (pixel.Picture, []*pixel.Sprite) {
 		spritemap = append(spritemap, pixel.NewSprite(spritesheet, sheetFrames[x]))
 	}
 	log.Println(len(spritemap), "sprites loaded")
+	log.Println(spritemap[0].Frame())
 	return spritesheet, spritemap
 }
 
 func run() {
-
+	flag.Parse()
+	FlagInit()
 	cfg := pixelgl.WindowConfig{
 		Title:     "AERPG mapedit",
 		Bounds:    pixel.R(0, 0, 800, 600),
 		Resizable: true,
-		VSync:     true,
+		VSync:     false,
 	}
 	win, err := pixelgl.NewWindow(cfg)
 	if err != nil {
 		panic(err)
 	}
-	win.SetSmooth(true)
 	imd := imdraw.New(nil)
-	var things = []rpg.Object{}
-
+	var oldthings = []rpg.Object{}
 	if b, err := ioutil.ReadFile(LEVEL); err == nil {
-		err = json.Unmarshal(b, &things)
+		err = json.Unmarshal(b, &oldthings)
 		if err != nil {
 			panic(err)
 		}
+	}
+	var things []rpg.Object
+	for _, v := range oldthings {
+		if *convert {
+			log.Println("Converting")
+			v.Type = rpg.O_TILE
+			if v.SpriteNum == 53 && v.Type == rpg.O_TILE {
+				v.Type = rpg.O_BLOCK
+			}
+		}
+
+		v.Rect = rpg.DefaultSpriteRectangle.Moved(v.Loc)
+
+		things = append(things, v)
 
 	}
-	/*
-		// convert old map to new map style (object types)
-		var things = []rpg.Object{}
-		for _, v := range oldthings {
-			if v.P.Tile || v.Type == rpg.O_TILE {
-				v.P.Tile = true
-				v.P.Block = false
-				v.Type = rpg.O_TILE
-			}
-			if v.P.Block || v.Type == rpg.O_BLOCK {
-				v.P.Block = true
-				v.P.Tile = false
-				v.Type = rpg.O_BLOCK
 
-			}
-			things = append(things, v)
-		}
-	*/
 	spritesheet, spritemap := loadSpriteSheet()
 
 	batch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
@@ -137,17 +136,16 @@ func run() {
 		last = time.Now()
 		frames++
 
+		// camera
 		cam := pixel.IM.Scaled(camPos, camZoom).Moved(win.Bounds().Center().Sub(camPos))
 		camZoom *= math.Pow(camZoomSpeed, win.MouseScroll().Y)
-		//cam := pixel.IM.Moved(win.Bounds().Center()).Scaled(camPos, camZoom)
-		//		cam := pixel.IM.Moved(win.Bounds().Center()).Moved(camPos.Scaled(-camZoom))
-		//.Scaled(pixel.ZV, camZoom)
-		//		cam := pixel.IM.Scaled(pixel.ZV, camZoom).Moved(win.Bounds().Center()).Moved(camPos.Scaled(-1))
 		win.SetMatrix(cam)
+
+		// snap to grid
 		snap := 32.00 // 16 for half grid ?
 		mouse := cam.Unproject(win.MousePosition())
 		mouse.X = float64(int(mouse.X/snap)) * snap
-		mouse.Y = float64(int(mouse.Y/snap)) * snap // 'snap to grid'
+		mouse.Y = float64(int(mouse.Y/snap)) * snap
 
 		if win.JustPressed(pixelgl.Key4) {
 			turbo = !turbo
@@ -195,13 +193,9 @@ func run() {
 			replace = !replace
 		}
 		// draw big patch of grass
-		if win.Pressed(pixelgl.KeyLeftControl) && win.JustPressed(pixelgl.MouseButtonLeft) {
-			box.Min.X = mouse.X
-			box.Max.Y = mouse.Y
-		}
-		if win.Pressed(pixelgl.KeyLeftControl) {
+		if win.Pressed(pixelgl.KeyLeftControl) && (win.JustPressed(pixelgl.MouseButtonLeft) || win.JustPressed(pixelgl.MouseButtonRight)) {
 			box.Min.Y = mouse.Y
-			box.Max.X = mouse.X
+			box.Min.X = mouse.X
 		} else {
 			if win.Pressed(pixelgl.KeyLeftShift) && win.Pressed(pixelgl.MouseButtonRight) ||
 				win.JustPressed(pixelgl.MouseButtonRight) {
@@ -230,10 +224,14 @@ func run() {
 			}
 		}
 		if win.JustPressed(pixelgl.KeyEnter) {
-			b, _ := json.Marshal(things)
+			b, err := json.Marshal(things)
+			if err != nil {
+				panic(err)
+			}
 			os.Rename(LEVEL, LEVEL+".old")
-			ioutil.WriteFile(LEVEL, b, 0644)
-			log.Println(LEVEL + " map saved")
+			if err := ioutil.WriteFile(LEVEL, b, 0644); err != nil {
+				log.Println(LEVEL + " map saved")
+			}
 		}
 		if win.JustPressed(pixelgl.KeyPageUp) {
 			currentThing++
@@ -265,7 +263,6 @@ func run() {
 		batch.Clear()
 
 		batch.Draw(win)
-
 		if b := box.Size(); b.Len() != 0 {
 			imd.Clear()
 			imd.Color = pixel.RGB(0, 1, 0)
@@ -284,9 +281,6 @@ func run() {
 		}
 
 		for i := range things {
-			if things[i].SpriteNum == 0 {
-				things[i].Sprite = spritemap[2]
-			}
 			things[i].Draw(batch, spritesheet, spritemap)
 			if highlight {
 				things[i].Highlight(batch)

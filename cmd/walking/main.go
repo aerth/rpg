@@ -13,7 +13,7 @@ import (
 
 	"golang.org/x/image/colornames"
 
-	_ "image/png"
+	//	_ "image/png"
 
 	"github.com/aerth/rpg"
 	"github.com/faiface/pixel"
@@ -29,6 +29,7 @@ var (
 	flagenemies   = flag.Int("e", 2, "number of enemies to begin with")
 	flaglevel     = flag.Int("lvl", 1, "starting level (1)")
 	flagcustomlvl = flag.String("test", "", "custom world test (filename)")
+	debug         = flag.Bool("v", false, "extra logs")
 )
 
 const (
@@ -46,18 +47,11 @@ var (
 )
 
 var (
-	NUMENEMY = 2
-	LEVEL    = 1
-)
-var (
 	defaultzoom  = 1.0
 	camZoomSpeed = 1.20
 )
 
 func run() {
-	NUMENEMY := *flagenemies
-	LEVEL := *flaglevel
-	TESTLVL := *flagcustomlvl
 	f, err := os.Create("p.debug")
 	if err != nil {
 		log.Fatal(err)
@@ -104,17 +98,11 @@ func run() {
 		{Name: "magicbullet", Frame: pixel.R(42, 10, 42+42, 42)},
 	}
 	// START
-	//char.Rect = char.Rect.Moved(V(33, 33))
+	//world.Char.Rect = world.Char.Rect.Moved(V(33, 33))
 	// load world
 	worldbounds := pixel.R(float64(-3000), float64(-3000), float64(3000), float64(3000))
 	//	worldbounds = pixel.R(float64(-4000), float64(-4000), float64(4000), float64(4000))
-	world := rpg.NewWorld(strconv.Itoa(LEVEL), worldbounds, TESTLVL)
-	char := rpg.NewCharacter()
-	char.Inventory = []rpg.Item{rpg.MakeGold(uint64(rand.Intn(7)))} // start with some loot
-	char.Rect = char.Rect.Moved(rpg.FindRandomTile(world.Objects))
-	char.W = world
-	world.Char = char
-
+	world := rpg.NewWorld(strconv.Itoa(*flaglevel), worldbounds, *flagcustomlvl)
 	// sprite sheet
 	spritesheet, spritemap := rpg.LoadSpriteSheet("tileset.png")
 
@@ -122,13 +110,13 @@ func run() {
 	// batch sprite drawing
 	globebatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
 	animbatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
-	menubatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
 
 	// water world 67 wood, 114 117 182 special, 121 135 dirt, 128 blank, 20 grass
 	//	rpg.DrawPattern(batch, spritemap[53], pixel.R(-3000, -3000, 3000, 3000), 100)
 
+	// draw menu bar
+	menubatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
 	rpg.DrawPattern(menubatch, spritemap[67], pixel.R(0, 0, win.Bounds().W()+20, 60), 100)
-	//rpg.DrawPattern(menubatch, spritemap[230], pixel.R(20, 20, win.Bounds().W()+20, 80), 100)
 	for _, btn := range buttons {
 		spritemap[200].Draw(menubatch, IM.Moved(btn.Frame.Center()))
 	}
@@ -136,17 +124,21 @@ func run() {
 	redrawWorld := func(w *rpg.World) {
 		globebatch.Clear()
 		// draw it on to canvasglobe
-		for i, v := range w.Objects {
-			if pixel.R(-300, -300, 300, 300).Moved(w.Char.Rect.Center()).Contains(v.Loc) {
+		for _, v := range w.Tiles {
+			v.Draw(globebatch, spritesheet, spritemap)
+		}
+		for _, v := range w.Blocks {
+			v.Draw(globebatch, spritesheet, spritemap)
+		}
 
-				w.Objects[i].Draw(globebatch, spritesheet, spritemap)
-			}
+		if *debug {
+			world.HighlightPaths(globebatch)
 		}
 	}
 
 	// create NPC
 
-	world.NewMobs(NUMENEMY)
+	world.NewMobs(*flagenemies)
 	l := time.Now()
 	var last = &l
 	second := time.Tick(time.Second)
@@ -155,26 +147,21 @@ func run() {
 	frames := 0
 	var delda float64 = 0.00
 	var camZoom = &defaultzoom
-	var debug bool
 	var dt *float64 = &delda
 	t1 := time.Now()
-	text := rpg.NewText(36)
-	texthelp := rpg.NewTextSmooth(18)
-	texthelp.Color = colornames.Red
-	fmt.Fprint(texthelp, "[tab=slow] [shift=fast] [q=quit] [space=manastorm] [enter=reset] [i=inventory]")
-	redrawWorld(world)
+	//text := rpg.NewText(36)
 	// start loop
 	imd := imdraw.New(nil)
 	rand.Seed(time.Now().UnixNano())
-	var latest string
+	//var latest string
 	redrawWorld(world)
 	for !win.Closed() {
 		rpg.TitleMenu(world, win)
 		world.Reset()
-		char.Health = 255
+		world.Char.Health = 255
 		for !win.Closed() {
 
-			if char.Health < 1 {
+			if world.Char.Health < 1 {
 				log.Println("GAME OVER")
 				break
 			}
@@ -197,28 +184,24 @@ func run() {
 			}
 
 			if win.JustPressed(pixelgl.KeyEqual) {
-				debug = !debug
+				*debug = !*debug
 			}
 
-			dir := controlswitch(dt, world, win, char, buttons, win)
-			char.Update(*dt, dir, world)
+			dir := controlswitch(dt, world, win, buttons, win)
+			world.Char.Update(*dt, dir, world)
 			world.Update(*dt)
 
-			char.Matrix = pixel.IM.Scaled(pixel.ZV, *camZoom).Moved(win.Bounds().Center())
-			cam := char.Matrix.Moved(char.Rect.Center().Scaled(-*camZoom))
+			world.Char.Matrix = pixel.IM.Scaled(pixel.ZV, *camZoom).Moved(win.Bounds().Center())
+			cam := world.Char.Matrix.Moved(world.Char.Rect.Center().Scaled(-*camZoom))
 			win.SetMatrix(cam)
 
 			// draw map (tiles and blocks) (never updated for now)
-			//canvasglobe.Draw(win, pixel.IM)
 			globebatch.Draw(win)
 
 			// draw entities and objects (not tiles and blocks)
-			world.Draw(win) // was win
-			// highlight paths
-			if debug {
-				world.HighlightPaths(win)
-			}
+			world.Draw(win)
 
+			// animations such as magic spells
 			imd.Clear()
 			world.CleanAnimations()
 			world.ShowAnimations(imd)
@@ -226,28 +209,34 @@ func run() {
 
 			// back to window cam
 			win.SetMatrix(pixel.IM)
-			char.Draw(win)
-			char.DrawBars(win)
-			text.Clear()
-			rpg.DrawScore(winbounds, text, win,
-				"[%vHP·%vMP·%sGP LVL%v %v/%vXP %vKills] %s", char.Health, char.Mana, char.CountGold(), char.Level, char.Stats.XP, char.NextLevel(), char.Stats.Kills, latest)
+			world.Char.Draw(win)
 
+			// draw score board
+			//text.Clear()
+			//rpg.DrawScore(winbounds, text, win,
+			//	"[%vHP·%vMP·%sGP LVL%v %v/%vXP %vKills] %s", world.Char.Health, world.Char.Mana, world.Char.CountGold(), world.Char.Level, world.Char.Stats.XP, world.Char.NextLevel(), world.Char.Stats.Kills, latest)
+
+			// draw menubar
 			menubatch.Draw(win)
+			if win.JustPressed(pixelgl.Key6) {
+				redrawWorld(world)
+			}
+
+			// draw health, mana, xp bars
+			world.Char.DrawBars(win, win.Bounds())
 
 			mouseloc := win.MousePosition()
 			if win.JustPressed(pixelgl.MouseButtonLeft) {
 
 				b, f, ok := world.IsButton(buttons, mouseloc)
 				if ok {
-					if debug {
+					if *debug {
 						log.Printf("Clicked button: %q", b.Name)
 					}
 					f(win, world)
 				} else {
 					tile := world.Tile(cam.Unproject(mouseloc))
-					if tile != nil {
-						log.Println(tile)
-					}
+					log.Println(tile)
 				}
 
 			}
@@ -255,13 +244,6 @@ func run() {
 			default: //
 			case <-tick:
 			}
-			if b, _, ok := world.IsButton(buttons, mouseloc); ok {
-				texthelp.Clear()
-				texthelp.Dot = texthelp.Orig
-				fmt.Fprintf(texthelp, "%q", b.Name)
-			}
-
-			texthelp.Draw(win, pixel.IM.Moved(pixel.V(150, 60)))
 
 			//spritemap[20].Draw(menubar, pixel.IM.Scaled(ZV, 10).Moved(pixel.V(30, 30)))
 			//menubar.Draw(win, pixel.IM)
@@ -270,31 +252,31 @@ func run() {
 
 			// fps, gps
 			frames++
-			gps := char.Rect.Center()
+			gps := world.Char.Rect.Center()
 			select {
 			default: //keep going
 			case <-second:
-				redrawWorld(world)
-				latest = ""
+				//redrawWorld(world)
+				//latest = ""
 				str := fmt.Sprintf(""+
 					"FPS: %d | GPS: (%v,%v) | VEL: (%v) | HP: (%v) ",
-					frames, int(gps.X), int(gps.Y), int(char.Phys.Vel.Len()), char.Health)
+					frames, int(gps.X), int(gps.Y), int(world.Char.Phys.Vel.Len()), world.Char.Health)
 				win.SetTitle(str)
 				frames = 0
 			}
 
 		}
-		log.Printf("You survived for %s.\nYou acquired %s gold", time.Now().Sub(t1), char.CountGold())
-		log.Println("Inventory:", rpg.FormatItemList(char.Inventory))
-		log.Printf("Skeletons killed: %v", char.Stats.Kills)
+		log.Printf("You survived for %s.\nYou acquired %s gold", time.Now().Sub(t1), world.Char.CountGold())
+		log.Println("Inventory:", rpg.FormatItemList(world.Char.Inventory))
+		log.Printf("Skeletons killed: %v", world.Char.Stats.Kills)
 	}
 
 }
 
-func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, char *rpg.Character, buttons []rpg.Button, buf pixel.Target) rpg.Direction {
+func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, buttons []rpg.Button, buf pixel.Target) rpg.Direction {
 	if win.JustPressed(pixelgl.KeySpace) {
-		if char.Mana > 0 {
-			w.Action(char, char.Rect.Center(), rpg.ManaStorm)
+		if w.Char.Mana > 0 {
+			w.Action(w.Char, w.Char.Rect.Center(), rpg.ManaStorm)
 		} else {
 			log.Println("Not enough mana")
 		}
@@ -309,19 +291,19 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, char *rpg.Cha
 		*dt *= 15
 	}
 	if win.Pressed(pixelgl.Key1) {
-		char.Mana += 1
-		if char.Mana > 255 {
-			char.Mana = 255
+		w.Char.Mana += 1
+		if w.Char.Mana > 255 {
+			w.Char.Mana = 255
 		}
 	}
 	if win.Pressed(pixelgl.KeyCapsLock) {
-		char.Phys.CanFly = !char.Phys.CanFly
+		w.Char.Phys.CanFly = !w.Char.Phys.CanFly
 	}
-	dir := char.Dir
+	dir := w.Char.Dir
 
 	// disable momentum
 	if win.JustPressed(pixelgl.KeyS) {
-		char.Phys.Vel = pixel.ZV
+		w.Char.Phys.Vel = pixel.ZV
 	}
 
 	if win.JustPressed(pixelgl.MouseButtonLeft) {
@@ -336,20 +318,20 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, char *rpg.Cha
 
 	if win.Pressed(pixelgl.KeyLeft) || win.Pressed(pixelgl.KeyH) || win.Pressed(pixelgl.KeyA) {
 		dir = LEFT
-		char.Phys.Vel.X = -char.Phys.RunSpeed * (1 + *dt)
+		w.Char.Phys.Vel.X = -w.Char.Phys.RunSpeed * (1 + *dt)
 	}
 	if win.Pressed(pixelgl.KeyRight) || win.Pressed(pixelgl.KeyL) || win.Pressed(pixelgl.KeyD) {
-		char.Phys.Vel.X = +char.Phys.RunSpeed * (1 + *dt)
+		w.Char.Phys.Vel.X = +w.Char.Phys.RunSpeed * (1 + *dt)
 		dir = RIGHT
 	}
 	if win.Pressed(pixelgl.KeyDown) || win.Pressed(pixelgl.KeyJ) || win.Pressed(pixelgl.KeyS) {
-		char.Phys.Vel.Y = -char.Phys.RunSpeed * (1 + *dt)
+		w.Char.Phys.Vel.Y = -w.Char.Phys.RunSpeed * (1 + *dt)
 		dir = DOWN
 
 	}
 	if win.Pressed(pixelgl.KeyUp) || win.Pressed(pixelgl.KeyK) || win.Pressed(pixelgl.KeyW) {
 
-		char.Phys.Vel.Y = +char.Phys.RunSpeed * (1 + *dt)
+		w.Char.Phys.Vel.Y = +w.Char.Phys.RunSpeed * (1 + *dt)
 		dir = UP
 	}
 

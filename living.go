@@ -16,23 +16,24 @@ func init() {
 }
 
 type Entity struct {
-	Name      string
-	Type      EntityType
-	CanFly    bool
-	Friendly  bool
-	Rate      float64
-	State     animState
-	Frame     pixel.Rect
-	Matrix    pixel.Matrix
-	Rect      pixel.Rect
-	SpriteNum int `json:"Sprite"`
-	Program   EntityState
-	P         EntityProperties
-	Phys      ePhys
-	Dir       Direction
-	counter   float64
-	paths     []pixel.Vec
-	w         *World
+	Name       string
+	Type       EntityType
+	CanFly     bool
+	Friendly   bool
+	Rate       float64
+	State      animState
+	Frame      pixel.Rect
+	Matrix     pixel.Matrix
+	Rect       pixel.Rect
+	SpriteNum  int `json:"Sprite"`
+	Program    EntityState
+	P          EntityProperties
+	Phys       ePhys
+	Dir        Direction
+	counter    float64
+	paths      []pixel.Vec
+	w          *World
+	calculated time.Time
 }
 
 type EntityType int
@@ -45,6 +46,7 @@ const (
 )
 
 type EntityProperties struct {
+	XP       uint64
 	Health   float64
 	Mana     float64
 	Loot     []Item
@@ -72,6 +74,7 @@ func (w *World) NewEntity(t EntityType) *Entity {
 	default: // no default
 	case SKELETON, SKELETON_GUARD:
 		if w.Sheets[t] == nil || w.Anims[t] == nil {
+			log.Println("New sheet:", t)
 			sheet, anims, err := LoadEntitySheet("sprites/"+t.String()+".png", 13, 21)
 			if err != nil {
 				panic(fmt.Errorf("error loading skeleton sheet: %v", err))
@@ -89,6 +92,7 @@ func (w *World) NewEntity(t EntityType) *Entity {
 				Health:   float64(rand.Intn(255) + 1),
 				Mana:     float64(rand.Intn(255)),
 				Strength: 1,
+				XP:       10,
 			},
 			Rect:  pixel.R(-16, -16, 16, 16),
 			State: Running,
@@ -208,14 +212,13 @@ func (e *Entity) ChangeMind(dt float64) {
 }
 
 func (e *Entity) Update(dt float64) {
-	tile := e.w.Tile(e.Rect.Center())
-	if tile == nil || tile.Type == O_BLOCK {
-		e.Rect = e.Rect.Moved(FindRandomTile(e.w.Objects))
+	blk := e.w.Block(e.Rect.Center())
+	if blk.Type == O_BLOCK {
+		e.Rect = e.Rect.Moved(FindRandomTile(e.w.Tiles))
 		return
 	}
 
 	e.counter += dt
-	collide := append(e.w.Objects, e.w.DObjects...)
 	w := e.w
 	i := int(math.Floor(e.counter / e.Rate))
 	//frame := i % len(e.Anims[e.Program][e.Dir])
@@ -233,23 +236,20 @@ func (e *Entity) Update(dt float64) {
 
 	next := e.Rect.Moved(e.Phys.Vel.Scaled(-dt))
 	t := w.Tile(next.Center())
-	if t == nil && !e.CanFly {
-
+	if t.Type == O_NONE && !e.CanFly {
 		return
 	}
 	if !e.CanFly && t.Type == O_BLOCK {
+		log.Println("bug")
 		next = e.Rect.Moved(e.Phys.Vel.Scaled(dt))
 	}
 
-	if e.Phys.Vel == pixel.ZV {
-		return
-	}
 	//	log.Println(e.Name, "wants to go", next.Center(), "from", e.Rect.Center())
 	f := func(dot pixel.Vec) bool {
 		if e.CanFly {
 			return true
 		}
-		for _, c := range collide {
+		for _, c := range w.Blocks {
 			if c.Type == O_BLOCK && c.Rect.Contains(dot) {
 				return false
 			}
@@ -261,7 +261,7 @@ func (e *Entity) Update(dt float64) {
 		if e.CanFly {
 			return true
 		}
-		for _, c := range collide {
+		for _, c := range w.Tiles {
 			if c.Type == O_TILE && c.Rect.Contains(dot) {
 				return true
 			}
@@ -339,11 +339,11 @@ func (w *World) NewMobs(n int) {
 		npc.Phys.RunSpeed = 10
 		npc.P.Health = 2000
 		// npc.CanFly = true
-		npc.Rect = npc.Rect.Moved(FindRandomTile(w.Objects))
+		npc.Rect = npc.Rect.Moved(FindRandomTile(w.Tiles))
 
 		for i := 1; i < n; i++ {
 			npc = w.NewEntity(SKELETON)
-			npc.Rect = npc.Rect.Moved(FindRandomTile(w.Objects))
+			npc.Rect = npc.Rect.Moved(FindRandomTile(w.Tiles))
 		}
 
 	}

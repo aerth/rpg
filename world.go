@@ -3,6 +3,8 @@ package rpg
 import (
 	"fmt"
 	"log"
+	"math/rand"
+	"os"
 	"time"
 
 	"golang.org/x/image/colornames"
@@ -15,20 +17,20 @@ var SpriteFrame = pixel.R(-100, -100, 100, 100)
 
 // World holds all information about a world
 type World struct {
-	Name                             string
-	Bounds                           pixel.Rect
-	Objects, DObjects, Tiles, Blocks []*Object     // sorted
-	Background                       string        // path to pic, will be repeated xy if not empty
-	background                       *pixel.Sprite // sprite to repeat xy
-	Batches                          map[EntityType]*pixel.Batch
-	Color                            pixel.RGBA
-	Entities                         []*Entity
-	Sheets                           map[EntityType]pixel.Picture
-	Anims                            map[EntityType]map[EntityState]map[Direction][]pixel.Rect // frankenmap
-	Char                             *Character
-	Animations                       []*Animation
-	Messages                         []string
-	Settings                         WorldSettings
+	Name                    string
+	Bounds                  pixel.Rect
+	DObjects, Tiles, Blocks []Object                    // sorted
+	Background              string                      // path to pic, will be repeated xy if not empty
+	background              *pixel.Sprite               // sprite to repeat xy
+	Batches                 map[EntityType]*pixel.Batch // one batch for every spritemap
+	Color                   pixel.RGBA                  // clear window with this color
+	Entities                []*Entity
+	Sheets                  map[EntityType]pixel.Picture
+	Anims                   map[EntityType]map[EntityState]map[Direction][]pixel.Rect // frankenmap
+	Char                    *Character
+	Animations              []*Animation
+	Messages                []string
+	Settings                WorldSettings
 }
 
 type WorldSettings struct {
@@ -36,42 +38,47 @@ type WorldSettings struct {
 }
 
 func NewWorld(name string, bounds pixel.Rect, testing string) *World {
-
 	w := new(World)
 	w.Name = name
 	w.Color = RandomColor()
 	w.Sheets = make(map[EntityType]pixel.Picture)
 	w.Anims = make(map[EntityType]map[EntityState]map[Direction][]pixel.Rect)
-
+	char := NewCharacter()
+	char.Inventory = []Item{MakeGold(uint64(rand.Intn(7)))} // start with some loot
+	char.W = w
+	w.Char = char
+	w.Batches = map[EntityType]*pixel.Batch{}
+	// create sheets, animations , batch for each sprite map
 	for _, t := range []EntityType{SKELETON, SKELETON_GUARD} {
 		sheet, anims, err := LoadEntitySheet("sprites/"+t.String()+".png", 13, 21)
 		if err != nil {
-			panic(fmt.Errorf("error loading skeleton sheet: %v", err))
+			panic(fmt.Errorf("error loading sheet: %s %v", t, err))
 		}
 
 		w.Sheets[t] = sheet
 		w.Anims[t] = anims
-		//log.Printf("New Skeleton Animation Frames: %v", len(w.Anims[t][S_RUN]))
+		w.Batches[t] = pixel.NewBatch(&pixel.TrianglesData{}, w.Sheets[t])
+
 	}
 
-	batchskel := pixel.NewBatch(&pixel.TrianglesData{}, w.Sheets[SKELETON])
-	batchguard := pixel.NewBatch(&pixel.TrianglesData{}, w.Sheets[SKELETON_GUARD])
-
-	w.Batches = map[EntityType]*pixel.Batch{
-		SKELETON:       batchskel,
-		SKELETON_GUARD: batchguard,
-	}
+	// load custom map
 	if testing != "" {
+		log.Println("Loading Map:", testing)
 		w.LoadMapFile(testing)
 
-	} else {
+	} else { // load map 1
+		log.Println("Loading...")
 		w.LoadMap("maps/" + name + ".map")
 	}
-	w.Messages = []string{"welcome"}
+	if len(w.Tiles) == 0 {
+		log.Println("Invalid map. No objects found")
+		os.Exit(1)
+	}
+	char.Rect = char.Rect.Moved(FindRandomTile(w.Tiles))
 	return w
 }
 
-func (w *World) NewSpecial(o *Object) {
+func (w *World) NewSpecial(o Object) {
 	o.Type = O_SPECIAL
 	w.DObjects = append(w.DObjects, o)
 }
@@ -82,7 +89,7 @@ func (w *World) Update(dt float64) {
 	// clean mobs
 	entities := []*Entity{}
 	for i := range w.Entities {
-		if w.Entities[i] == nil {
+		if len(w.Entities) < i || w.Entities[i] == nil {
 			continue
 		}
 		w.Entities[i].ChangeMind(dt)
@@ -92,27 +99,20 @@ func (w *World) Update(dt float64) {
 			continue
 		}
 
-		if len(w.Entities) > 5 {
+		// entity is dead, spawn another
+		if len(w.Entities) > 10 {
 			continue
 		}
 		npc := w.NewEntity(SKELETON_GUARD)
-		npc.Rect = npc.Rect.Moved(FindRandomTile(w.Objects))
+		npc.Rect = npc.Rect.Moved(FindRandomTile(w.Tiles))
 		entities = append(entities, npc)
 		npc = w.NewEntity(SKELETON)
-		npc.Rect = npc.Rect.Moved(FindRandomTile(w.Objects))
+		npc.Rect = npc.Rect.Moved(FindRandomTile(w.Tiles))
 		entities = append(entities, npc)
-
 	}
 	w.Entities = entities
-	tile := w.GetSpecial(w.Char.Rect.Center())
-	if tile != nil {
-		w.Message("invisible")
-		w.Message("full HP")
-		w.Char.Health = 255
-		w.Char.Invisible = true
-	} else {
-		w.Char.Invisible = false
-	}
+
+	// update animations
 	if len(w.Animations) > 0 {
 		for i := range w.Animations {
 			w.Animations[i].update(dt)
@@ -120,6 +120,7 @@ func (w *World) Update(dt float64) {
 
 	}
 
+	// animations effect entities
 	for _, a := range w.Animations {
 		if a == nil || time.Since(a.start) < time.Millisecond || time.Since(a.until) > time.Millisecond {
 			continue
@@ -130,7 +131,7 @@ func (w *World) Update(dt float64) {
 				w.Message(fmt.Sprintf("%s took %v damage", v.Name, a.damage))
 				w.Entities[i].P.Health -= a.damage
 				if w.Entities[i].P.Health <= 0 {
-					// damage func should be function
+					// entity damage should be function
 					if w.Entities[i].P.IsDead {
 						w.Entities[i].P.Health = 0
 						continue
@@ -140,17 +141,14 @@ func (w *World) Update(dt float64) {
 					w.Char.Stats.Kills++
 
 					log.Println("Got new loot!:", FormatItemList(v.P.Loot))
-					//w.Message(" Loot: " + FormatItemList(v.P.Loot))
-
 					w.Char.Inventory = StackItems(w.Char.Inventory, v.P.Loot)
-					//log.Println("New inventory:", w.Char.Inventory)
-					w.Char.ExpUp(1)
+					w.Char.ExpUp(v.P.XP)
 					w.checkLevel()
 
 				}
-				//
-				//log.Printf("%s took %v damage, now at %v HP",
-				//	w.Entities[i].Name, a.damage, w.Entities[i].P.Health)
+
+				log.Printf("%s took %v damage, now at %v HP",
+					w.Entities[i].Name, a.damage, w.Entities[i].P.Health)
 			}
 		}
 	}
@@ -159,33 +157,58 @@ func (w *World) Update(dt float64) {
 
 func (w *World) DrawEntity(n int) {
 	w.Entities[n].Draw(w.Batches[w.Entities[n].Type], w)
-}
-func (w *World) GetSpecial(dot pixel.Vec) *Object {
-	for i := range w.Objects {
-		if w.Objects[i].Rect.Contains(dot) && w.Objects[i].Type == O_SPECIAL {
-			//log.Println("found", w.Objects[i])
-			return w.Objects[i]
-		}
-
-	}
-	return nil
 
 }
 
 // Tile scans tiles and returns the first tile located at dot
-func (w *World) Tile(dot pixel.Vec) *Object {
-	for i := range w.Tiles {
+func (w *World) Tile(dot pixel.Vec) Object {
+	if w.Tiles == nil {
+		log.Println("nil tiles")
+		return Object{}
+	}
+
+	if len(w.Tiles) == 0 {
+		log.Println("no tiles")
+		return Object{}
+	}
+	for i := len(w.Tiles) - 1; i >= 0; i-- {
 		if w.Tiles[i].Rect.Contains(dot) {
 			return w.Tiles[i]
 		}
 	}
-	return nil
+	return Object{}
 }
 
-// Object returns the object at dot, very expensive
-func (w *World) Object(dot pixel.Vec) *Object {
+// Block scans blocks and returns the first block located at dot
+func (w *World) Block(dot pixel.Vec) Object {
+	for i := range w.Blocks {
+		if w.Blocks[i].Rect.Contains(dot) {
+			return w.Blocks[i]
+		}
+	}
+	return Object{}
+}
 
-	var ob *Object
+func (w *World) Object(dot pixel.Vec) Object {
+	for _, v := range w.Blocks {
+		if v.Rect.Contains(dot) {
+			return v
+		}
+	}
+	for _, v := range w.Tiles {
+		if v.Rect.Contains(dot) {
+			return v
+		}
+	}
+	return Object{Type: O_NONE}
+
+}
+
+/*
+// Object returns the object at dot, very expensive
+func (w *World) Object(dot pixel.Vec) Object {
+
+	var ob Object
 	for i := range w.Objects {
 		if w.Objects[i].Rect.Contains(dot) {
 			ob = w.Objects[i]
@@ -197,7 +220,7 @@ func (w *World) Object(dot pixel.Vec) *Object {
 	return ob
 
 }
-
+*/
 func (w *World) Draw(target pixel.Target) {
 	for i := range w.Entities {
 		w.DrawEntity(i)
@@ -222,13 +245,10 @@ func (w *World) HighlightPaths(target pixel.Target) {
 	imd := imdraw.New(nil)
 	color := pixel.ToRGBA(colornames.Red)
 	for i := range w.Entities {
-		imd.Color = color.Mul(pixel.Alpha(0.8))
+		imd.Color = color
 		if len(w.Entities[i].paths) != 0 {
 			imd.Color = color.Mul(pixel.Alpha(0.5))
-			for i, vv := range w.Entities[i].paths {
-				if i < 3 {
-					continue
-				}
+			for _, vv := range w.Entities[i].paths {
 				v := w.Tile(vv)
 				imd.Push(v.Rect.Min, v.Rect.Max)
 				imd.Rectangle(0)
@@ -263,12 +283,12 @@ func (w *World) Reset() {
 	w.Char.Level = 0
 	w.Char.Mana = 0
 	w.Char.Inventory = []Item{createLoot()}
-	w.Char.Rect = DefaultPhys.Rect.Moved(FindRandomTile(w.Objects))
+	w.Char.Rect = DefaultPhys.Rect.Moved(FindRandomTile(w.Tiles))
 	w.Char.Phys.Vel = pixel.ZV
 	npc := w.NewEntity(SKELETON_GUARD)
-	npc.Rect = npc.Rect.Moved(FindRandomTile(w.Objects))
+	npc.Rect = npc.Rect.Moved(FindRandomTile(w.Tiles))
 	npc2 := w.NewEntity(SKELETON)
-	npc2.Rect = npc.Rect.Moved(FindRandomTile(w.Objects))
+	npc2.Rect = npc.Rect.Moved(FindRandomTile(w.Tiles))
 	w.Entities = []*Entity{npc, npc2}
 	w.Animations = nil
 

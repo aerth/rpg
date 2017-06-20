@@ -2,6 +2,7 @@ package rpg
 
 import (
 	"fmt"
+	"image/color"
 	"log"
 	"os"
 	"time"
@@ -18,34 +19,35 @@ type Button struct {
 	Frame pixel.Rect
 }
 
-var version = "0.0.91"
+var version = "0.0.92"
 
 func TitleMenu(w *World, win *pixelgl.Window) {
-	text := NewText(40)
-
-	fmt.Fprintf(text, "AERPG v%s\nPRESS ENTER", version)
+	title := NewText(40)
+	text := NewText(24)
 	dot := pixel.V(30, 400)
-	text.Color = colornames.White
+	title.Dot = dot
+	title.Orig = title.Dot
+	dot = pixel.V(-100, -300)
 	text.Dot = dot
 	text.Orig = text.Dot
+
+	fmt.Fprintln(text, "https://github.com/aerth/rpg")
+	fmt.Fprintf(title, "AERPG v%s\nPRESS ENTER", version)
+
 	win.Clear(colornames.Black)
-	text.Draw(win, pixel.IM.Moved(win.Bounds().Center()))
+
 	win.SetTitle("AERPG (https://github.com/aerth/rpg)")
 	log.Println("AERPG (https://github.com/aerth/rpg)")
+
 	tick := time.Tick(time.Second)
 	var frames = 0
 	for !win.Closed() {
 
+		win.Clear(colornames.Black)
+		title.Color = RandomColor()
+		text.Draw(win, pixel.IM)
+		title.Draw(win, pixel.IM)
 		frames++
-		/*imd := imdraw.New(nil)
-		imd.Color = colornames.Black
-		imd.Push(pixel.V(0, 0), win.Bounds().Max)
-		imd.Rectangle(0)
-		imd.Color = colornames.White
-		imd.Push(pixel.V(30, 30), pixel.V(130, 130))
-		imd.Rectangle(0)
-		imd.Draw(win)*/
-
 		if win.JustPressed(pixelgl.KeyEscape) || win.JustPressed(pixelgl.KeyQ) {
 			w.Exit(0)
 		}
@@ -96,63 +98,30 @@ func (w *World) Exit(code int) {
 	os.Exit(code)
 }
 
-func (c *Character) DrawBars(target pixel.Target) {
+func DrawBar(imd *imdraw.IMDraw, color color.RGBA, cur, max float64, rect pixel.Rect) {
+	imd.Color = color
+	percent := cur / max
+	one := rect.Min
+	one.Y++
+	imd.Push(rect.Min, rect.Max)
+	imd.Rectangle(1)
+	pt := pixel.V(rect.Max.X*percent, rect.Max.Y)
+	imd.Push(rect.Min, pt)
+	imd.Rectangle(0)
+
+}
+
+func (c *Character) DrawBars(target pixel.Target, bounds pixel.Rect) {
+	var barheight = 10.00
+	var startY = 50.00
 	imd := imdraw.New(nil)
 	xp := float64(c.Stats.XP)
 	next := float64(c.NextLevel())
-	percent := xp / next
-	if c.textbuf == nil {
-		c.textbuf = NewText(28)
-	}
-	c.textbuf.Clear()
-	c.textbuf.Dot = c.textbuf.Orig
-	fmt.Fprintf(c.textbuf, "L%v", c.Level)
-	c.textbuf.Draw(target, pixel.IM.Moved(pixel.V(115, 90)))
-
-	// XP
-	imd.Color = colornames.Purple
-	imd.Push(pixel.V(10, 100))
-	imd.Push(pixel.V(110, 120))
-	imd.Rectangle(4)
-	if xp > 0 {
-		imd.Color = colornames.Purple
-		imd.Push(pixel.V(10, 100))
-		imd.Push(pixel.V(115*percent, 120))
-		imd.Rectangle(0)
-	}
-
-	// HP
-	pt := (110 * float64(c.Health) / 255)
-	if c.Health == 0 {
-		pt = 10
-	}
-	imd.Color = colornames.Red
-	imd.Push(pixel.V(10, 130))
-	imd.Push(pixel.V(110, 150))
-	imd.Rectangle(4)
-
-	imd.Color = colornames.Red
-	imd.Push(pixel.V(10, 130))
-	imd.Push(pixel.V(pt, 150))
-	imd.Rectangle(0)
-
-	// MP
-	pt = (110 * float64(c.Mana) / 255)
-	if c.Mana == 0 {
-		pt = 10
-	}
-	imd.Color = colornames.Blue
-	imd.Push(pixel.V(10, 160))
-	imd.Push(pixel.V(110, 180))
-	imd.Rectangle(4)
-	imd.Color = colornames.Blue
-
-	if pt > 10 {
-		imd.Push(pixel.V(10, 160))
-		imd.Push(pixel.V(pt, 180))
-		imd.Rectangle(0)
-	}
-
+	rect := bounds
+	rect.Min.Y = startY
+	rect.Max.Y = rect.Min.Y + barheight
+	DrawBar(imd, colornames.Red, float64(c.Health), float64(255), rect)
+	DrawBar(imd, colornames.Blue, float64(c.Mana), 255.00, rect.Moved(pixel.V(0, barheight+1)))
+	DrawBar(imd, colornames.Purple, xp, next, rect.Moved(pixel.V(0, (barheight*2)+1)))
 	imd.Draw(target)
-
 }

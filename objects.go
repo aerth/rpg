@@ -15,16 +15,18 @@ import (
 	"github.com/faiface/pixel/imdraw"
 )
 
+var DefaultSpriteRectangle = pixel.R(-16, -16, 16, 16)
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
 type Object struct {
-	Loc       pixel.Vec        `json:", omitempty"`
-	Rect      pixel.Rect       `json:", omitempty"`
-	Type      ObjectType       `json:"-"`
-	P         ObjectProperties `json:", omitempty"`
-	SpriteNum int              `json:"Sprite,omitempty"`
+	Loc       pixel.Vec        `json:"L"`
+	Rect      pixel.Rect       `json:"-"`
+	Type      ObjectType       `json:"T,ObjectType"`
+	P         ObjectProperties `json:",omitempty"`
+	SpriteNum int              `json:"S,omitempty"`
 	Sprite    *pixel.Sprite    `json:"-"`
 	w         *World           `json:"-"`
 }
@@ -79,6 +81,9 @@ func (o Object) Highlight(win pixel.Target) {
 	imd.Draw(win)
 }
 func (o Object) Draw(win pixel.Target, spritesheet pixel.Picture, sheetFrames []*pixel.Sprite) {
+	if o.Type != O_BLOCK && o.Type != O_TILE {
+		log.Println("UNKNOWN TILE", o)
+	}
 	if o.P.Invisible {
 		return
 	}
@@ -121,30 +126,34 @@ func (w *World) loadmap(b []byte) {
 		log.Println("invalid map:", err)
 		w.Exit(111)
 	}
-	for _, thing := range things {
-		t := new(Object)
-		*t = thing
+	total := len(things)
+	for i, t := range things {
 		t.w = w
+		t.Rect = DefaultSpriteRectangle.Moved(t.Loc)
 		switch t.SpriteNum {
 		case 53:
 			t.Type = O_BLOCK
-
 		default:
 		}
 
 		switch t.Type {
 		case O_BLOCK:
+			//log.Printf("%v/%v block object: %s %v %s", i, total, t.Loc, t.SpriteNum, t.Type)
 			w.Blocks = append(w.Blocks, t)
 		case O_TILE:
+			//log.Printf("%v/%v tile object: %s %v %s", i, total, t.Loc, t.SpriteNum, t.Type)
 			w.Tiles = append(w.Tiles, t)
-		default: //
-		}
 
-		w.Objects = append(w.Objects, t)
+		default: //
+			log.Printf("%v/%v skipping bad object: %s %v %s", i, total, t.Loc, t.SpriteNum, t.Type)
+		}
 	}
+	log.Printf("map has %v blocks, %v tiles", len(w.Blocks), len(w.Tiles))
+	//log.Println(w.Blocks, w.Tiles)
 	return
 }
 
+/*
 func (o ObjectType) MarshalJSON() ([]byte, error) {
 	i := int(o)
 	return json.Marshal(i)
@@ -159,19 +168,17 @@ func (o ObjectType) UnmarshalJSON(b []byte) error {
 	o = ObjectType(i)
 	return nil
 }
-
-// never returns blocks
-func FindRandomTile(os []*Object) pixel.Vec {
-
-	tiles := GetTiles(os)
-	if len(tiles) == 0 {
-		return pixel.ZV
+*/
+// assumes only tiles are given
+func FindRandomTile(os []Object) pixel.Vec {
+	if len(os) == 0 {
+		panic("no objects")
 	}
-	return tiles[rand.Intn(len(tiles))].Rect.Center()
+	return os[rand.Intn(len(os))].Rect.Center()
 }
 
-func GetObjects(objects []*Object, position pixel.Vec) []*Object {
-	var good []*Object
+func GetObjects(objects []Object, position pixel.Vec) []Object {
+	var good []Object
 	for _, o := range objects {
 		if o.Rect.Contains(position) {
 			good = append(good, o)
@@ -180,9 +187,8 @@ func GetObjects(objects []*Object, position pixel.Vec) []*Object {
 	return good
 }
 
-func GetTiles(objects []*Object) []*Object {
-
-	var tiles []*Object
+func GetTiles(objects []Object) []Object {
+	var tiles []Object
 	for _, o := range objects {
 		if o.Type == O_TILE {
 			tiles = append(tiles, o)
@@ -191,8 +197,8 @@ func GetTiles(objects []*Object) []*Object {
 	return tiles
 }
 
-func GetTilesAt(objects []*Object, position pixel.Vec) []*Object {
-	var good []*Object
+func GetTilesAt(objects []Object, position pixel.Vec) []Object {
+	var good []Object
 	all := GetObjects(objects, position)
 	if len(all) > 0 {
 		for _, o := range all {
@@ -205,8 +211,8 @@ func GetTilesAt(objects []*Object, position pixel.Vec) []*Object {
 	return good
 
 }
-func GetBlocks(objects []*Object, position pixel.Vec) []*Object {
-	var bad []*Object
+func GetBlocks(objects []Object, position pixel.Vec) []Object {
+	var bad []Object
 	all := GetObjects(objects, position)
 	if len(all) > 0 {
 		for _, o := range all {
@@ -219,9 +225,9 @@ func GetBlocks(objects []*Object, position pixel.Vec) []*Object {
 	return bad
 }
 
-// GetNeighbors gets the neighboring tiles of the same time
-func (o *Object) GetNeighbors() []*Object {
-	neighbors := []*Object{}
+// GetNeighbors gets the neighboring tiles
+func (o Object) GetNeighbors() []Object {
+	neighbors := []Object{}
 	of := 32.0
 	for _, offset := range [][]float64{
 		{-of, 0},
@@ -229,10 +235,8 @@ func (o *Object) GetNeighbors() []*Object {
 		{0, -of},
 		{0, of},
 	} {
-		if n := o.w.Tile(pixel.V(o.Rect.Center().X+offset[0], o.Rect.Center().Y+offset[1])); n != nil {
-			if n.Type == o.Type {
-				neighbors = append(neighbors, n)
-			}
+		if n := o.w.Tile(pixel.V(o.Rect.Center().X+offset[0], o.Rect.Center().Y+offset[1])); n.Type == o.Type {
+			neighbors = append(neighbors, n)
 		}
 	}
 	return neighbors

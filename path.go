@@ -2,16 +2,28 @@ package rpg
 
 import (
 	"log"
+	"time"
 
 	astar "github.com/beefsack/go-astar"
 	"github.com/faiface/pixel"
 )
 
 func (e *Entity) pathcalc(target pixel.Vec) {
-	tile := e.w.Tile(e.Rect.Center())
+	var (
+		maxcost = 100.00 // 100 regular tiles away
+	)
+	if len(e.paths) == 0 && time.Since(e.calculated) < time.Second*3 {
+		return
+	}
+	e.calculated = time.Now()
+	/*	t1 := time.Now()
+		defer func(t time.Time) {
+			log.Println("TILE path calc took:", time.Since(t))
+		}(t1)
+	*/tile := e.w.Tile(e.Rect.Center())
 	targett := e.w.Tile(target)
-	if tile == nil || targett == nil {
-		if tile == nil {
+	if tile.Type == O_NONE || targett.Type == O_NONE {
+		if tile.Type != O_TILE { // we spawned on bad tile
 			e.P.Health = 0
 			e.P.IsDead = true
 			log.Println("killing bad entity")
@@ -19,9 +31,14 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 		}
 		return
 	}
-	path, distance, found := astar.Path(tile, targett)
+	/*	t2 := time.Now()
+		defer func(t time.Time) {
+			log.Println("PATH path calc took:", time.Since(t))
+		}(t2)
+	*/path, distance, found := astar.Path(tile, targett)
 	if found {
-		if distance > 20 { // cost path
+		if distance > maxcost { // cost path
+			log.Println("too far")
 			e.paths = nil
 			return
 		}
@@ -31,7 +48,7 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 		for _, p := range path {
 
 			//log.Println(p)
-			center := p.(*Object).Rect.Center()
+			center := p.(Object).Rect.Center()
 			paths = append(paths, center)
 		}
 
@@ -42,8 +59,6 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 	//log.Println(e.Name, "no path found, distance:", distance)
 }
 
-// PathNeighbors returns the neighbors of the tile, excluding blockers and
-// tiles off the edge of the board.
 func (o Object) PathNeighbors() []astar.Pather {
 	neighbors := []astar.Pather{}
 	of := 32.0
@@ -59,17 +74,16 @@ func (o Object) PathNeighbors() []astar.Pather {
 		//{of, of},
 		//{-of, of},
 	} {
-		if n := o.w.Tile(pixel.V(o.Rect.Center().X+offset[0], o.Rect.Center().Y+offset[1])); n != nil {
-			if n.Type == O_TILE {
-				neighbors = append(neighbors, n)
-			}
+		n := o.w.Object(pixel.V(o.Rect.Center().X+offset[0], o.Rect.Center().Y+offset[1]))
+		if n.Type != O_NONE {
+			neighbors = append(neighbors, n)
 		}
 	}
 	return neighbors
 }
 
-func (o *Object) PathEstimatedCost(to astar.Pather) float64 {
-	toT := to.(*Object)
+func (o Object) PathEstimatedCost(to astar.Pather) float64 {
+	toT := to.(Object)
 	absX := toT.Rect.Center().X - o.Rect.Center().X
 	if absX < 0 {
 		absX = -absX
@@ -82,8 +96,8 @@ func (o *Object) PathEstimatedCost(to astar.Pather) float64 {
 
 }
 
-func (o *Object) PathNeighborCost(to astar.Pather) float64 {
-	toT := to.(*Object)
+func (o Object) PathNeighborCost(to astar.Pather) float64 {
+	toT := to.(Object)
 	cost := tileCosts[toT.Type]
 	return cost
 }
@@ -91,7 +105,8 @@ func (o *Object) PathNeighborCost(to astar.Pather) float64 {
 type ObjectType int
 
 const (
-	O_TILE ObjectType = iota
+	O_NONE ObjectType = iota
+	O_TILE
 	O_BLOCK
 	O_INVISIBLE
 	O_SPECIAL
@@ -101,6 +116,7 @@ const (
 // KindCosts map tile kinds to movement costs.
 
 var tileCosts = map[ObjectType]float64{
+	O_NONE:      2.00,
 	O_BLOCK:     30.00,
 	O_INVISIBLE: 3.00,
 	O_SPECIAL:   0.00,

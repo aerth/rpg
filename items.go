@@ -15,6 +15,14 @@ func createLoot() Item {
 	return item
 }
 
+func createItemLoot() Item {
+	item := createLoot()
+	if item.Type == GOLD || item.Type == FOOD {
+		return createItemLoot()
+	}
+	return item
+}
+
 // just stack gold potions and food for now
 func (i Item) Stack(items []Item) []Item {
 	var stacked []Item
