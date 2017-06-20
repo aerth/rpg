@@ -97,6 +97,12 @@ func (char *Character) Draw(t pixel.Target) {
 }
 
 func (char *Character) Update(dt float64, dir Direction, world *World) {
+	for _, i := range char.Inventory {
+		if i.Effect != nil {
+			char.Stats = i.Effect(char.Stats)
+		}
+
+	}
 	if time.Since(char.tick) >= time.Second*1 {
 		if char.Mana < 255 {
 			char.Mana++

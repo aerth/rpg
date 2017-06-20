@@ -11,6 +11,7 @@ type Item struct {
 	Name       string
 	Type       ItemType
 	Properties ItemProperties
+	Effect     func(Stats) Stats
 	Quantity   uint64
 }
 
@@ -133,7 +134,7 @@ func FormatItemList(items []Item) string {
 	}
 	var s string
 	for i, item := range items {
-		if i%5 == 0 {
+		if i%10 == 0 {
 			s += "\n"
 		}
 		s += item.String() + ", "
@@ -150,9 +151,45 @@ func RandomLoot() []Item {
 		return []Item{MakeGold(uint64(rand.Intn(255) + 1))}
 	case 5, 6:
 		return []Item{createLoot()}
-	case 8:
-		item := createLoot()
-		item.Name = fmt.Sprintf(GenerateItemName(), item.Type.String())
-		return []Item{item}
+		//	case 8:
+	case 7, 8, 9:
+		return []Item{RandomMagicItem()}
 	}
+}
+
+func RandomMagicItem() Item {
+	// special item
+	item := createLoot()
+	item.Name = fmt.Sprintf(GenerateItemName(), item.Type.String())
+	item.Effect = RandomItemEffect()
+	return item
+
+}
+
+func RandomItemEffect() func(Stats) Stats {
+
+	switch rand.Intn(5) {
+	default:
+		return func(s Stats) Stats {
+			return s
+		}
+	case 1:
+		return func(s Stats) Stats {
+			s.Strength = 0
+			s.Intelligence += 1000
+			return s
+		}
+	case 2:
+		return func(s Stats) Stats {
+			s.Strength += 10
+			return s
+		}
+	case 3:
+		return func(s Stats) Stats {
+			s.Intelligence += 10
+			return s
+		}
+
+	}
+
 }

@@ -87,7 +87,6 @@ func (o Object) Draw(win pixel.Target, spritesheet pixel.Picture, sheetFrames []
 	if o.P.Invisible {
 		return
 	}
-
 	if o.Sprite == nil {
 		if 0 > o.SpriteNum && o.SpriteNum > len(sheetFrames) {
 			log.Printf("unloadable sprite: %v/%v", o.SpriteNum, len(sheetFrames))
@@ -96,8 +95,8 @@ func (o Object) Draw(win pixel.Target, spritesheet pixel.Picture, sheetFrames []
 		o.Sprite = sheetFrames[o.SpriteNum]
 	}
 	if o.Loc == pixel.ZV && o.Rect.Size().Y != 32 {
-		log.Println(o.Rect.Size(), "cool")
-		DrawPattern(win, o.Sprite, o.Rect, 100)
+		log.Println(o.Rect.Size(), "cool rectangle", o.SpriteNum)
+		DrawPattern(win, o.Sprite, o.Rect, 0)
 	} else {
 		o.Sprite.Draw(win, pixel.IM.Moved(o.Loc))
 	}

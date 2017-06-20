@@ -1,6 +1,8 @@
 package rpg
 
 import (
+	"fmt"
+
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
@@ -13,6 +15,8 @@ func InventoryLoop(win *pixelgl.Window, world *World) {
 	text.WriteString("\tGAME PAUSED\n\n")
 	text.WriteString("\tESC or any key to return\n\n")
 	text.WriteString(world.Char.Stats.String())
+	text.WriteString(fmt.Sprintf("Level %v", world.Char.Level))
+
 	text.WriteString("\n\n===INVENTORY===\n" + FormatItemList(world.Char.Inventory))
 	for !win.Closed() {
 
