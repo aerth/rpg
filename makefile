@@ -9,7 +9,7 @@ build:
 dev: clean generate embed-assets build
 
 generate:
-	stringer -output strings.go -type EntityType,EntityState,ItemType,ObjectType,animState,ActionType
+	stringer -output strings.go -type EntityType,EntityState,ItemType,ObjectType,animState,ActionType,StatusEffect
 
 embed-assets:
 	@test -x ${shell which go-bindata} && \
@@ -38,3 +38,9 @@ key:
 pdf:
 	test -f p.debug && \
 	go tool pprof -pdf p.debug > p.pdf && echo p.pdf created
+
+install:
+	install mapmaker /usr/local/bin/ae-mapmaker
+	install walking /usr/local/bin/ae-rpg
+	install mapgen /usr/local/bin/ae-mapgen
+
