@@ -122,7 +122,7 @@ func (w *World) Update(dt float64) {
 
 	// animations effect entities
 	for _, a := range w.Animations {
-		if a == nil || time.Since(a.start) < time.Millisecond || time.Since(a.until) > time.Millisecond {
+		if a == nil || time.Since(a.start) < time.Millisecond*300 || time.Since(a.until) > time.Millisecond {
 			continue
 		}
 
@@ -243,12 +243,12 @@ func (w *World) ShowAnimations(imd *imdraw.IMDraw) {
 
 func (w *World) HighlightPaths(target pixel.Target) {
 	imd := imdraw.New(nil)
-	color := pixel.ToRGBA(colornames.Red)
 	for i := range w.Entities {
-		imd.Color = color
+		color := pixel.ToRGBA(colornames.Red)
 		if len(w.Entities[i].paths) != 0 {
-			imd.Color = color.Mul(pixel.Alpha(0.5))
 			for _, vv := range w.Entities[i].paths {
+				color = color.Scaled(0.8)
+				imd.Color = color
 				v := w.Tile(vv)
 				imd.Push(v.Rect.Min, v.Rect.Max)
 				imd.Rectangle(0)
