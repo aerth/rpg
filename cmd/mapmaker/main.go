@@ -16,7 +16,6 @@ import (
 
 	"github.com/aerth/rpg"
 	"github.com/faiface/pixel"
-	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
 )
 
@@ -84,7 +83,6 @@ func run() {
 	if err != nil {
 		panic(err)
 	}
-	imd := imdraw.New(nil)
 	var oldthings = []rpg.Object{}
 	if b, err := ioutil.ReadFile(LEVEL); err == nil {
 		err = json.Unmarshal(b, &oldthings)
@@ -130,6 +128,7 @@ func run() {
 	var turbo = false
 	var highlight = true
 	var box pixel.Rect
+	var replace = true
 	for !win.Closed() {
 		dt := time.Since(last).Seconds()
 		_ = dt
@@ -146,12 +145,15 @@ func run() {
 		mouse := cam.Unproject(win.MousePosition())
 		mouse.X = float64(int(mouse.X/snap)) * snap
 		mouse.Y = float64(int(mouse.Y/snap)) * snap
-
+		mouse.X = mouse.X - 16
+		mouse.Y = mouse.Y - 16
 		if win.JustPressed(pixelgl.Key4) {
 			turbo = !turbo
+			log.Println("turbo:", turbo)
 		}
 		if win.JustPressed(pixelgl.KeyCapsLock) {
 			highlight = !highlight
+			log.Println("highlight:", highlight)
 		}
 
 		if turbo {
@@ -188,9 +190,9 @@ func run() {
 		if win.Pressed(pixelgl.KeySpace) {
 			things = deleteThing(mouse)
 		}
-		var replace bool
 		if win.JustPressed(pixelgl.KeyB) {
 			replace = !replace
+			log.Println("replace:", replace)
 		}
 		// draw big patch of grass
 		if win.Pressed(pixelgl.KeyLeftControl) && (win.JustPressed(pixelgl.MouseButtonLeft) || win.JustPressed(pixelgl.MouseButtonRight)) {
@@ -238,12 +240,14 @@ func run() {
 			if currentThing > len(spritemap)-1 {
 				currentThing = 0
 			}
+			log.Println("current sprite:", currentThing)
 		}
 		if win.JustPressed(pixelgl.KeyPageDown) {
 			currentThing--
 			if currentThing <= 0 {
 				currentThing = len(spritemap) - 1
 			}
+			log.Println("current sprite:", currentThing)
 		}
 		if win.Pressed(pixelgl.KeyLeft) || win.Pressed(pixelgl.KeyA) {
 			camPos.X -= camSpeed * dt
@@ -264,19 +268,20 @@ func run() {
 
 		batch.Draw(win)
 		if b := box.Size(); b.Len() != 0 {
-			imd.Clear()
-			imd.Color = pixel.RGB(0, 1, 0)
-			imd.Push(box.Min, box.Max)
-			imd.Rectangle(1)
-			imd.Draw(win)
-			if win.JustReleased(pixelgl.MouseButtonLeft) {
-				log.Println("drawing rectangle:", box, currentThing)
-				things = append(things, rpg.DrawPatternObject(currentThing, rpg.O_TILE, box, 100)...)
-			}
-			if win.JustReleased(pixelgl.MouseButtonRight) {
-				log.Println("drawing rectangle:", box, currentThing)
-				things = append(things, rpg.DrawPatternObject(currentThing, rpg.O_BLOCK, box, 100)...)
+			if win.Pressed(pixelgl.KeyLeftControl) {
+				if win.JustReleased(pixelgl.MouseButtonLeft) {
+					box.Max = mouse
+					box = box.Norm()
+					log.Println("drawing rectangle:", box, currentThing)
+					things = append(DeleteThings(things, box), rpg.DrawPatternObject(currentThing, rpg.O_TILE, box, 100)...)
+				}
+				if win.JustReleased(pixelgl.MouseButtonRight) {
+					box.Max = mouse
+					box = box.Norm()
+					log.Println("drawing rectangle:", box, currentThing)
+					things = append(DeleteThings(things, box), rpg.DrawPatternObject(currentThing, rpg.O_BLOCK, box, 100)...)
 
+				}
 			}
 		}
 
@@ -284,6 +289,10 @@ func run() {
 			things[i].Draw(batch, spritesheet, spritemap)
 			if highlight {
 				things[i].Highlight(batch)
+			}
+			if things[i].Rect.Contains(mouse) {
+				things[i].Highlight(batch)
+
 			}
 
 		}
@@ -316,4 +325,15 @@ func run() {
 
 func main() {
 	pixelgl.Run(run)
+}
+
+func DeleteThings(from []rpg.Object, at pixel.Rect) []rpg.Object {
+	var cleaned []rpg.Object
+	for _, o := range from {
+		if !at.Contains(o.Loc) {
+			cleaned = append(cleaned, o)
+		}
+
+	}
+	return cleaned
 }
