@@ -5,7 +5,6 @@ import (
 	"log"
 	"math"
 	"math/rand"
-	"strconv"
 	"time"
 
 	"github.com/faiface/pixel"
@@ -61,6 +60,7 @@ const (
 	S_GUARD
 	S_SUSPECT
 	S_HUNT
+	S_DEAD
 )
 
 func (e *Entity) String() string {
@@ -111,48 +111,6 @@ func (w *World) NewEntity(t EntityType) *Entity {
 	w.Entities = append(w.Entities, e)
 
 	return e
-}
-
-type Item struct {
-	Name       string
-	Type       ItemType
-	Properties ItemProperties
-	Quantity   uint64
-}
-
-func (i Item) String() (s string) {
-
-	if i.Quantity > 1 {
-		s += strconv.FormatInt(int64(i.Quantity), 10)
-		s += " "
-	}
-	s += i.Type.String()
-	return s
-
-}
-
-type ItemType int
-
-const (
-	_ ItemType = iota
-	GOLD
-	POTION
-	FOOD
-	WEAPON
-	ARMOR
-	SPECIAL
-)
-
-func MakeGold(amount uint64) Item {
-	return Item{
-		Name:     "gold",
-		Type:     GOLD,
-		Quantity: amount,
-	}
-}
-
-type ItemProperties struct {
-	Weight uint8
 }
 
 type ePhys struct {
@@ -270,7 +228,6 @@ func (e *Entity) Update(dt float64) {
 		return false
 	}
 	if f(next.Center()) && f2(next.Center()) {
-		//log.Println(e.Name, "passed:", next)
 		e.Rect = next
 	} else {
 		//log.Println("cant move", e.Name, "to ", next.Center(), w.Tile(next.Center()), e.paths[0])
@@ -316,9 +273,13 @@ func LoadEntitySheet(sheetPath string, framesx, framesy uint8) (sheet pixel.Pict
 	anims[S_GUARD] = make(map[Direction][]pixel.Rect)
 	anims[S_SUSPECT] = make(map[Direction][]pixel.Rect)
 	anims[S_HUNT] = make(map[Direction][]pixel.Rect)
+	anims[S_DEAD] = make(map[Direction][]pixel.Rect)
 
 	// spritesheet is right down left up
-	// why is inverted?
+	anims[S_DEAD][LEFT] = frames[0:5]
+	anims[S_DEAD][RIGHT] = frames[0:5]
+	anims[S_DEAD][UP] = frames[0:5]
+	anims[S_DEAD][DOWN] = frames[0:5]
 	anims[S_IDLE][LEFT] = frames[143:144]
 	anims[S_IDLE][UP] = frames[156:157]
 	anims[S_IDLE][RIGHT] = frames[169:170]

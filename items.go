@@ -1,17 +1,62 @@
 package rpg
 
 import (
+	"fmt"
 	"math/rand"
+	"strconv"
 	"strings"
 )
 
-func createLoot() Item {
+type Item struct {
+	Name       string
+	Type       ItemType
+	Properties ItemProperties
+	Quantity   uint64
+}
 
+func (i Item) String() (s string) {
+	if i.Quantity > 1 {
+		s += strconv.FormatInt(int64(i.Quantity), 10)
+		s += " "
+	}
+	if i.Name != "" {
+		s += i.Name
+		return s
+	}
+	s += i.Type.String()
+	return s
+
+}
+
+type ItemType int
+
+const (
+	_ ItemType = iota
+	GOLD
+	POTION
+	FOOD
+	WEAPON
+	ARMOR
+	SPECIAL
+)
+
+func MakeGold(amount uint64) Item {
+	return Item{
+		Name:     "gold",
+		Type:     GOLD,
+		Quantity: amount,
+	}
+}
+
+type ItemProperties struct {
+	Weight uint8
+}
+
+func createLoot() Item {
 	item := Item{
 		Type:     ItemType(rand.Intn(5)) + 1,
 		Quantity: 1,
 	}
-
 	return item
 }
 
@@ -98,13 +143,16 @@ func FormatItemList(items []Item) string {
 }
 
 func RandomLoot() []Item {
-	switch rand.Intn(5) {
+	switch rand.Intn(10) {
 	default: // 0
 		return []Item{} // no loot
-	case 1, 2:
+	case 1, 2, 3, 4:
 		return []Item{MakeGold(uint64(rand.Intn(255) + 1))}
-	case 3, 4:
+	case 5, 6:
 		return []Item{createLoot()}
-
+	case 8:
+		item := createLoot()
+		item.Name = fmt.Sprintf(GenerateItemName(), item.Type.String())
+		return []Item{item}
 	}
 }
