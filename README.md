@@ -8,51 +8,50 @@ contributions very welcome
 
 ![screenshot](https://raw.githubusercontent.com/aerth/rpg/master/doc/screenshot.png)
 
-roadmap:
 
-  * [x] Character movement animation
-  
-  * [x] Background
-  
-  * [x] Character movement on top of background
-  
-  * [x] GPS system
-  
-  * [x] Map
- 
-  * [x] Collision detection ( actually only allow stepping on tiles (not blocks))
- 
-  * [x] Generate map with cmd/mapmaker  (from JSON)
-  
-  * [x] Import generated map (from JSON)
-  
-  * [x] World objects ( from JSON)
+## keymap:
 
-  * [x] NPC, moving things, enemys (fun)
+  * Movement: `arrows`, `asdw`, `hjkl`
 
-  * [x] Improve AI
+  * Zoom: `mouse wheel`
 
-  * [x] Magic / Damage
+  * Identify tile: `left click`
 
-  * [x] Loot / Gold
+  * Attack (manastorm): `space`
+
+
+## cheats:
+
+  * Toggle show enemy paths: `=`
+
+  * Toggle fly mode: `caps lock`
+
+  * Mana potion: `1`
+
+
+## roadmap:
+
+  * [ ] Regions
 
   * [ ] Doors
 
-  * [ ] Map editor improvements (issue with zoom / grid snap)
+  * [ ] Spawn tiles (instead of random tile)
+
+  * [ ] Map editor improvements (toolbar, pallet)
  
   * [ ] Text boxes (space to speed past conversations, pgup pgdown scroll)
   
   * [ ] Text Input (cheat codes, debug, chat, user input)
 
-  * [ ] Inventory, Pickup, Drop 'Items'
+  * [ ] Pickup, Drop 'Items' (currently just transferring if kill)
 
   * [ ] Optimization
 
-  * [ ] Replace spritesheets, allow texturepacks
+  * [ ] Replace spritesheets, allow texturepacks, skins
 
   * [ ] "Stage 1" map and missions, npcs, enemies, and a generated dungeon with bad guys and a boss
 
-  * [ ] Multiplayer (probably not too hard, with game server or p2p or LAN, enable trading, battle, and chat? )
+  * [ ] D2 style multiplayer
 
 
 ### credits
