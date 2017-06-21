@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"math/rand"
 	"os"
 	"strconv"
@@ -115,8 +116,10 @@ func main() {
 }
 
 func randfloat() float64 {
-
+	step := 32.00
 	f := float64(rand.Intn(int(BOUNDS)))
+	f = math.Floor(f)
+	f = float64(int(f/step)) * step
 	switch rand.Intn(2) {
 	case 0:
 		f = -f
