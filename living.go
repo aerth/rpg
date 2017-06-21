@@ -7,7 +7,10 @@ import (
 	"math/rand"
 	"time"
 
+	"golang.org/x/image/colornames"
+
 	"github.com/faiface/pixel"
+	"github.com/faiface/pixel/imdraw"
 )
 
 func init() {
@@ -38,6 +41,7 @@ type Entity struct {
 	paths      []pixel.Vec
 	w          *World
 	calculated time.Time
+	imd        *imdraw.IMDraw
 }
 
 type EntityType int
@@ -50,12 +54,12 @@ const (
 )
 
 type EntityProperties struct {
-	XP       uint64
-	Health   float64
-	Mana     float64
-	Loot     []Item
-	IsDead   bool
-	Strength float64
+	XP                uint64
+	Health, MaxHealth float64
+	Mana              float64
+	Loot              []Item
+	IsDead            bool
+	Strength          float64
 }
 
 const (
@@ -94,10 +98,11 @@ func (w *World) NewEntity(t EntityType) *Entity {
 			w:    w,
 			Type: t,
 			P: EntityProperties{
-				Health:   float64(rand.Intn(255) + 1),
-				Mana:     float64(rand.Intn(255)),
-				Strength: 1,
-				XP:       10,
+				Health:    255,
+				Mana:      255,
+				Strength:  1,
+				XP:        10,
+				MaxHealth: 255,
 			},
 			Rect:  DefaultEntityRectangle,
 			State: Running,
@@ -139,6 +144,19 @@ func (e *Entity) Draw(t pixel.Target, w *World) {
 	sprite.Set(w.Sheets[e.Type], e.Frame)
 	//sprite.Draw(t, pixel.IM.Moved(e.Rect.Center()))
 	sprite.Draw(t, pixel.IM.Scaled(pixel.ZV, 0.5).Moved(e.Rect.Center()))
+	if e.imd == nil {
+		e.imd = imdraw.New(nil)
+	}
+	e.imd.Clear()
+	rect := e.Rect.Norm()
+	rect.Max.Y = rect.Min.Y + 2
+	rect.Max.X = rect.Min.X + 10
+	if e.P.Health > 0 {
+		DrawBar(e.imd, colornames.Red, e.P.Health, e.P.MaxHealth, rect)
+
+		e.imd.Draw(t)
+	}
+
 }
 
 func (e *Entity) Center() pixel.Vec {
@@ -179,7 +197,7 @@ func (e *Entity) ChangeMind(dt float64) {
 func (e *Entity) Update(dt float64) {
 	blk := e.w.Block(e.Rect.Center())
 	if blk.Type == O_BLOCK {
-		e.Rect = e.Rect.Moved(FindRandomTile(e.w.Tiles))
+		e.Rect = DefaultEntityRectangle.Moved(FindRandomTile(e.w.Tiles))
 		return
 	}
 

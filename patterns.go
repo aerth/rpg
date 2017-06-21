@@ -176,13 +176,23 @@ func DrawBase(canvas *pixelgl.Canvas) {
 	batch.Draw(canvas)
 }
 func DrawBar(imd *imdraw.IMDraw, color color.RGBA, cur, max float64, rect pixel.Rect) {
+	rect = rect.Norm()
 	imd.Color = color
+	if max < cur {
+		cur, max = max, cur
+	}
 	percent := cur / max
-	one := rect.Min
-	one.Y++
+	//	if rect.Max.Y-rect.Min.Y > 10 {
+	//		rect.Max.Y = rect.Min.Y + 10
+	//	}
+	//one.Y++
 	imd.Push(rect.Min, rect.Max)
 	imd.Rectangle(1)
-	pt := pixel.V(rect.Max.X*percent, rect.Max.Y)
+	pt := pixel.V(rect.Min.X+((rect.Max.X-rect.Min.X)*percent), rect.Max.Y)
+
+	if pt.X < rect.Min.X {
+		pt.X = rect.Min.X
+	}
 	imd.Push(rect.Min, pt)
 	imd.Rectangle(0)
 

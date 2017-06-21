@@ -6,8 +6,6 @@ import (
 	"math/rand"
 	"time"
 
-	"golang.org/x/image/colornames"
-
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 )
@@ -244,7 +242,7 @@ func (w *World) ShowAnimations(imd *imdraw.IMDraw) {
 func (w *World) HighlightPaths(target pixel.Target) {
 	imd := imdraw.New(nil)
 	for i := range w.Entities {
-		color := pixel.ToRGBA(colornames.Red).Scaled(0.5)
+		color := TransparentRed
 		if len(w.Entities[i].paths) != 0 {
 			for _, vv := range w.Entities[i].paths {
 				//color = color.Scaled(0.3)
