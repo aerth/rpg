@@ -73,14 +73,15 @@ func main() {
 		}
 
 	}
-
-	// fill in with water blocks
-	waterworld := rpg.DrawPatternObject(53, rpg.O_BLOCK, pixel.R(-BOUNDS, -BOUNDS, BOUNDS, BOUNDS), 0)
-	for _, water := range waterworld {
-		if rpg.GetObjects(olist, water.Loc) == nil {
-			olist = append(olist, water)
+	/*
+		// fill in with water blocks
+		waterworld := rpg.DrawPatternObject(53, rpg.O_BLOCK, pixel.R(-BOUNDS, -BOUNDS, BOUNDS, BOUNDS), 0)
+		for _, water := range waterworld {
+			if rpg.GetObjects(olist, water.Loc) == nil {
+				olist = append(olist, water)
+			}
 		}
-	}
+	*/
 	world := new(rpg.World)
 	world.Tiles = rpg.GetTiles(olist)
 	// detect islands, make bridges
@@ -90,10 +91,18 @@ func main() {
 	for _, o := range oldlist {
 		o.W = world
 		_, _, found := astar.Path(o, spot)
-		if !found {
+		if o.Type == rpg.O_TILE && !found {
 			log.Println("found island tile", o)
 		} else {
 			olist = append(olist, o)
+		}
+	}
+
+	// fill in with water blocks
+	waterworld := rpg.DrawPatternObject(53, rpg.O_BLOCK, pixel.R(-BOUNDS, -BOUNDS, BOUNDS, BOUNDS), 0)
+	for _, water := range waterworld {
+		if rpg.GetObjects(olist, water.Loc) == nil {
+			olist = append(olist, water)
 		}
 	}
 
