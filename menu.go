@@ -2,7 +2,6 @@ package rpg
 
 import (
 	"fmt"
-	"image/color"
 	"log"
 	"os"
 	"time"
@@ -25,7 +24,7 @@ func Version() string {
 	return "AERPG " + version
 }
 
-func TitleMenu(w *World, win *pixelgl.Window) {
+func TitleMenu(win *pixelgl.Window) (breakloop bool) {
 	title := NewText(40)
 	text := NewText(24)
 	dot := pixel.V(30, 400)
@@ -53,10 +52,10 @@ func TitleMenu(w *World, win *pixelgl.Window) {
 		title.Draw(win, pixel.IM)
 		frames++
 		if win.JustPressed(pixelgl.KeyEscape) || win.JustPressed(pixelgl.KeyQ) {
-			w.Exit(0)
+			return true
 		}
-		if win.JustPressed(pixelgl.MouseButtonLeft) || win.JustPressed(pixelgl.KeyEnter) {
-			break
+		if win.JustPressed(pixelgl.KeyEnter) {
+			return false
 		}
 		win.Update()
 		select {
@@ -68,6 +67,7 @@ func TitleMenu(w *World, win *pixelgl.Window) {
 		}
 	}
 	log.Println("thanks for playing")
+	return true
 }
 
 var textmatrix = pixel.IM.Moved(pixel.V(10, 580))
@@ -81,6 +81,11 @@ func (w *World) IsButton(buttons []Button, point pixel.Vec) (Button, func(win pi
 				return button, func(win pixel.Target, world *World) {
 					world.Action(w.Char, w.Char.Rect.Center(), ManaStorm)
 				}, true
+			case "magicbullet":
+				return button, func(win pixel.Target, world *World) {
+					world.Action(w.Char, w.Char.Rect.Center(), MagicBullet)
+				}, true
+
 			default:
 				return button, func(win pixel.Target, world *World) {
 					world.Message(fmt.Sprintf("Bad button %s", point))
@@ -100,19 +105,6 @@ func (w *World) IsButton(buttons []Button, point pixel.Vec) (Button, func(win pi
 
 func (w *World) Exit(code int) {
 	os.Exit(code)
-}
-
-func DrawBar(imd *imdraw.IMDraw, color color.RGBA, cur, max float64, rect pixel.Rect) {
-	imd.Color = color
-	percent := cur / max
-	one := rect.Min
-	one.Y++
-	imd.Push(rect.Min, rect.Max)
-	imd.Rectangle(1)
-	pt := pixel.V(rect.Max.X*percent, rect.Max.Y)
-	imd.Push(rect.Min, pt)
-	imd.Rectangle(0)
-
 }
 
 func (c *Character) DrawBars(target pixel.Target, bounds pixel.Rect) {

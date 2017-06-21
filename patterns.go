@@ -1,6 +1,7 @@
 package rpg
 
 import (
+	"image/color"
 	"log"
 	"math/rand"
 	"time"
@@ -16,17 +17,18 @@ func init() {
 }
 
 type Animation struct {
-	Name    string
-	Type    ActionType
-	loc     pixel.Vec
-	rect    pixel.Rect
-	radius  float64
-	step    float64
-	counter float64
-	cols    [5]pixel.RGBA
-	until   time.Time
-	start   time.Time
-	damage  float64
+	Name      string
+	Type      ActionType
+	loc       pixel.Vec
+	rect      pixel.Rect
+	radius    float64
+	step      float64
+	counter   float64
+	cols      [5]pixel.RGBA
+	until     time.Time
+	start     time.Time
+	damage    float64
+	direction Direction
 }
 
 func (a *Animation) update(dt float64) {
@@ -42,6 +44,10 @@ func (a *Animation) update(dt float64) {
 		}
 		a.cols[0] = RandomColor().Scaled(0.3)
 		a.cols[1] = RandomColor().Scaled(0.3)
+	}
+	if a.direction != OUT {
+		a.loc = a.loc.Add(a.direction.V().Scaled(100 * dt))
+		a.rect = pixel.R(-a.radius, -a.radius, a.radius, a.radius).Moved(a.loc)
 	}
 }
 
@@ -61,6 +67,19 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string, direction Direction) {
 	default: //
 		log.Println("invalid animation type")
 		return
+	case "magicbullet":
+		a := new(Animation)
+		a.loc = loc
+		a.radius = 5
+		a.step = 1.0 / 7
+		a.rect = pixel.R(-a.radius, -a.radius, a.radius, a.radius).Moved(a.loc)
+		a.cols = [5]pixel.RGBA{}
+		a.start = time.Now()
+		a.until = time.Now().Add(time.Second * 2)
+		a.direction = direction
+		a.damage = w.Char.Stats.Intelligence * 1.3
+		w.Animations = append(w.Animations, a)
+
 	case "manastorm":
 		a := new(Animation)
 		a.loc = loc
@@ -70,6 +89,7 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string, direction Direction) {
 		a.rect = pixel.R(-a.radius, -a.radius, a.radius, a.radius).Moved(a.loc)
 		a.cols = [5]pixel.RGBA{}
 		a.start = time.Now()
+		a.direction = direction
 		a.until = time.Now().Add(
 			time.Duration(
 				w.Char.Stats.Intelligence * float64(time.Millisecond) * 10))
@@ -81,6 +101,7 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string, direction Direction) {
 func DrawPatternObject(spritenum int, objecttype ObjectType, bounds pixel.Rect, width float64) []Object {
 	var objects []Object
 	size := pixel.Rect{pixel.V(-16, -16), pixel.V(16, 16)}
+	//size := DefaultSpriteRectangle
 	for y := bounds.Min.Y; y < bounds.Max.Y; y = y + size.H() {
 		for x := bounds.Min.X; x < bounds.Max.X; x = x + size.W() {
 			o := Object{
@@ -153,4 +174,16 @@ func DrawBase(canvas *pixelgl.Canvas) {
 	imd.Rectangle(10)
 	imd.Draw(batch)
 	batch.Draw(canvas)
+}
+func DrawBar(imd *imdraw.IMDraw, color color.RGBA, cur, max float64, rect pixel.Rect) {
+	imd.Color = color
+	percent := cur / max
+	one := rect.Min
+	one.Y++
+	imd.Push(rect.Min, rect.Max)
+	imd.Rectangle(1)
+	pt := pixel.V(rect.Max.X*percent, rect.Max.Y)
+	imd.Push(rect.Min, pt)
+	imd.Rectangle(0)
+
 }

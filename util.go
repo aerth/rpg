@@ -59,6 +59,21 @@ func (d Direction) String() string {
 	}
 }
 
+func (d Direction) V() pixel.Vec {
+	switch d {
+	case LEFT:
+		return pixel.V(-1, 0)
+	case RIGHT:
+		return pixel.V(1, 0)
+	case UP:
+		return pixel.V(0, 1)
+	case DOWN:
+		return pixel.V(0, -1)
+	default:
+		return pixel.V(0, 0)
+	}
+}
+
 func RandomColor() pixel.RGBA {
 
 	r := rand.Float64()

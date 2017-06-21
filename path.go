@@ -12,32 +12,40 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 	var (
 		maxcost = 200.00 // 100 regular tiles away
 	)
-	if len(e.paths) == 0 && time.Since(e.calculated) < time.Second*3 {
+	if !e.calculated.IsZero() && time.Since(e.calculated) < time.Millisecond {
+
 		return
 	}
 	e.calculated = time.Now()
-	/*	t1 := time.Now()
-		defer func(t time.Time) {
-			log.Println("TILE path calc took:", time.Since(t))
-		}(t1)
-	*/tile := e.w.Tile(e.Rect.Center())
+
+	// get tiles, give world
+	tile := e.w.Tile(e.Rect.Center())
+	tile.W = e.w
 	targett := e.w.Tile(target)
-	if tile.Type == O_NONE || targett.Type == O_NONE {
-		if tile.Type != O_TILE { // we spawned on bad tile
-			e.P.Health = 0
-			e.P.IsDead = true
-			log.Println("killing bad entity")
-			return
-		}
+	targett.W = e.w
+
+	// check
+	if tile.Type == O_NONE {
+		// bad spawn, respawn
+		e.P.Health = 0
+		return
 	}
-	/*	t2 := time.Now()
-		defer func(t time.Time) {
-			log.Println("PATH path calc took:", time.Since(t))
-		}(t2)
-	*/path, distance, found := astar.Path(tile, targett)
+	if targett.Type == O_NONE {
+		// player must be flying
+		e.calculated = time.Now().Add(3 * time.Second)
+		return
+	}
+	if tile.PathEstimatedCost(targett) > 2000 {
+		// too far
+		log.Println("path too expensive, trying in 3 seconds")
+		e.calculated = time.Now().Add(3 * time.Second)
+	}
+
+	// calculate path
+	path, distance, found := astar.Path(tile, targett)
 	if found {
 		if distance > maxcost { // cost path
-			e.calculated = time.Now().Add(-time.Minute)
+			e.calculated = time.Now().Add(3 * time.Second)
 			log.Println("too far")
 			e.paths = nil
 			return
@@ -48,7 +56,7 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 		for _, p := range path {
 
 			//log.Println(p)
-			center := p.(Object).Rect.Center()
+			center := p.(Object).Loc
 			paths = append(paths, center)
 		}
 
@@ -74,7 +82,7 @@ func (o Object) PathNeighbors() []astar.Pather {
 		//{of, of},
 		//{-of, of},
 	} {
-		n := o.w.Object(pixel.V(o.Rect.Center().X+offset[0], o.Rect.Center().Y+offset[1]))
+		n := o.W.Tile(pixel.V(o.Rect.Center().X+offset[0], o.Rect.Center().Y+offset[1]))
 		if n.Type != O_NONE {
 			neighbors = append(neighbors, n)
 		}

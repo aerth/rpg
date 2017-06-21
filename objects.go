@@ -17,6 +17,9 @@ import (
 
 var DefaultSpriteRectangle = pixel.R(-16, -16, 16, 16)
 
+//var DefaultSpriteRectangle = pixel.R(-16, 0, 16, 32)
+//var DefaultSpriteRectangle = pixel.R(-16, 0, 16, 32)
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
@@ -28,7 +31,7 @@ type Object struct {
 	P         ObjectProperties `json:",omitempty"`
 	SpriteNum int              `json:"S,omitempty"`
 	Sprite    *pixel.Sprite    `json:"-"`
-	w         *World           `json:"-"`
+	W         *World           `json:"-"`
 }
 
 func (o Object) String() string {
@@ -69,15 +72,15 @@ func NewBlockBox(rect pixel.Rect) Object {
 		Type: O_BLOCK,
 	}
 }
-func (o Object) Highlight(win pixel.Target) {
+
+var TransparentBlue = pixel.ToRGBA(colornames.Blue).Scaled(0.8)
+var TransparentRed = pixel.ToRGBA(colornames.Red).Scaled(0.8)
+var TransparentPurple = pixel.ToRGBA(colornames.Purple).Scaled(0.8)
+
+func (o Object) Highlight(win pixel.Target, color pixel.RGBA) {
 	imd := imdraw.New(nil)
-	color := pixel.ToRGBA(colornames.Red)
-	if o.Type == O_TILE {
-		color = pixel.ToRGBA(colornames.Blue)
-	}
-	imd.Color = color.Scaled(0.3)
 	imd.Push(o.Rect.Min, o.Rect.Max)
-	imd.Rectangle(4)
+	imd.Rectangle(2)
 	imd.Draw(win)
 }
 func (o Object) Draw(win pixel.Target, spritesheet pixel.Picture, sheetFrames []*pixel.Sprite) {
@@ -107,32 +110,29 @@ func (o Object) Draw(win pixel.Target, spritesheet pixel.Picture, sheetFrames []
 	//	}
 
 }
-func (w *World) LoadMapFile(path string) {
+func (w *World) LoadMapFile(path string) error {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		log.Println("error loading map:", err)
-		w.Exit(111)
+		return err
 	}
-	w.loadmap(b)
+	return w.loadmap(b)
 }
-func (w *World) LoadMap(path string) {
+func (w *World) LoadMap(path string) error {
 	b, err := assets.Asset(path)
 	if err != nil {
-		log.Println("error loading map:", err)
-		w.Exit(111)
+		return err
 	}
-	w.loadmap(b)
+	return w.loadmap(b)
 }
-func (w *World) loadmap(b []byte) {
+func (w *World) loadmap(b []byte) error {
 	var things = []Object{}
 	err := json.Unmarshal(b, &things)
 	if err != nil {
-		log.Println("invalid map:", err)
-		w.Exit(111)
+		return fmt.Errorf("invalid map: %v", err)
 	}
 	total := len(things)
 	for i, t := range things {
-		t.w = w
+		t.W = w
 		t.Rect = DefaultSpriteRectangle.Moved(t.Loc)
 		switch t.SpriteNum {
 		case 53: // water
@@ -153,7 +153,10 @@ func (w *World) loadmap(b []byte) {
 		}
 	}
 	log.Printf("map has %v blocks, %v tiles", len(w.Blocks), len(w.Tiles))
-	return
+	if len(w.Blocks) == 0 && len(w.Tiles) == 0 {
+		return fmt.Errorf("invalid map")
+	}
+	return nil
 }
 
 // assumes only tiles are given
@@ -161,7 +164,11 @@ func FindRandomTile(os []Object) pixel.Vec {
 	if len(os) == 0 {
 		panic("no objects")
 	}
-	return os[rand.Intn(len(os))].Rect.Center()
+	ob := os[rand.Intn(len(os))]
+	if ob.Loc != pixel.ZV && ob.SpriteNum != 0 && ob.Type == O_TILE {
+		return ob.Rect.Center()
+	}
+	return FindRandomTile(os)
 }
 
 func GetObjects(objects []Object, position pixel.Vec) []Object {
@@ -189,7 +196,7 @@ func GetTilesAt(objects []Object, position pixel.Vec) []Object {
 	all := GetObjects(objects, position)
 	if len(all) > 0 {
 		for _, o := range all {
-			if o.Type == O_TILE {
+			if DefaultSpriteRectangle.Moved(o.Loc).Contains(position) && o.Type == O_TILE {
 				good = append(good, o)
 			}
 
@@ -198,6 +205,21 @@ func GetTilesAt(objects []Object, position pixel.Vec) []Object {
 	return good
 
 }
+func GetObjectsAt(objects []Object, position pixel.Vec) []Object {
+	var good []Object
+	all := GetObjects(objects, position)
+	if len(all) > 0 {
+		for _, o := range all {
+			if DefaultSpriteRectangle.Moved(o.Loc).Contains(position) {
+				good = append(good, o)
+			}
+
+		}
+	}
+	return good
+
+}
+
 func GetBlocks(objects []Object, position pixel.Vec) []Object {
 	var bad []Object
 	all := GetObjects(objects, position)
@@ -222,10 +244,29 @@ func (o Object) GetNeighbors() []Object {
 		{0, -of},
 		{0, of},
 	} {
-		if n := o.w.Tile(pixel.V(o.Rect.Center().X+offset[0], o.Rect.Center().Y+offset[1])); n.Type == o.Type {
+		if n := o.W.Tile(pixel.V(o.Rect.Center().X+offset[0], o.Rect.Center().Y+offset[1])); n.Type == o.Type {
 			neighbors = append(neighbors, n)
 		}
 	}
 	return neighbors
 
+}
+func (w *World) drawTiles(path string) error {
+	spritesheet, spritemap := LoadSpriteSheet(path)
+	// layers (TODO: slice?)
+	// batch sprite drawing
+	globebatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
+	// water world 67 wood, 114 117 182 special, 121 135 dirt, 128 blank, 20 grass
+	//      rpg.DrawPattern(batch, spritemap[53], pixel.R(-3000, -3000, 3000, 3000), 100)
+
+	globebatch.Clear()
+	// draw it on to canvasglobe
+	for _, o := range w.Tiles {
+		o.Draw(globebatch, spritesheet, spritemap)
+	}
+	for _, o := range w.Blocks {
+		o.Draw(globebatch, spritesheet, spritemap)
+	}
+	w.Batches[EntityType(-1)] = globebatch
+	return nil
 }

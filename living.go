@@ -94,7 +94,7 @@ func (w *World) NewEntity(t EntityType) *Entity {
 				Strength: 1,
 				XP:       10,
 			},
-			Rect:  pixel.R(-16, -16, 16, 16),
+			Rect:  DefaultSpriteRectangle,
 			State: Running,
 			Frame: w.Anims[t][S_RUN][DOWN][0],
 			Phys:  DefaultMobPhys,
@@ -122,7 +122,7 @@ type ePhys struct {
 
 // DefaultPhys character
 var DefaultMobPhys = ePhys{
-	RunSpeed: 100.5,
+	RunSpeed: 50.5,
 	Gravity:  50.00,
 	Rate:     2,
 }
@@ -132,7 +132,8 @@ func (e *Entity) Draw(t pixel.Target, w *World) {
 	sprite := pixel.NewSprite(nil, pixel.Rect{})
 	// draw the correct frame with the correct position and direction
 	sprite.Set(w.Sheets[e.Type], e.Frame)
-	sprite.Draw(t, pixel.IM.Moved(e.Rect.Center()))
+	//sprite.Draw(t, pixel.IM.Moved(e.Rect.Center()))
+	sprite.Draw(t, pixel.IM.Scaled(pixel.ZV, 0.5).Moved(e.Rect.Center()))
 }
 
 func (e *Entity) Center() pixel.Vec {
@@ -147,7 +148,7 @@ func (e *Entity) ChangeMind(dt float64) {
 	}
 
 	r := pixel.Rect{e.Rect.Center(), e.w.Char.Rect.Center()}
-	if r.Size().Len() < 48 {
+	if r.Size().Len() < e.Rect.Size().Len()/2 {
 		e.w.Char.Damage(uint(rand.Intn(10*int(e.P.Strength))), e.Name)
 		return
 	}

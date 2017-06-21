@@ -61,10 +61,10 @@ var DefaultStats = Stats{
 
 // DefaultPhys character
 var DefaultPhys = charPhys{
-	RunSpeed: 200.5,
-	Rect:     pixel.R(-8, -8, 8, 8),
-	Gravity:  50.00,
-	Rate:     2,
+	RunSpeed: 50.5,
+	//Rect:     pixel.R(-8, -8, 8, 8),
+	Gravity: 50.00,
+	Rate:    2,
 }
 
 func NewCharacter() *Character {
@@ -220,15 +220,22 @@ func (w *World) Action(char *Character, loc pixel.Vec, t ActionType) {
 	case Slash:
 		log.Println("no weapon yet")
 	case ManaStorm:
-		cost := uint(1)
+		cost := uint(2)
 		if char.Mana < cost {
-			w.Message(" not enough mana")
+			w.Message("not enough mana")
 			return
 		}
 		char.Mana -= cost
 		w.NewAnimation(char.Rect.Center(), "manastorm", OUT)
 	case MagicBullet:
-		log.Println("Soon")
+		cost := uint(2)
+		if char.Mana < cost {
+			w.Message("not enough mana")
+			return
+		}
+
+		char.Mana -= cost
+		w.NewAnimation(char.Rect.Center(), "magicbullet", char.Dir)
 	default: //
 	}
 }

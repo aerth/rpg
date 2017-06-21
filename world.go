@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"os"
 	"time"
 
 	"golang.org/x/image/colornames"
@@ -37,7 +36,7 @@ type WorldSettings struct {
 	NumEnemy int
 }
 
-func NewWorld(name string, bounds pixel.Rect, testing string) *World {
+func NewWorld(name string, difficulty int) *World {
 	w := new(World)
 	w.Name = name
 	w.Color = RandomColor()
@@ -61,18 +60,14 @@ func NewWorld(name string, bounds pixel.Rect, testing string) *World {
 
 	}
 
-	// load custom map
-	if testing != "" {
-		log.Println("Loading Map:", testing)
-		w.LoadMapFile(testing)
-
-	} else { // load map 1
-		log.Println("Loading...")
-		w.LoadMap("maps/" + name + ".map")
+	log.Println("Loading...")
+	if e := w.LoadMap("maps/" + name + ".map"); e != nil {
+		log.Println(e)
+		return nil
 	}
 	if len(w.Tiles) == 0 {
 		log.Println("Invalid map. No objects found")
-		os.Exit(1)
+		return nil
 	}
 	char.Rect = char.Rect.Moved(FindRandomTile(w.Tiles))
 	return w
@@ -164,19 +159,21 @@ func (w *World) DrawEntity(n int) {
 func (w *World) Tile(dot pixel.Vec) Object {
 	if w.Tiles == nil {
 		log.Println("nil tiles")
-		return Object{}
+		return Object{W: w}
 	}
 
 	if len(w.Tiles) == 0 {
 		log.Println("no tiles")
-		return Object{}
+		return Object{W: w}
 	}
 	for i := len(w.Tiles) - 1; i >= 0; i-- {
 		if w.Tiles[i].Rect.Contains(dot) {
-			return w.Tiles[i]
+			ob := w.Tiles[i]
+			ob.W = w
+			return ob
 		}
 	}
-	return Object{}
+	return Object{W: w}
 }
 
 // Block scans blocks and returns the first block located at dot
@@ -189,10 +186,13 @@ func (w *World) Block(dot pixel.Vec) Object {
 	return Object{}
 }
 
+// Object at location
 func (w *World) Object(dot pixel.Vec) Object {
-	for _, v := range w.Blocks {
-		if v.Rect.Contains(dot) {
-			return v
+	if w.Blocks != nil {
+		for _, v := range w.Blocks {
+			if v.Rect.Contains(dot) {
+				return v
+			}
 		}
 	}
 	for _, v := range w.Tiles {
@@ -244,14 +244,14 @@ func (w *World) ShowAnimations(imd *imdraw.IMDraw) {
 func (w *World) HighlightPaths(target pixel.Target) {
 	imd := imdraw.New(nil)
 	for i := range w.Entities {
-		color := pixel.ToRGBA(colornames.Red)
+		color := pixel.ToRGBA(colornames.Red).Scaled(0.5)
 		if len(w.Entities[i].paths) != 0 {
 			for _, vv := range w.Entities[i].paths {
-				color = color.Scaled(0.8)
+				//color = color.Scaled(0.3)
 				imd.Color = color
 				v := w.Tile(vv)
 				imd.Push(v.Rect.Min, v.Rect.Max)
-				imd.Rectangle(0)
+				imd.Rectangle(4)
 			}
 		}
 	}
