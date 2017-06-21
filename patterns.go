@@ -77,7 +77,7 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string, direction Direction) {
 		a.start = time.Now()
 		a.until = time.Now().Add(time.Second * 2)
 		a.direction = direction
-		a.damage = w.Char.Stats.Intelligence * 1.3
+		a.damage = w.Char.Stats.Intelligence * 0.5
 		w.Animations = append(w.Animations, a)
 
 	case "manastorm":
@@ -85,7 +85,7 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string, direction Direction) {
 		a.loc = loc
 		a.radius = 20 * w.Char.Stats.Intelligence / 100
 		a.step = 1.0 / 7
-		a.damage = w.Char.Stats.Intelligence * 1.3
+		a.damage = w.Char.Stats.Intelligence * 0.8
 		a.rect = pixel.R(-a.radius, -a.radius, a.radius, a.radius).Moved(a.loc)
 		a.cols = [5]pixel.RGBA{}
 		a.start = time.Now()
