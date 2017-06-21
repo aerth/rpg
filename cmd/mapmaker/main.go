@@ -288,10 +288,14 @@ func run() {
 		for i := range things {
 			things[i].Draw(batch, spritesheet, spritemap)
 			if highlight {
-				things[i].Highlight(batch)
+				color := rpg.TransparentRed
+				if things[i].Type == rpg.O_TILE {
+					color = rpg.TransparentBlue
+				}
+				things[i].Highlight(batch, color)
 			}
 			if things[i].Rect.Contains(mouse) {
-				things[i].Highlight(batch)
+				things[i].Highlight(batch, rpg.TransparentPurple)
 
 			}
 
