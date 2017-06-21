@@ -153,7 +153,8 @@ func (e *Entity) ChangeMind(dt float64) {
 	}
 
 	r := pixel.Rect{e.Rect.Center(), e.w.Char.Rect.Center()}
-	if r.Size().Len() < e.Rect.Size().Len()/3 {
+	if r.Size().Len() < e.Rect.Size().Len()/2 {
+
 		e.w.Char.Damage(uint(rand.Intn(10*int(e.P.Strength))), e.Name)
 		return
 	}

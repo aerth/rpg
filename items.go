@@ -22,6 +22,16 @@ func (i Item) String() (s string) {
 	}
 	if i.Name != "" {
 		s += i.Name
+		if i.Effect != nil {
+			switch i.Type {
+			case ARMOR:
+				s += " (+defence)"
+			case POTION:
+				s += " (+magic)"
+			case WEAPON:
+				s += " (+attack)"
+			}
+		}
 		return s
 	}
 	s += i.Type.String()
@@ -161,35 +171,37 @@ func RandomMagicItem() Item {
 	// special item
 	item := createLoot()
 	item.Name = fmt.Sprintf(GenerateItemName(), item.Type.String())
-	item.Effect = RandomItemEffect()
+	item.Effect = RandomItemEffect(item.Type)
 	return item
 
 }
 
-func RandomItemEffect() func(Stats) Stats {
+func RandomItemEffect(t ItemType) func(Stats) Stats {
+	fn := func(s Stats) Stats {
+		return s
+	}
 
-	switch rand.Intn(5) {
+	switch t {
+	case ARMOR:
+		fn = func(s Stats) Stats {
+			s.Vitality += 0.1
+			return s
+		}
+	case WEAPON:
+		fn = func(s Stats) Stats {
+			s.Strength += 0.1
+			return s
+		}
+	case POTION:
+		fn = func(s Stats) Stats {
+			s.Intelligence += 0.1
+			return s
+		}
 	default:
-		return func(s Stats) Stats {
-			return s
-		}
-	case 1:
-		return func(s Stats) Stats {
-			s.Strength += 0.1
-			s.Intelligence += 0.1
-			return s
-		}
-	case 2:
-		return func(s Stats) Stats {
-			s.Strength += 0.1
-			return s
-		}
-	case 3:
-		return func(s Stats) Stats {
-			s.Intelligence += 0.1
+		fn = func(s Stats) Stats {
 			return s
 		}
 
 	}
-
+	return fn
 }

@@ -35,3 +35,12 @@ func TestGenerateItemName(t *testing.T) {
 		log.Printf(GenerateItemName(), item)
 	}
 }
+
+func TestMagicLoot(t *testing.T) {
+	for i := 0; i < 100; i++ {
+		inv := RandomLoot()
+		for _, item := range inv {
+			log.Println(item)
+		}
+	}
+}
