@@ -61,7 +61,10 @@ func NewWorld(name string, difficulty int) *World {
 	log.Println("Loading...")
 	if e := w.LoadMap("maps/" + name + ".map"); e != nil {
 		log.Println(e)
-		return nil
+		if e = w.LoadMapFile(name); e != nil {
+			log.Println(e)
+			return nil
+		}
 	}
 	if len(w.Tiles) == 0 {
 		log.Println("Invalid map. No objects found")
@@ -156,13 +159,13 @@ func (w *World) DrawEntity(n int) {
 // Tile scans tiles and returns the first tile located at dot
 func (w *World) Tile(dot pixel.Vec) Object {
 	if w.Tiles == nil {
-		log.Println("nil tiles")
-		return Object{W: w}
+		log.Println("nil tiles!")
+		return Object{W: w, Type: O_BLOCK}
 	}
 
 	if len(w.Tiles) == 0 {
-		log.Println("no tiles")
-		return Object{W: w}
+		log.Println("no tiles to look in")
+		return Object{W: w, Type: O_BLOCK}
 	}
 	for i := len(w.Tiles) - 1; i >= 0; i-- {
 		if w.Tiles[i].Rect.Contains(dot) {
@@ -171,7 +174,9 @@ func (w *World) Tile(dot pixel.Vec) Object {
 			return ob
 		}
 	}
-	return Object{W: w}
+	//	log.Println("no tiles found at location:", dot)
+	//	panic("bug")
+	return Object{W: w, Type: O_BLOCK}
 }
 
 // Block scans blocks and returns the first block located at dot

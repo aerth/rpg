@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"math/rand"
 	"os"
 	"strconv"
 	"time"
@@ -14,6 +15,7 @@ import (
 
 func init() {
 
+	rand.Seed(time.Now().UnixNano())
 	log.SetFlags(log.Lshortfile)
 	if len(os.Args) == 1 {
 		log.SetFlags(0)
@@ -37,7 +39,7 @@ type Character struct {
 	Health    uint                       // hp
 	Mana      uint                       // mp
 	Invisible bool                       // hidden from enemies
-	Level     int
+	Level     uint
 	tick      time.Time
 	textbuf   *text.Text
 	W         *World
@@ -83,6 +85,7 @@ func NewCharacter() *Character {
 	c.Phys = DefaultPhys
 	c.Rate = 0.1
 	c.Health = 255
+	c.Mana = uint(rand.Intn(255))
 	c.Stats = DefaultStats
 	return c
 }
@@ -277,4 +280,8 @@ func (w *World) checkLevel() {
 
 func (c *Character) NextLevel() uint64 {
 	return uint64(150 * c.Level)
+}
+
+func (c *Character) MaxHealth() uint64 {
+	return uint64(c.Health * c.Level)
 }

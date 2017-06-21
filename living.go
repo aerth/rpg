@@ -17,9 +17,10 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-var DefaultEntityRectangle = pixel.R(-16, -8, 16, 24)
+//var DefaultEntityRectangle = pixel.R(-16, -8, 16, 24)
 
-//var DefaultSpriteRectangle = pixel.R(-16, 0, 16, 32)
+var DefaultEntityRectangle = pixel.R(-16, -16, 16, 16)
+
 //var DefaultSpriteRectangle = pixel.R(-16, 0, 16, 32)
 
 type Entity struct {
@@ -142,8 +143,10 @@ func (e *Entity) Draw(t pixel.Target, w *World) {
 	sprite := pixel.NewSprite(nil, pixel.Rect{})
 	// draw the correct frame with the correct position and direction
 	sprite.Set(w.Sheets[e.Type], e.Frame)
-	//sprite.Draw(t, pixel.IM.Moved(e.Rect.Center()))
 	sprite.Draw(t, pixel.IM.Scaled(pixel.ZV, 0.5).Moved(e.Rect.Center()))
+	//sprite.Draw(t, pixel.IM.Scaled(pixel.ZV, 0.5).Moved(e.Rect.Center()))
+
+	// HP bars
 	if e.imd == nil {
 		e.imd = imdraw.New(nil)
 	}
@@ -153,9 +156,12 @@ func (e *Entity) Draw(t pixel.Target, w *World) {
 	rect.Max.X = rect.Min.X + 10
 	if e.P.Health > 0 {
 		DrawBar(e.imd, colornames.Red, e.P.Health, e.P.MaxHealth, rect)
-
 		e.imd.Draw(t)
 	}
+	e.imd.Color = colornames.Green
+	e.imd.Push(e.Rect.Min, e.Rect.Max)
+	e.imd.Rectangle(1)
+	e.imd.Draw(t)
 
 }
 
@@ -164,7 +170,10 @@ func (e *Entity) Center() pixel.Vec {
 }
 
 func (e *Entity) ChangeMind(dt float64) {
-
+	if t := e.w.Tile(e.Center()); t.Type != O_TILE {
+		e.Phys.Vel = pixel.ZV
+		return
+	}
 	if e.w.Char.Invisible {
 		e.Phys.Vel = pixel.ZV
 		return
@@ -195,9 +204,11 @@ func (e *Entity) ChangeMind(dt float64) {
 }
 
 func (e *Entity) Update(dt float64) {
-	blk := e.w.Block(e.Rect.Center())
-	if blk.Type == O_BLOCK {
-		e.Rect = DefaultEntityRectangle.Moved(FindRandomTile(e.w.Tiles))
+	blk := e.w.Tile(e.Rect.Center())
+	if blk.Type != O_TILE {
+		old := e.Rect.Center()
+		e.Rect = DefaultEntityRectangle.Moved(TileNear(e.w.Tiles, e.Center()).Loc)
+		log.Println("Moved skel:", old, "to", e.Rect.Center())
 		return
 	}
 
@@ -223,8 +234,9 @@ func (e *Entity) Update(dt float64) {
 		return
 	}
 	if !e.CanFly && t.Type == O_BLOCK {
-		log.Println("bug")
-		next = e.Rect.Moved(e.Phys.Vel.Scaled(dt))
+		e.Phys.Vel = pixel.ZV
+		log.Println(e.Type, "got blocked", t.Loc)
+
 	}
 
 	//	log.Println(e.Name, "wants to go", next.Center(), "from", e.Rect.Center())

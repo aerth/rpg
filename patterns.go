@@ -46,7 +46,7 @@ func (a *Animation) update(dt float64) {
 		a.cols[1] = RandomColor().Scaled(0.3)
 	}
 	if a.direction != OUT {
-		a.loc = a.loc.Add(a.direction.V().Scaled(100 * dt))
+		a.loc = a.loc.Add((a.direction.V().Scaled(100 * dt)))
 		a.rect = pixel.R(-a.radius, -a.radius, a.radius, a.radius).Moved(a.loc)
 	}
 }
@@ -83,16 +83,17 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string, direction Direction) {
 	case "manastorm":
 		a := new(Animation)
 		a.loc = loc
-		a.radius = 20 * w.Char.Stats.Intelligence / 100
+		a.radius = (w.Char.Stats.Intelligence / 20) * 4
 		a.step = 1.0 / 7
 		a.damage = w.Char.Stats.Intelligence * 0.8
 		a.rect = pixel.R(-a.radius, -a.radius, a.radius, a.radius).Moved(a.loc)
 		a.cols = [5]pixel.RGBA{}
 		a.start = time.Now()
 		a.direction = direction
-		a.until = time.Now().Add(
-			time.Duration(
-				w.Char.Stats.Intelligence * float64(time.Millisecond) * 10))
+		dur := time.Duration(w.Char.Stats.Intelligence * float64(time.Millisecond) * 18)
+		log.Println(dur)
+		a.until = time.Now().Add(dur)
+
 		w.Animations = append(w.Animations, a)
 	}
 

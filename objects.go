@@ -191,7 +191,7 @@ func GetTiles(objects []Object) []Object {
 	return tiles
 }
 
-func GetTilesAt(objects []Object, position pixel.Vec) []Object {
+func TilesAt(objects []Object, position pixel.Vec) []Object {
 	var good []Object
 	all := GetObjects(objects, position)
 	if len(all) > 0 {
@@ -269,4 +269,43 @@ func (w *World) drawTiles(path string) error {
 	}
 	w.Batches[EntityType(-1)] = globebatch
 	return nil
+}
+
+func TileNear(all []Object, loc pixel.Vec) Object {
+	tile := TilesAt(all, loc)
+	radius := 1.00
+	oloc := loc
+	if len(tile) > 0 {
+		oloc = tile[0].Loc
+	}
+	log.Println("looking for loc:", loc)
+	for i := 0; i < len(all); i++ {
+		if loc == oloc {
+			loc.X += 16
+			continue
+		}
+		log.Println("Checking loc", loc)
+		os := TilesAt(all, loc)
+		if len(os) > 0 {
+			if os[0].Loc == pixel.ZV || os[0].Loc == oloc {
+				continue
+			}
+			return os[0]
+		}
+		os = TilesAt(all, loc.Scaled(-2))
+		if len(os) > 0 {
+			if os[0].Loc == pixel.ZV || os[0].Loc == oloc {
+				continue
+			}
+			return os[0]
+		}
+
+		loc.X += radius * 16
+		loc.Y += radius * 16
+		if i%4 == 1 {
+			radius++
+		}
+	}
+	return Object{Type: O_NONE}
+
 }

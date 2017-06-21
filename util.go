@@ -66,6 +66,29 @@ func (d Direction) String() string {
 	}
 }
 
+func UnitToDirection(v pixel.Vec) Direction {
+	switch v {
+	default:
+		return OUT
+	case LEFT.V():
+		return LEFT
+	case UPLEFT.V():
+		return UPLEFT
+	case DOWNLEFT.V():
+		return DOWNLEFT
+	case RIGHT.V():
+		return RIGHT
+	case UPRIGHT.V():
+		return UPRIGHT
+	case DOWNRIGHT.V():
+		return DOWNRIGHT
+	case DOWN.V():
+		return DOWN
+	case UP.V():
+		return UP
+	}
+}
+
 func (d Direction) V() pixel.Vec {
 	switch d {
 	case LEFT:

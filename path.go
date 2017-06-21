@@ -35,7 +35,10 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 		e.calculated = time.Now().Add(3 * time.Second)
 		return
 	}
-	if tile.PathEstimatedCost(targett) < 3 {
+
+	est := tile.PathEstimatedCost(targett)
+	//	log.Println("finding path:", e, est)
+	if est < 3 {
 		e.paths = []pixel.Vec{e.w.Char.Rect.Center()}
 		return
 	}
@@ -88,7 +91,7 @@ func (o Object) PathNeighbors() []astar.Pather {
 		//{-of, of},
 	} {
 		n := o.W.Tile(pixel.V(o.Rect.Center().X+offset[0], o.Rect.Center().Y+offset[1]))
-		if n.Type != O_NONE {
+		if n.Type == O_TILE {
 			neighbors = append(neighbors, n)
 		}
 	}

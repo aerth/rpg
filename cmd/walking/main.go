@@ -178,12 +178,20 @@ MainLoop:
 			win.Clear(colornames.Black)
 			animbatch.Clear()
 			// if key
-			if win.JustPressed(pixelgl.KeyQ) {
+			if win.JustPressed(pixelgl.KeyQ) && win.Pressed(pixelgl.KeyLeftControl) {
 				break MainLoop
 			}
+			// teleport random
 			if win.JustPressed(pixelgl.Key8) {
-				world.Char.Rect = rpg.DefaultSpriteRectangle.Moved(rpg.FindRandomTile(world.Tiles))
+				world.Char.Rect = rpg.DefaultSpriteRectangle.Moved(rpg.TileNear(world.Tiles, world.Char.Rect.Center()).Loc)
 
+			}
+
+			// move all enemies (debug)
+			if win.JustPressed(pixelgl.Key9) {
+				for _, v := range world.Entities {
+					v.Rect = rpg.DefaultEntityRectangle.Moved(rpg.TileNear(world.Tiles, v.Rect.Center()).Loc)
+				}
 			}
 			if win.JustReleased(pixelgl.KeyI) {
 				rpg.InventoryLoop(win, world)
@@ -225,7 +233,7 @@ MainLoop:
 
 			// back to window cam
 			win.SetMatrix(pixel.IM)
-			world.Char.Matrix = pixel.IM.Scaled(pixel.ZV, *camZoom).Scaled(pixel.ZV, 0.5).Moved(pixel.V(0, 16)).Moved(win.Bounds().Center())
+			world.Char.Matrix = pixel.IM.Scaled(pixel.ZV, *camZoom).Scaled(pixel.ZV, 0.5).Moved(pixel.V(0, 0)).Moved(win.Bounds().Center())
 			world.Char.Draw(win)
 			// draw score board
 			//text.Clear()
