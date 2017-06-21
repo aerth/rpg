@@ -19,6 +19,7 @@ contributions very welcome
 
   * Attack (manastorm): `space`
 
+  * Attack (magic bullet): `B`
 
 ## cheats:
 
