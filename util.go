@@ -33,6 +33,13 @@ const (
 	UP
 	IN
 	OUT
+	UPLEFT
+	UPRIGHT
+	DOWNLEFT
+	DOWNRIGHT
+)
+
+const (
 	WEST  = LEFT
 	EAST  = RIGHT
 	NORTH = UP
@@ -69,6 +76,14 @@ func (d Direction) V() pixel.Vec {
 		return pixel.V(0, 1)
 	case DOWN:
 		return pixel.V(0, -1)
+	case UPRIGHT:
+		return pixel.V(1, 1)
+	case UPLEFT:
+		return pixel.V(-1, 1)
+	case DOWNLEFT:
+		return pixel.V(-1, -1)
+	case DOWNRIGHT:
+		return pixel.V(1, -1)
 	default:
 		return pixel.V(0, 0)
 	}

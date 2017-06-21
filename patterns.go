@@ -83,7 +83,7 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string, direction Direction) {
 	case "manastorm":
 		a := new(Animation)
 		a.loc = loc
-		a.radius = 140 * w.Char.Stats.Intelligence / 100
+		a.radius = 20 * w.Char.Stats.Intelligence / 100
 		a.step = 1.0 / 7
 		a.damage = w.Char.Stats.Intelligence * 1.3
 		a.rect = pixel.R(-a.radius, -a.radius, a.radius, a.radius).Moved(a.loc)

@@ -54,8 +54,12 @@ func LoadCharacterSheet(sheetPath string, numframes uint8) (sheet pixel.Picture,
 
 	anims = make(map[Direction][]pixel.Rect)
 	anims[LEFT] = frames[:4]
+	anims[UPLEFT] = frames[:4]
 	anims[RIGHT] = frames[4:8]
+	anims[DOWNRIGHT] = frames[4:8]
 	anims[DOWN] = frames[8:12]
+	anims[DOWNLEFT] = frames[8:12]
 	anims[UP] = frames[12:]
+	anims[UPRIGHT] = frames[12:]
 	return sheet, anims, nil
 }

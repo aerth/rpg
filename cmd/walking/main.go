@@ -313,7 +313,7 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, buttons []rpg
 	}
 	// speed motion with tab
 	if win.Pressed(pixelgl.KeyLeftShift) {
-		*dt *= 15
+		*dt *= 4
 	}
 	if win.Pressed(pixelgl.Key1) {
 		w.Char.Mana += 1
@@ -355,11 +355,22 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, buttons []rpg
 
 	}
 	if win.Pressed(pixelgl.KeyUp) || win.Pressed(pixelgl.KeyK) || win.Pressed(pixelgl.KeyW) {
-
 		w.Char.Phys.Vel.Y = +w.Char.Phys.RunSpeed * (1 + *dt)
 		dir = UP
 	}
 
+	if win.Pressed(pixelgl.KeyUp) && win.Pressed(pixelgl.KeyLeft) {
+		dir = rpg.UPLEFT
+	}
+	if win.Pressed(pixelgl.KeyUp) && win.Pressed(pixelgl.KeyRight) {
+		dir = rpg.UPRIGHT
+	}
+	if win.Pressed(pixelgl.KeyDown) && win.Pressed(pixelgl.KeyLeft) {
+		dir = rpg.DOWNLEFT
+	}
+	if win.Pressed(pixelgl.KeyDown) && win.Pressed(pixelgl.KeyRight) {
+		dir = rpg.DOWNRIGHT
+	}
 	// restart the level on pressing enter
 	//	if win.JustPressed(pixelgl.KeyEnter) {
 	//		rpg.InventoryLoop(win, w)

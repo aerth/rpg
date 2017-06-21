@@ -14,6 +14,11 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+var DefaultEntityRectangle = pixel.R(-16, -8, 16, 24)
+
+//var DefaultSpriteRectangle = pixel.R(-16, 0, 16, 32)
+//var DefaultSpriteRectangle = pixel.R(-16, 0, 16, 32)
+
 type Entity struct {
 	Name       string
 	Type       EntityType
@@ -94,7 +99,7 @@ func (w *World) NewEntity(t EntityType) *Entity {
 				Strength: 1,
 				XP:       10,
 			},
-			Rect:  DefaultSpriteRectangle,
+			Rect:  DefaultEntityRectangle,
 			State: Running,
 			Frame: w.Anims[t][S_RUN][DOWN][0],
 			Phys:  DefaultMobPhys,
@@ -122,7 +127,7 @@ type ePhys struct {
 
 // DefaultPhys character
 var DefaultMobPhys = ePhys{
-	RunSpeed: 50.5,
+	RunSpeed: 40.5,
 	Gravity:  50.00,
 	Rate:     2,
 }
@@ -148,7 +153,7 @@ func (e *Entity) ChangeMind(dt float64) {
 	}
 
 	r := pixel.Rect{e.Rect.Center(), e.w.Char.Rect.Center()}
-	if r.Size().Len() < e.Rect.Size().Len()/2 {
+	if r.Size().Len() < e.Rect.Size().Len()/3 {
 		e.w.Char.Damage(uint(rand.Intn(10*int(e.P.Strength))), e.Name)
 		return
 	}

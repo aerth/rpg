@@ -137,11 +137,12 @@ func (char *Character) Update(dt float64, dir Direction, world *World) {
 	// determine the correct animation frame
 
 	if char.State == Idle {
-		char.Frame = char.Anims[char.Dir][0]
+		char.Frame = char.Anims[dir][0]
 	} else if char.State == Running {
 		// count 0 1 2 3 0 1 2 3...
 		i := int(math.Floor(char.counter / char.Rate))
-		char.Frame = char.Anims[char.Dir][i%len(char.Anims[char.Dir])]
+
+		char.Frame = char.Anims[dir][i%len(char.Anims[dir])]
 
 		// gradually lose momentum
 		char.Phys.Vel = pixel.Lerp(char.Phys.Vel, pixel.ZV, 1-math.Pow(1.0/char.Phys.Gravity, dt))

@@ -16,6 +16,12 @@ func InventoryLoop(win *pixelgl.Window, world *World) {
 	text.WriteString("\tESC or any key to return\n\n")
 	text.WriteString(world.Char.Stats.String())
 	text.WriteString(fmt.Sprintf("Level %v\nHealth: %v\nMana: %v\nXP: %v/%v", world.Char.Level, world.Char.Health, world.Char.Mana, world.Char.Stats.XP, world.Char.NextLevel()))
+	for _, item := range world.Char.Inventory {
+		if item.Effect != nil {
+			text.WriteString(fmt.Sprintf("\n Effects: %q", item.Name))
+
+		}
+	}
 
 	text.WriteString("\n\n===INVENTORY===\n" + FormatItemList(world.Char.Inventory))
 	for !win.Closed() {
