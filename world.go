@@ -81,6 +81,7 @@ func (w World) String() string {
 	return w.Name
 }
 func (w *World) Update(dt float64) {
+	w.checkLevel()
 	// clean mobs
 	entities := []*Entity{}
 	for i := range w.Entities {
@@ -138,7 +139,6 @@ func (w *World) Update(dt float64) {
 					log.Println("Got new loot!:", FormatItemList(v.P.Loot))
 					w.Char.Inventory = StackItems(w.Char.Inventory, v.P.Loot)
 					w.Char.ExpUp(v.P.XP)
-					w.checkLevel()
 
 				}
 

@@ -321,6 +321,17 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, buttons []rpg
 			w.Char.Mana = 255
 		}
 	}
+	if win.Pressed(pixelgl.Key2) {
+		w.Char.Health += 1
+		if w.Char.Health > 255 {
+			w.Char.Health = 255
+		}
+	}
+
+	if win.Pressed(pixelgl.Key3) {
+		w.Char.Stats.XP += 10
+	}
+
 	if win.Pressed(pixelgl.KeyCapsLock) {
 		w.Char.Phys.CanFly = !w.Char.Phys.CanFly
 	}
