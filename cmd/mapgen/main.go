@@ -1,15 +1,49 @@
 package main
 
 import (
+	"bytes"
+	"crypto/md5"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/aerth/rpg"
 	"github.com/faiface/pixel"
 )
+
+var BOUNDS float64 = 700
+var numbers = "0123456789"
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+	if len(os.Args) == 2 {
+		hashb := md5.Sum([]byte(os.Args[1]))
+		hash := []byte(fmt.Sprintf("%x", hashb))
+		var seed []byte
+		for _, b := range hash {
+			if bytes.IndexAny([]byte{b}, numbers) != -1 {
+				log.Println(string(b), "is a number")
+				seed = append(seed, b)
+			} else {
+				log.Println(string(b), "is a letter")
+			}
+
+		}
+		worldseed, err := strconv.ParseInt(string(seed), 10, 64)
+		if err != nil {
+			log.Println(err)
+		}
+		rand.Seed(worldseed)
+		log.Printf("Using world seed: %q -> %v", os.Args[1], worldseed)
+		log.Printf("Hash: %q", string(hash))
+	}
+
+}
 
 func main() {
 	os.Mkdir("maps", 0755)
@@ -19,7 +53,7 @@ func main() {
 
 		currentThing := 20 // grass
 		t = rpg.O_TILE
-		if i%2 == 1 {
+		if i%3 == 0 {
 			currentThing = 53 // water
 			t = rpg.O_BLOCK
 		}
@@ -31,12 +65,19 @@ func main() {
 		log.Println(t, box)
 		pattern := rpg.DrawPatternObject(currentThing, t, box, 100)
 		for _, obj := range pattern {
-
-			if len(rpg.GetTilesAt(olist, obj.Loc)) == 0 {
+			if rpg.GetObjects(olist, obj.Loc) == nil {
 				olist = append(olist, obj)
 			}
 		}
 
+	}
+
+	waterworld := rpg.DrawPatternObject(53, rpg.O_BLOCK, pixel.R(-BOUNDS, -BOUNDS, BOUNDS, BOUNDS), 0)
+
+	for _, water := range waterworld {
+		if rpg.GetObjects(olist, water.Loc) == nil {
+			olist = append(olist, water)
+		}
 	}
 
 	b, err := json.Marshal(olist)
@@ -59,7 +100,7 @@ func main() {
 
 func randfloat() float64 {
 
-	f := float64(rand.Intn(1500))
+	f := float64(rand.Intn(int(BOUNDS)))
 	switch rand.Intn(2) {
 	case 0:
 		f = -f
