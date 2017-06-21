@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/aerth/rpg"
+	astar "github.com/beefsack/go-astar"
 	"github.com/faiface/pixel"
 )
 
@@ -72,11 +73,26 @@ func main() {
 
 	}
 
+	// fill in with water blocks
 	waterworld := rpg.DrawPatternObject(53, rpg.O_BLOCK, pixel.R(-BOUNDS, -BOUNDS, BOUNDS, BOUNDS), 0)
-
 	for _, water := range waterworld {
 		if rpg.GetObjects(olist, water.Loc) == nil {
 			olist = append(olist, water)
+		}
+	}
+	world := new(rpg.World)
+	world.Tiles = rpg.GetTiles(olist)
+	// detect islands, make bridges
+	oldlist := olist
+	olist = nil
+	spot := world.Tile(rpg.FindRandomTile(oldlist))
+	for _, o := range oldlist {
+		o.W = world
+		_, _, found := astar.Path(o, spot)
+		if !found {
+			log.Println("found island tile", o)
+		} else {
+			olist = append(olist, o)
 		}
 	}
 
