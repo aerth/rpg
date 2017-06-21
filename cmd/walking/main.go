@@ -8,7 +8,6 @@ import (
 	"math/rand"
 	"os"
 	"runtime/pprof"
-	"strconv"
 	"time"
 
 	"golang.org/x/image/colornames"
@@ -26,10 +25,10 @@ func init() {
 }
 
 var (
-	flagenemies   = flag.Int("e", 2, "number of enemies to begin with")
-	flaglevel     = flag.Int("lvl", 1, "starting level (1)")
-	flagcustomlvl = flag.String("test", "", "custom world test (filename)")
-	debug         = flag.Bool("v", false, "extra logs")
+	flagenemies = flag.Int("e", 2, "number of enemies to begin with")
+	flaglevel   = flag.String("test", "1", "custom world test (filename)")
+
+	debug = flag.Bool("v", false, "extra logs")
 )
 
 const (
@@ -47,7 +46,7 @@ var (
 )
 
 var (
-	defaultzoom  = 1.0
+	defaultzoom  = 3.0
 	camZoomSpeed = 1.20
 )
 
@@ -100,9 +99,12 @@ func run() {
 	// START
 	//world.Char.Rect = world.Char.Rect.Moved(V(33, 33))
 	// load world
-	worldbounds := pixel.R(float64(-3000), float64(-3000), float64(3000), float64(3000))
 	//	worldbounds = pixel.R(float64(-4000), float64(-4000), float64(4000), float64(4000))
-	world := rpg.NewWorld(strconv.Itoa(*flaglevel), worldbounds, *flagcustomlvl)
+
+	world := rpg.NewWorld(*flaglevel, *flagenemies)
+	if world == nil {
+		return
+	}
 	// sprite sheet
 	spritesheet, spritemap := rpg.LoadSpriteSheet("tileset.png")
 
@@ -152,15 +154,18 @@ func run() {
 	rand.Seed(time.Now().UnixNano())
 	//var latest string
 	redrawWorld(world)
+MainLoop:
 	for !win.Closed() {
-		rpg.TitleMenu(world, win)
 		world.Reset()
+		rpg.TitleMenu(win)
 		world.Char.Health = 255
+		world.Char.Rect = rpg.DefaultPhys.Rect.Moved(rpg.FindRandomTile(world.Tiles))
+	GameLoop:
 		for !win.Closed() {
 
 			if world.Char.Health < 1 {
 				log.Println("GAME OVER")
-				break
+				break GameLoop
 			}
 			*dt = time.Since(*last).Seconds()
 			*last = time.Now()
@@ -174,7 +179,11 @@ func run() {
 			animbatch.Clear()
 			// if key
 			if win.JustPressed(pixelgl.KeyQ) {
-				break
+				break MainLoop
+			}
+			if win.JustPressed(pixelgl.Key8) {
+				world.Char.Rect = rpg.DefaultSpriteRectangle.Moved(rpg.FindRandomTile(world.Tiles))
+
 			}
 			if win.JustReleased(pixelgl.KeyI) {
 				rpg.InventoryLoop(win, world)
@@ -188,9 +197,7 @@ func run() {
 			world.Char.Update(*dt, dir, world)
 			world.Update(*dt)
 			world.Clean()
-
-			world.Char.Matrix = pixel.IM.Scaled(pixel.ZV, *camZoom).Moved(win.Bounds().Center())
-			cam := world.Char.Matrix.Moved(world.Char.Rect.Center().Scaled(-*camZoom))
+			cam := pixel.IM.Scaled(pixel.ZV, *camZoom).Moved(win.Bounds().Center()).Moved(world.Char.Rect.Center().Scaled(-*camZoom))
 			win.SetMatrix(cam)
 
 			// draw map (tiles and blocks) (never updated for now)
@@ -208,10 +215,18 @@ func run() {
 			world.ShowAnimations(imd)
 			imd.Draw(win)
 
+			if *debug {
+				for _, o := range world.Tile(world.Char.Rect.Center()).PathNeighbors() {
+					ob := o.(rpg.Object)
+					ob.W = world
+					ob.Highlight(win, rpg.TransparentPurple)
+				}
+			}
+
 			// back to window cam
 			win.SetMatrix(pixel.IM)
+			world.Char.Matrix = pixel.IM.Scaled(pixel.ZV, *camZoom).Scaled(pixel.ZV, 0.5).Moved(pixel.V(0, 16)).Moved(win.Bounds().Center())
 			world.Char.Draw(win)
-
 			// draw score board
 			//text.Clear()
 			//rpg.DrawScore(winbounds, text, win,
@@ -263,6 +278,9 @@ func run() {
 					frames, int(gps.X), int(gps.Y), int(world.Char.Phys.Vel.Len()), world.Char.Health)
 				win.SetTitle(str)
 				frames = 0
+				if *debug {
+					log.Println("zoom level", *camZoom)
+				}
 			}
 
 		}
@@ -277,6 +295,13 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, buttons []rpg
 	if win.JustPressed(pixelgl.KeySpace) {
 		if w.Char.Mana > 0 {
 			w.Action(w.Char, w.Char.Rect.Center(), rpg.ManaStorm)
+		} else {
+			log.Println("Not enough mana")
+		}
+	}
+	if win.JustPressed(pixelgl.KeyB) {
+		if w.Char.Mana > 0 {
+			w.Action(w.Char, w.Char.Rect.Center(), rpg.MagicBullet)
 		} else {
 			log.Println("Not enough mana")
 		}
