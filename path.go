@@ -132,7 +132,7 @@ const (
 // KindCosts map tile kinds to movement costs.
 
 var tileCosts = map[ObjectType]float64{
-	O_NONE:      2.00,
+	O_NONE:      30.00,
 	O_BLOCK:     30.00,
 	O_INVISIBLE: 3.00,
 	O_SPECIAL:   0.00,

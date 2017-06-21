@@ -172,7 +172,12 @@ MainLoop:
 			// zoom with mouse scroll
 
 			*camZoom *= math.Pow(camZoomSpeed, win.MouseScroll().Y)
-
+			if *camZoom > 6.5 {
+				*camZoom = 6.5
+			}
+			if *camZoom < 2 {
+				*camZoom = 2
+			}
 			// drawing
 			//win.Clear(rpg.RandomColor())
 			win.Clear(colornames.Black)

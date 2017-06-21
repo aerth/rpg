@@ -273,6 +273,9 @@ func (w *World) drawTiles(path string) error {
 
 func TileNear(all []Object, loc pixel.Vec) Object {
 	tile := TilesAt(all, loc)
+	snap := 32.00
+	loc.X = float64(int(loc.X/snap)) * snap
+	loc.Y = float64(int(loc.Y/snap)) * snap
 	radius := 1.00
 	oloc := loc
 	if len(tile) > 0 {
@@ -284,7 +287,7 @@ func TileNear(all []Object, loc pixel.Vec) Object {
 			loc.X += 16
 			continue
 		}
-		log.Println("Checking loc", loc)
+		//log.Println("Checking loc", loc)
 		os := TilesAt(all, loc)
 		if len(os) > 0 {
 			if os[0].Loc == pixel.ZV || os[0].Loc == oloc {
