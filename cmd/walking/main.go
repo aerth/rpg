@@ -106,7 +106,7 @@ func run() {
 	//world.Char.Rect = world.Char.Rect.Moved(V(33, 33))
 	// load world
 	//	worldbounds = pixel.R(float64(-4000), float64(-4000), float64(4000), float64(4000))
-
+	cursorsprite := rpg.GetCursor(1)
 	world := rpg.NewWorld(*flaglevel, *flagenemies)
 	if world == nil {
 		return
@@ -158,6 +158,7 @@ func run() {
 	if win.Bounds().Max.X < 1100 {
 		fontsize = 24.00
 	}
+	win.SetCursorVisible(false)
 	text := rpg.NewText(fontsize)
 	// start loop
 	imd := imdraw.New(nil)
@@ -263,6 +264,10 @@ MainLoop:
 
 			// draw health, mana, xp bars
 			world.Char.DrawBars(win, win.Bounds())
+
+			cursorsprite.Draw(win, pixel.IM.Scaled(pixel.ZV, 4).Moved(win.MousePosition()).Moved(pixel.V(0, -32)))
+
+			// done drawing
 
 			if win.JustPressed(pixelgl.MouseButtonLeft) {
 				mouseloc := win.MousePosition()
