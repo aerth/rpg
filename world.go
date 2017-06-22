@@ -248,11 +248,14 @@ func (w *World) Draw(target pixel.Target) {
 	if w.imd == nil {
 		w.imd = imdraw.New(nil)
 	}
-	w.imd.Clear()
-	w.imd.Color = colornames.Orange
-	w.imd.Push(w.Char.Rect.Min, w.Char.Rect.Max)
-	w.imd.Rectangle(3)
-	w.imd.Draw(target)
+
+	/*
+		w.imd.Clear()
+		w.imd.Color = pixel.ToRGBA(colornames.Orange).Scaled(0.5)
+		w.imd.Push(w.Char.Rect.Min, w.Char.Rect.Max)
+		w.imd.Rectangle(3)
+		w.imd.Draw(target)
+	*/
 }
 
 func (w *World) ShowAnimations(imd *imdraw.IMDraw) {
@@ -312,6 +315,7 @@ func (w *World) Reset() {
 	w.Char.Inventory = []Item{createLoot()}
 	w.Char.Rect = DefaultPhys.Rect.Moved(FindRandomTile(w.Tiles))
 	w.Char.Phys.Vel = pixel.ZV
+	w.Entities = nil
 	w.NewMobs(w.Settings.NumEnemy)
 	w.Animations = nil
 

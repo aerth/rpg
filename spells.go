@@ -44,7 +44,7 @@ func (w *World) Action(char *Character, loc pixel.Vec, t ActionType, dir Directi
 	case Slash:
 		log.Println("no weapon yet")
 	case ManaStorm:
-		cost := uint(2)
+		cost := uint(2.5 * float64(char.Level))
 		if char.Mana < cost {
 			w.Message("not enough mana")
 			return
@@ -173,7 +173,7 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string, direction Direction) {
 		dur := time.Duration(w.Char.Stats.Intelligence * float64(time.Millisecond) * 18)
 		//	log.Println(dur)
 		a.until = time.Now().Add(dur)
-		a.ticker = time.Tick(time.Millisecond * 500)
+		a.ticker = time.Tick(time.Millisecond * 200)
 		w.Animations = append(w.Animations, a)
 
 	case "arrow":

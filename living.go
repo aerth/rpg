@@ -17,33 +17,25 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-//var DefaultEntityRectangle = pixel.R(-16, -8, 16, 24)
-
 var DefaultEntityRectangle = pixel.R(-16, -16, 16, 16)
-
-//var DefaultSpriteRectangle = pixel.R(-16, 0, 16, 32)
 
 type Entity struct {
 	Name       string
 	Type       EntityType
-	CanFly     bool
-	Friendly   bool
 	Rate       float64
 	State      animState
-	Frame      pixel.Rect
-	Matrix     pixel.Matrix
-	Rect       pixel.Rect
-	SpriteNum  int `json:"Sprite"`
+	Frame      pixel.Rect // of sprite sheet
+	counter    float64    // inside animation
+	Rect       pixel.Rect // for damage, collisions
 	Program    EntityState
 	P          EntityProperties
 	Phys       ePhys
-	Dir        Direction
-	counter    float64
-	paths      []pixel.Vec
-	w          *World
-	calculated time.Time
-	imd        *imdraw.IMDraw
-	ticker     <-chan time.Time
+	Dir        Direction        // facing, attacking
+	paths      []pixel.Vec      // path finding
+	calculated time.Time        // last path calculation time
+	ticker     <-chan time.Time // attack speed
+	w          *World           // to read/write world and char
+	imd        *imdraw.IMDraw   // health bar
 }
 
 type EntityType int
@@ -63,6 +55,8 @@ type EntityProperties struct {
 	IsDead            bool
 	Strength          float64
 	AttackSpeed       uint64
+	CanFly            bool
+	Friendly          bool
 }
 
 const (
@@ -209,7 +203,7 @@ func (e *Entity) ChangeMind(dt float64) {
 		return
 	}
 
-	if e.CanFly {
+	if e.P.CanFly {
 		log.Println("FLYING", e.Name)
 		if !e.w.Char.Invisible {
 
@@ -254,10 +248,10 @@ func (e *Entity) Update(dt float64) {
 	// move
 	next := e.Rect.Moved(e.Phys.Vel.Scaled(dt))
 	t := w.Tile(next.Center())
-	if t.Type == O_NONE && !e.CanFly {
+	if t.Type == O_NONE && !e.P.CanFly {
 		return
 	}
-	if !e.CanFly && t.Type == O_BLOCK {
+	if !e.P.CanFly && t.Type == O_BLOCK {
 		log.Println(e.Type, "got blocked", t.Loc)
 		next = e.Rect.Moved(e.Phys.Vel.Scaled(-dt * 10))
 		if w.Tile(next.Center()).Type != O_TILE {
@@ -268,7 +262,7 @@ func (e *Entity) Update(dt float64) {
 
 	//	log.Println(e.Name, "wants to go", next.Center(), "from", e.Rect.Center())
 	f := func(dot pixel.Vec) bool {
-		if e.CanFly {
+		if e.P.CanFly {
 			return true
 		}
 		for _, c := range w.Blocks {
@@ -280,7 +274,7 @@ func (e *Entity) Update(dt float64) {
 	}
 	// only walk on tiles
 	f2 := func(dot pixel.Vec) bool {
-		if e.CanFly {
+		if e.P.CanFly {
 			return true
 		}
 		for _, c := range w.Tiles {

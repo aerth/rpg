@@ -67,16 +67,21 @@ func run() {
 	rand.Seed(time.Now().UnixNano())
 
 	winbounds := pixel.R(0, 0, 800, 600)
-	fmt.Println("which screen resolution?")
+	fmt.Println("Welcome to", rpg.Version())
+	fmt.Println("Source code: https://github.com/aerth/rpg")
+	fmt.Println("Please select screen resolution:")
 	fmt.Println("1. 800x600")
 	fmt.Println("2. 1024x768")
 	fmt.Println("3. 1280x800")
 	fmt.Println("4. 1280x800 undecorated")
+
 	var screenres int
 	_, err = fmt.Scanf("%d", &screenres)
 	if err != nil {
+		fmt.Println("... choosing 800x600")
 		screenres = 0
 	}
+
 	// window options
 	cfg := pixelgl.WindowConfig{
 		Title:       rpg.Version(),
@@ -96,7 +101,9 @@ func run() {
 		winbounds = pixel.R(0, 0, 1280, 800)
 		cfg.Undecorated = true
 	}
+
 	cfg.Bounds = winbounds
+
 	// create window
 	win, err := pixelgl.NewWindow(cfg)
 	if err != nil {
@@ -152,8 +159,6 @@ func run() {
 	l := time.Now()
 	var last = &l
 	second := time.Tick(time.Second)
-	tick := time.Tick(time.Second)
-
 	frames := 0
 	var camZoom = new(float64)
 	var dt = new(float64)
@@ -169,20 +174,20 @@ func run() {
 	rand.Seed(time.Now().UnixNano())
 	//var latest string
 	redrawWorld(world)
+
 MainLoop:
 	for !win.Closed() {
-		world.Reset()
 		rpg.TitleMenu(win)
 		world.Char.Health = 255
-		world.Char.Rect = rpg.DefaultPhys.Rect.Moved(rpg.FindRandomTile(world.Tiles))
+		world.Reset()
 	GameLoop:
 		for !win.Closed() {
 
 			if world.Char.Health < 1 {
 				log.Println("GAME OVER")
 				log.Printf("You survived for %s.\nYou acquired %s gold", time.Now().Sub(t1), world.Char.CountGold())
-				log.Println("Inventory:", rpg.FormatItemList(world.Char.Inventory))
 				log.Printf("Skeletons killed: %v", world.Char.Stats.Kills)
+				log.Println(world.Char.StatsReport())
 
 				break GameLoop
 			}
@@ -191,11 +196,16 @@ MainLoop:
 			// zoom with mouse scroll
 
 			*camZoom *= math.Pow(camZoomSpeed, win.MouseScroll().Y)
-			if *camZoom > 6.5 {
+			if !*debug && *camZoom > 6.5 {
 				*camZoom = 6.5
 			}
-			if *camZoom < 2 {
+			if !*debug && *camZoom < 2 {
 				*camZoom = 2
+			}
+			if *debug {
+				if *camZoom == 0 {
+					*camZoom = 1
+				}
 			}
 			// drawing
 			//win.Clear(rpg.RandomColor())
@@ -253,6 +263,7 @@ MainLoop:
 			imd.Draw(win)
 
 			if *debug {
+
 				for _, o := range world.Tile(world.Char.Rect.Center()).PathNeighbors() {
 					ob := o.(rpg.Object)
 					ob.W = world
@@ -307,11 +318,6 @@ MainLoop:
 					}
 				}
 			}
-			select {
-			default: //
-			case <-tick:
-			}
-
 			//spritemap[20].Draw(menubar, pixel.IM.Scaled(ZV, 10).Moved(pixel.V(30, 30)))
 			//menubar.Draw(win, pixel.IM)
 			win.Update()
@@ -326,7 +332,14 @@ MainLoop:
 					"FPS: %d | GPS: (%v,%v) | VEL: (%v) | HP: (%v) ",
 					frames, int(gps.X), int(gps.Y), int(world.Char.Phys.Vel.Len()), world.Char.Health)
 				win.SetTitle(str)
+
+				if *debug {
+					log.Println(frames, "frames per second")
+					log.Println(len(world.Animations), "animations")
+					log.Println(len(world.Entities), "living entities")
+				}
 				frames = 0
+
 			}
 
 		}
@@ -334,6 +347,7 @@ MainLoop:
 	log.Printf("You survived for %s.\nYou acquired %s gold", time.Now().Sub(t1), world.Char.CountGold())
 	log.Println("Inventory:", rpg.FormatItemList(world.Char.Inventory))
 	log.Printf("Skeletons killed: %v", world.Char.Stats.Kills)
+	log.Println(world.Char.StatsReport())
 
 }
 

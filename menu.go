@@ -18,7 +18,7 @@ type Button struct {
 	Frame pixel.Rect
 }
 
-var version = "0.0.94"
+var version = "0.0.95"
 
 func Version() string {
 	return "AERPG " + version

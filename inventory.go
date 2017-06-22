@@ -22,6 +22,7 @@ func InventoryLoop(win *pixelgl.Window, world *World) {
 
 		}
 	}
+	imd := imdraw.New(nil)
 
 	text.WriteString("\n\n===INVENTORY===\n" + FormatItemList(world.Char.Inventory))
 	var page = 500.00
@@ -43,7 +44,6 @@ func InventoryLoop(win *pixelgl.Window, world *World) {
 		}
 
 		win.Clear(colornames.Black)
-		imd := imdraw.New(nil)
 		imd.Color = colornames.Green
 		imd.Push(pixel.V(0, 0), win.Bounds().Max)
 		imd.Rectangle(30)

@@ -18,7 +18,7 @@ func init() {
 
 func GenerateWord() string {
 	var name []rune
-	length := 6
+	length := rand.Intn(6) + 4
 	pallet := append(vowels, consonants...)
 	r := pallet[rand.Intn(len(pallet))]
 	name = []rune{r}

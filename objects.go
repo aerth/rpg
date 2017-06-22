@@ -73,14 +73,15 @@ func NewBlockBox(rect pixel.Rect) Object {
 	}
 }
 
-var TransparentBlue = pixel.ToRGBA(colornames.Blue).Scaled(0.8)
-var TransparentRed = pixel.ToRGBA(colornames.Red).Scaled(0.8)
-var TransparentPurple = pixel.ToRGBA(colornames.Purple).Scaled(0.8)
+var TransparentBlue = pixel.ToRGBA(colornames.Blue).Scaled(0.4)
+var TransparentRed = pixel.ToRGBA(colornames.Red).Scaled(0.4)
+var TransparentPurple = pixel.ToRGBA(colornames.Purple).Scaled(0.4)
 
 func (o Object) Highlight(win pixel.Target, color pixel.RGBA) {
 	imd := imdraw.New(nil)
+	imd.Color = color
 	imd.Push(o.Rect.Min, o.Rect.Max)
-	imd.Rectangle(2)
+	imd.Rectangle(1)
 	imd.Draw(win)
 }
 func (o Object) Draw(win pixel.Target, spritesheet pixel.Picture, sheetFrames []*pixel.Sprite) {

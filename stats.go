@@ -24,5 +24,6 @@ Kills %v
 Score %v
 `
 
-	return fmt.Sprintf(f, s.Strength, s.Wisdom, s.Intelligence, s.Vitality, s.XP, s.Kills, s.Score)
+	return fmt.Sprintf(f, int(s.Strength), int(s.Wisdom), int(s.Intelligence), int(s.Vitality),
+		s.XP, s.Kills, s.Score)
 }

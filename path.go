@@ -43,9 +43,9 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 		return
 	}
 
-	if tile.PathEstimatedCost(targett) > 800 {
+	if tile.PathEstimatedCost(targett) > 400 {
 		// too far
-		log.Println("path too expensive, trying in 3 seconds")
+		//log.Println("path too expensive, trying in 3 seconds")
 		e.calculated = time.Now().Add(3 * time.Second)
 		return
 	}

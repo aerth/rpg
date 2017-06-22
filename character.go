@@ -58,9 +58,22 @@ var DefaultStats = Stats{
 // DefaultPhys character
 var DefaultPhys = charPhys{
 	RunSpeed: 50.5,
-	//Rect:     pixel.R(-8, -8, 8, 8),
-	Gravity: 50.00,
-	Rate:    2,
+	Rect:     pixel.R(-8, -8, 8, 8),
+	Gravity:  50.00,
+	Rate:     2,
+}
+
+func (c *Character) StatsReport() string {
+	s := (c.Stats.String())
+	s += fmt.Sprintf("Level %v\nHealth: %v\nMana: %v\nXP: %v/%v", c.Level, c.Health, c.Mana, c.Stats.XP, c.NextLevel())
+	for _, item := range c.Inventory {
+		if item.Effect != nil {
+			s += fmt.Sprintf("\n Effects: %q", item.Name)
+
+		}
+	}
+	return s
+
 }
 
 func NewCharacter(skin string) *Character {
@@ -74,6 +87,7 @@ func NewCharacter(skin string) *Character {
 	c.Anims = anims
 	//log.Printf("Anims: %v", len(anims))
 	c.Sprite = pixel.NewSprite(nil, pixel.Rect{})
+	c.Rect = DefaultPhys.Rect
 	c.State = Idle
 	c.Frame = c.Anims[DOWN][0]
 	c.Phys = DefaultPhys
@@ -184,7 +198,7 @@ func (char *Character) Update(dt float64, dir Direction, world *World) {
 
 func (char *Character) Damage(n uint, from string) {
 	if from != "" {
-		from = fmt.Sprintln("from", from)
+		from = fmt.Sprintf("from %s", from)
 	}
 	if char.Health < n {
 		char.Health = 0
