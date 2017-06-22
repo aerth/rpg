@@ -103,7 +103,7 @@ func (w *World) NewEntity(t EntityType) *Entity {
 			P: EntityProperties{
 				Health:      255,
 				Mana:        255,
-				Strength:    1,
+				Strength:    2,
 				XP:          10,
 				MaxHealth:   255,
 				AttackSpeed: 550,
@@ -162,16 +162,17 @@ func (e *Entity) Draw(t pixel.Target, w *World) {
 	e.imd.Clear()
 	rect := e.Rect.Norm()
 	rect.Max.Y = rect.Min.Y + 2
-	rect.Max.X = rect.Min.X + 10
+	rect.Max.X = rect.Min.X + 30
 	if e.P.Health > 0 {
 		DrawBar(e.imd, colornames.Red, e.P.Health, e.P.MaxHealth, rect)
 		e.imd.Draw(t)
 	}
+	/* good debug square
 	e.imd.Color = colornames.Green
 	e.imd.Push(e.Rect.Min, e.Rect.Max)
 	e.imd.Rectangle(1)
 	e.imd.Draw(t)
-
+	*/
 }
 
 func (e *Entity) Center() pixel.Vec {
