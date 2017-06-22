@@ -5,7 +5,6 @@ import (
 	"log"
 	"math"
 	"math/rand"
-	"os"
 	"strconv"
 	"time"
 
@@ -14,12 +13,7 @@ import (
 )
 
 func init() {
-
 	rand.Seed(time.Now().UnixNano())
-	log.SetFlags(log.Lshortfile)
-	if len(os.Args) == 1 {
-		log.SetFlags(0)
-	}
 }
 
 type Character struct {
@@ -69,9 +63,9 @@ var DefaultPhys = charPhys{
 	Rate:    2,
 }
 
-func NewCharacter() *Character {
+func NewCharacter(skin string) *Character {
 	// get main character asset
-	sheet, anims, err := LoadCharacterSheet("sprites/char.png", 32)
+	sheet, anims, err := LoadCharacterSheet("sprites/"+skin+".png", 32)
 	if err != nil {
 		panic(fmt.Errorf("error loading character sheet: %v", err))
 	}
@@ -192,13 +186,11 @@ func (char *Character) Damage(n uint, from string) {
 	if from != "" {
 		from = fmt.Sprintln("from", from)
 	}
-
 	if char.Health < n {
 		char.Health = 0
 		log.Printf("Player took critical hit %s!", from)
 		return
 	}
-	//log.Printf("Player took %v damage %s!", n, from)
 	char.Health -= n
 	char.W.Message(fmt.Sprintf("ouch! took %v damage, now at %v", n, char.Health))
 }
@@ -207,42 +199,6 @@ func (char *Character) ResetLocation() {
 	char.Rect = DefaultPhys.Rect
 	char.Phys.Vel = pixel.ZV
 
-}
-
-type ActionType int
-
-const (
-	Talk ActionType = iota
-	Slash
-	ManaStorm
-	MagicBullet
-)
-
-func (w *World) Action(char *Character, loc pixel.Vec, t ActionType, dir Direction) {
-	switch t {
-	case Talk:
-		log.Println("nothing to say yet")
-	case Slash:
-		log.Println("no weapon yet")
-	case ManaStorm:
-		cost := uint(2)
-		if char.Mana < cost {
-			w.Message("not enough mana")
-			return
-		}
-		char.Mana -= cost
-		w.NewAnimation(char.Rect.Center(), "manastorm", OUT)
-	case MagicBullet:
-		cost := uint(1)
-		if char.Mana < cost {
-			w.Message("not enough mana")
-			return
-		}
-
-		char.Mana -= cost
-		w.NewAnimation(char.Rect.Center(), "magicbullet", dir)
-	default: //
-	}
 }
 
 func (char *Character) CountGold() string {
@@ -256,7 +212,9 @@ func (char *Character) CountGold() string {
 }
 
 func (char *Character) ExpUp(amount uint64) {
+	log.Println("Gained experience:", amount)
 	char.Stats.XP += amount
+	char.Stats.Score += amount
 
 }
 
