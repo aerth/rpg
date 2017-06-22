@@ -3,6 +3,7 @@
 package rpg
 
 import (
+	"fmt"
 	"io/ioutil"
 	"math"
 	"math/rand"
@@ -61,12 +62,26 @@ func (d Direction) String() string {
 		return "up"
 	case DOWN:
 		return "down"
+	case DOWNLEFT:
+		return "down-left"
+	case DOWNRIGHT:
+		return "down-right"
+	case UPLEFT:
+		return "up-left"
+	case UPRIGHT:
+		return "up-right"
+	case IN:
+		return "within"
+	case OUT:
+		return "without"
 	default:
-		return "invalid direction"
+		return fmt.Sprintf("invalid direction: %v", int(d))
 	}
 }
 
 func UnitToDirection(v pixel.Vec) Direction {
+	v.X = math.Floor(v.X + 0.5)
+	v.Y = math.Floor(v.Y + 0.5)
 	switch v {
 	default:
 		return OUT

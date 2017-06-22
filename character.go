@@ -218,7 +218,7 @@ const (
 	MagicBullet
 )
 
-func (w *World) Action(char *Character, loc pixel.Vec, t ActionType) {
+func (w *World) Action(char *Character, loc pixel.Vec, t ActionType, dir Direction) {
 	switch t {
 	case Talk:
 		log.Println("nothing to say yet")
@@ -240,7 +240,7 @@ func (w *World) Action(char *Character, loc pixel.Vec, t ActionType) {
 		}
 
 		char.Mana -= cost
-		w.NewAnimation(char.Rect.Center(), "magicbullet", char.Dir)
+		w.NewAnimation(char.Rect.Center(), "magicbullet", dir)
 	default: //
 	}
 }

@@ -254,20 +254,30 @@ MainLoop:
 			// draw health, mana, xp bars
 			world.Char.DrawBars(win, win.Bounds())
 
-			mouseloc := win.MousePosition()
 			if win.JustPressed(pixelgl.MouseButtonLeft) {
-
-				b, f, ok := world.IsButton(buttons, mouseloc)
-				if ok {
-					if *debug {
-						log.Printf("Clicked button: %q", b.Name)
-					}
+				mouseloc := win.MousePosition()
+				if b, f, ok := world.IsButton(buttons, mouseloc); ok {
+					log.Println(mouseloc)
+					log.Printf("Clicked button: %q", b.Name)
 					f(win, world)
-				} else {
-					tile := world.Tile(cam.Unproject(mouseloc))
-					log.Println(tile)
-				}
 
+				} else {
+
+					mcam := pixel.IM.Moved(win.Bounds().Center())
+					mouseloc1 := mcam.Unproject(mouseloc)
+					unit := mouseloc1.Unit()
+					//				log.Println("unit:", unit)
+					dir := rpg.UnitToDirection(unit)
+					//				log.Println("direction:", dir)
+					if dir == rpg.OUT || dir == rpg.IN {
+						dir = world.Char.Dir
+					}
+					if world.Char.Mana > 0 {
+						world.Action(world.Char, world.Char.Rect.Center(), rpg.MagicBullet, dir)
+					} else {
+						log.Println("Not enough mana")
+					}
+				}
 			}
 			select {
 			default: //
@@ -300,16 +310,16 @@ MainLoop:
 }
 
 func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, buttons []rpg.Button, buf pixel.Target) rpg.Direction {
-	if win.JustPressed(pixelgl.KeySpace) {
+	if win.JustPressed(pixelgl.KeySpace) || win.JustPressed(pixelgl.MouseButtonRight) {
 		if w.Char.Mana > 0 {
-			w.Action(w.Char, w.Char.Rect.Center(), rpg.ManaStorm)
+			w.Action(w.Char, w.Char.Rect.Center(), rpg.ManaStorm, w.Char.Dir)
 		} else {
 			log.Println("Not enough mana")
 		}
 	}
 	if win.JustPressed(pixelgl.KeyB) {
 		if w.Char.Mana > 0 {
-			w.Action(w.Char, w.Char.Rect.Center(), rpg.MagicBullet)
+			w.Action(w.Char, w.Char.Rect.Center(), rpg.MagicBullet, w.Char.Dir)
 		} else {
 			log.Println("Not enough mana")
 		}
@@ -345,20 +355,15 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, buttons []rpg
 	}
 	dir := w.Char.Dir
 
-	// disable momentum
-	if win.JustPressed(pixelgl.KeyS) {
-		w.Char.Phys.Vel = pixel.ZV
-	}
-
-	if win.JustPressed(pixelgl.MouseButtonLeft) {
+	/*if win.JustPressed(pixelgl.MouseButtonLeft) {
 		mouseloc := win.MousePosition()
-		log.Println(mouseloc)
 		if b, f, ok := w.IsButton(buttons, mouseloc); ok {
+			log.Println(mouseloc)
 			log.Printf("Clicked button: %q", b.Name)
 			f(win, w)
 
 		}
-	}
+	} */
 
 	if win.Pressed(pixelgl.KeyLeft) || win.Pressed(pixelgl.KeyH) || win.Pressed(pixelgl.KeyA) {
 		dir = LEFT

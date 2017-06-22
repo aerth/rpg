@@ -79,11 +79,11 @@ func (w *World) IsButton(buttons []Button, point pixel.Vec) (Button, func(win pi
 			switch button.Name {
 			case "manastorm":
 				return button, func(win pixel.Target, world *World) {
-					world.Action(w.Char, w.Char.Rect.Center(), ManaStorm)
+					world.Action(w.Char, w.Char.Rect.Center(), ManaStorm, OUT)
 				}, true
 			case "magicbullet":
 				return button, func(win pixel.Target, world *World) {
-					world.Action(w.Char, w.Char.Rect.Center(), MagicBullet)
+					world.Action(w.Char, w.Char.Rect.Center(), MagicBullet, world.Char.Dir)
 				}, true
 
 			default:

@@ -45,7 +45,7 @@ func (a *Animation) update(dt float64) {
 		a.cols[0] = RandomColor().Scaled(0.3)
 		a.cols[1] = RandomColor().Scaled(0.3)
 	}
-	if a.direction != OUT {
+	if a.direction != OUT && a.direction != IN {
 		a.loc = a.loc.Add((a.direction.V().Scaled(100 * dt)))
 		a.rect = pixel.R(-a.radius, -a.radius, a.radius, a.radius).Moved(a.loc)
 	}
