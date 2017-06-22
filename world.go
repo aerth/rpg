@@ -128,6 +128,14 @@ func (w *World) Update(dt float64) {
 
 		for i, v := range w.Entities {
 			if a.rect.Contains(v.Rect.Center()) {
+				if a.ticker != nil {
+					select {
+					default:
+						continue
+					case <-a.ticker:
+						//
+					}
+				}
 				//w.Message(fmt.Sprintf("%s took %v damage", v.Name, a.damage))
 				w.Entities[i].P.Health -= a.damage
 				if w.Entities[i].P.Health <= 0 {

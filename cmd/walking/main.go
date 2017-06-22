@@ -65,27 +65,33 @@ func run() {
 	fmt.Println("which screen resolution?")
 	fmt.Println("1. 800x600")
 	fmt.Println("2. 1024x768")
-	fmt.Println("3. 1280x720")
+	fmt.Println("3. 1280x800")
+	fmt.Println("4. 1280x800 undecorated")
 	var screenres int
 	_, err = fmt.Scanf("%d", &screenres)
 	if err != nil {
 		screenres = 0
 	}
+	// window options
+	cfg := pixelgl.WindowConfig{
+		Title:       rpg.Version(),
+		Bounds:      winbounds,
+		Undecorated: false,
+		VSync:       false,
+	}
+
 	switch screenres {
 	default:
 	case 2:
 		winbounds = pixel.R(0, 0, 1024, 768)
 	case 3:
-		winbounds = pixel.R(0, 0, 1280, 720)
+		winbounds = pixel.R(0, 0, 1280, 800)
+	case 4:
+		log.Println("undecorated!")
+		winbounds = pixel.R(0, 0, 1280, 800)
+		cfg.Undecorated = true
 	}
-	// window options
-	cfg := pixelgl.WindowConfig{
-		Title:  rpg.Version(),
-		Bounds: winbounds,
-		//Undecorated: true,
-		VSync: false,
-	}
-
+	cfg.Bounds = winbounds
 	// create window
 	win, err := pixelgl.NewWindow(cfg)
 	if err != nil {
@@ -148,7 +154,11 @@ func run() {
 	var camZoom = &defaultzoom
 	var dt *float64 = &delda
 	t1 := time.Now()
-	text := rpg.NewText(36)
+	fontsize := 36.00
+	if win.Bounds().Max.X < 1100 {
+		fontsize = 24.00
+	}
+	text := rpg.NewText(fontsize)
 	// start loop
 	imd := imdraw.New(nil)
 	rand.Seed(time.Now().UnixNano())
@@ -243,7 +253,7 @@ MainLoop:
 			// draw score board
 			text.Clear()
 			rpg.DrawScore(winbounds, text, win,
-				"[%vHP·%vMP·%sGP] [LVL%v] [%v/%vXP] [%vKills]", world.Char.Health, world.Char.Mana, world.Char.CountGold(), world.Char.Level, world.Char.Stats.XP, world.Char.NextLevel(), world.Char.Stats.Kills)
+				"%v HP · %v MP · %s GP · LVL %v · %v/%v XP · %v Kills", world.Char.Health, world.Char.Mana, world.Char.CountGold(), world.Char.Level, world.Char.Stats.XP, world.Char.NextLevel(), world.Char.Stats.Kills)
 
 			// draw menubar
 			menubatch.Draw(win)
@@ -366,8 +376,8 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, buttons []rpg
 	} */
 
 	if win.Pressed(pixelgl.KeyLeft) || win.Pressed(pixelgl.KeyH) || win.Pressed(pixelgl.KeyA) {
-		dir = LEFT
 		w.Char.Phys.Vel.X = -w.Char.Phys.RunSpeed * (1 + *dt)
+		dir = LEFT
 	}
 	if win.Pressed(pixelgl.KeyRight) || win.Pressed(pixelgl.KeyL) || win.Pressed(pixelgl.KeyD) {
 		w.Char.Phys.Vel.X = +w.Char.Phys.RunSpeed * (1 + *dt)

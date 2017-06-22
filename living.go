@@ -146,8 +146,13 @@ func (e *Entity) Draw(t pixel.Target, w *World) {
 
 	sprite := pixel.NewSprite(nil, pixel.Rect{})
 	// draw the correct frame with the correct position and direction
+
+	scaling := 0.5
+	if e.Type == SKELETON_GUARD {
+		scaling = 0.7
+	}
 	sprite.Set(w.Sheets[e.Type], e.Frame)
-	sprite.Draw(t, pixel.IM.Scaled(pixel.ZV, 0.5).Moved(e.Rect.Center()))
+	sprite.Draw(t, pixel.IM.Scaled(pixel.ZV, scaling).Moved(e.Rect.Center()))
 	//sprite.Draw(t, pixel.IM.Scaled(pixel.ZV, 0.5).Moved(e.Rect.Center()))
 
 	// HP bars

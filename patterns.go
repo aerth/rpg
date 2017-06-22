@@ -29,6 +29,7 @@ type Animation struct {
 	start     time.Time
 	damage    float64
 	direction Direction
+	ticker    <-chan time.Time
 }
 
 func (a *Animation) update(dt float64) {
@@ -93,7 +94,7 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string, direction Direction) {
 		dur := time.Duration(w.Char.Stats.Intelligence * float64(time.Millisecond) * 18)
 		//	log.Println(dur)
 		a.until = time.Now().Add(dur)
-
+		a.ticker = time.Tick(time.Millisecond * 500)
 		w.Animations = append(w.Animations, a)
 	}
 
