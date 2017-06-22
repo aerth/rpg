@@ -43,6 +43,7 @@ type Entity struct {
 	w          *World
 	calculated time.Time
 	imd        *imdraw.IMDraw
+	ticker     <-chan time.Time
 }
 
 type EntityType int
@@ -61,6 +62,7 @@ type EntityProperties struct {
 	Loot              []Item
 	IsDead            bool
 	Strength          float64
+	AttackSpeed       uint64
 }
 
 const (
@@ -99,11 +101,12 @@ func (w *World) NewEntity(t EntityType) *Entity {
 			w:    w,
 			Type: t,
 			P: EntityProperties{
-				Health:    255,
-				Mana:      255,
-				Strength:  1,
-				XP:        10,
-				MaxHealth: 255,
+				Health:      255,
+				Mana:        255,
+				Strength:    1,
+				XP:          10,
+				MaxHealth:   255,
+				AttackSpeed: 550,
 			},
 			Rect:  DefaultEntityRectangle,
 			State: Running,
@@ -111,6 +114,7 @@ func (w *World) NewEntity(t EntityType) *Entity {
 			Phys:  DefaultMobPhys,
 			Rate:  0.1,
 		}
+		e.ticker = time.Tick(time.Millisecond * time.Duration(e.P.AttackSpeed))
 	}
 
 	if e == nil {
@@ -181,8 +185,15 @@ func (e *Entity) ChangeMind(dt float64) {
 
 	r := pixel.Rect{e.Rect.Center(), e.w.Char.Rect.Center()}
 	if r.Size().Len() < e.Rect.Size().Len()/2 {
+		log.Println("in attack range", r.Size().Len())
+		e.Phys.Vel = e.Rect.Center().Sub(e.w.Char.Rect.Center()).Unit().Scaled(-e.Phys.RunSpeed)
+		select {
 
-		e.w.Char.Damage(uint(rand.Intn(10*int(e.P.Strength))), e.Name)
+		case <-e.ticker:
+			e.w.Char.Damage(uint(rand.Intn(10*int(e.P.Strength))), e.Name)
+		default:
+		}
+
 		return
 	}
 
@@ -190,7 +201,7 @@ func (e *Entity) ChangeMind(dt float64) {
 		log.Println("FLYING", e.Name)
 		if !e.w.Char.Invisible {
 
-			e.Phys.Vel = e.Rect.Center().Sub(e.w.Char.Rect.Center()).Unit().Scaled(e.Phys.RunSpeed)
+			e.Phys.Vel = e.Rect.Center().Sub(e.w.Char.Rect.Center()).Unit().Scaled(-e.Phys.RunSpeed)
 		} else {
 			e.Phys.Vel = pixel.ZV
 		}
@@ -199,7 +210,7 @@ func (e *Entity) ChangeMind(dt float64) {
 	}
 	e.pathcalc(e.w.Char.Rect.Center())
 	if len(e.paths) > 2 {
-		e.Phys.Vel = e.Rect.Center().Sub(e.paths[len(e.paths)-2]).Unit().Scaled(e.Phys.RunSpeed)
+		e.Phys.Vel = e.Rect.Center().Sub(e.paths[len(e.paths)-2]).Unit().Scaled(-e.Phys.RunSpeed)
 	}
 }
 
@@ -225,18 +236,22 @@ func (e *Entity) Update(dt float64) {
 		log.Println("bad sprite:", e.Name, e.Program, e.Dir)
 		return
 	}
+	// choose frame
 	e.Frame = w.Anims[e.Type][e.Program][e.Dir][i%len(w.Anims[e.Type][e.Program][e.Dir])]
-	//log.Println(e.Name, "Frame#", frame, "out of", len(e.Anims[e.Program][e.Dir]))
 
-	next := e.Rect.Moved(e.Phys.Vel.Scaled(-dt))
+	// move
+	next := e.Rect.Moved(e.Phys.Vel.Scaled(dt))
 	t := w.Tile(next.Center())
 	if t.Type == O_NONE && !e.CanFly {
 		return
 	}
 	if !e.CanFly && t.Type == O_BLOCK {
-		e.Phys.Vel = pixel.ZV
 		log.Println(e.Type, "got blocked", t.Loc)
-
+		next = e.Rect.Moved(e.Phys.Vel.Scaled(-dt * 10))
+		if w.Tile(next.Center()).Type != O_TILE {
+			log.Println("returning")
+			return
+		}
 	}
 
 	//	log.Println(e.Name, "wants to go", next.Center(), "from", e.Rect.Center())

@@ -148,7 +148,7 @@ func run() {
 	var camZoom = &defaultzoom
 	var dt *float64 = &delda
 	t1 := time.Now()
-	//text := rpg.NewText(36)
+	text := rpg.NewText(36)
 	// start loop
 	imd := imdraw.New(nil)
 	rand.Seed(time.Now().UnixNano())
@@ -241,9 +241,9 @@ MainLoop:
 			world.Char.Matrix = pixel.IM.Scaled(pixel.ZV, *camZoom).Scaled(pixel.ZV, 0.5).Moved(pixel.V(0, 0)).Moved(win.Bounds().Center())
 			world.Char.Draw(win)
 			// draw score board
-			//text.Clear()
-			//rpg.DrawScore(winbounds, text, win,
-			//	"[%vHP·%vMP·%sGP LVL%v %v/%vXP %vKills] %s", world.Char.Health, world.Char.Mana, world.Char.CountGold(), world.Char.Level, world.Char.Stats.XP, world.Char.NextLevel(), world.Char.Stats.Kills, latest)
+			text.Clear()
+			rpg.DrawScore(winbounds, text, win,
+				"[%vHP·%vMP·%sGP] [LVL%v] [%v/%vXP] [%vKills]", world.Char.Health, world.Char.Mana, world.Char.CountGold(), world.Char.Level, world.Char.Stats.XP, world.Char.NextLevel(), world.Char.Stats.Kills)
 
 			// draw menubar
 			menubatch.Draw(win)
@@ -284,16 +284,11 @@ MainLoop:
 			select {
 			default: //keep going
 			case <-second:
-				//redrawWorld(world)
-				//latest = ""
 				str := fmt.Sprintf(""+
 					"FPS: %d | GPS: (%v,%v) | VEL: (%v) | HP: (%v) ",
 					frames, int(gps.X), int(gps.Y), int(world.Char.Phys.Vel.Len()), world.Char.Health)
 				win.SetTitle(str)
 				frames = 0
-				if *debug {
-					log.Println("zoom level", *camZoom)
-				}
 			}
 
 		}

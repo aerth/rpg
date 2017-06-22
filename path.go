@@ -37,13 +37,13 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 	}
 
 	est := tile.PathEstimatedCost(targett)
-	//	log.Println("finding path:", e, est)
-	if est < 3 {
-		e.paths = []pixel.Vec{e.w.Char.Rect.Center()}
+	if est < 100 {
+		log.Println("direct to char", e, est)
+		e.paths = []pixel.Vec{e.w.Char.Rect.Center(), e.w.Char.Rect.Center(), e.w.Char.Rect.Center()}
 		return
 	}
 
-	if tile.PathEstimatedCost(targett) > 2000 {
+	if tile.PathEstimatedCost(targett) > 1000 {
 		// too far
 		log.Println("path too expensive, trying in 3 seconds")
 		e.calculated = time.Now().Add(3 * time.Second)
@@ -64,7 +64,7 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 		for _, p := range path {
 
 			//log.Println(p)
-			center := p.(Object).Loc
+			center := p.(Object).Loc.Add(DefaultSpriteRectangle.Center())
 			paths = append(paths, center)
 		}
 

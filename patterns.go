@@ -85,7 +85,7 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string, direction Direction) {
 		a.loc = loc
 		a.radius = (w.Char.Stats.Intelligence / 20) * 4
 		a.step = 1.0 / 7
-		a.damage = w.Char.Stats.Intelligence * 0.8
+		a.damage = w.Char.Stats.Intelligence * 0.2
 		a.rect = pixel.R(-a.radius, -a.radius, a.radius, a.radius).Moved(a.loc)
 		a.cols = [5]pixel.RGBA{}
 		a.start = time.Now()

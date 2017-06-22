@@ -97,6 +97,7 @@ func (char *Character) Draw(t pixel.Target) {
 	// draw the correct frame with the correct position and direction
 	char.Sprite.Set(char.Sheet, char.Frame)
 	char.Sprite.Draw(t, char.Matrix)
+
 }
 
 func (char *Character) Update(dt float64, dir Direction, world *World) {

@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"time"
 
+	"golang.org/x/image/colornames"
+
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 )
@@ -28,6 +30,7 @@ type World struct {
 	Animations              []*Animation
 	Messages                []string
 	Settings                WorldSettings
+	imd                     *imdraw.IMDraw
 }
 
 type WorldSettings struct {
@@ -232,7 +235,14 @@ func (w *World) Draw(target pixel.Target) {
 	for i := range w.Batches {
 		w.Batches[i].Draw(target)
 	}
-
+	if w.imd == nil {
+		w.imd = imdraw.New(nil)
+	}
+	w.imd.Clear()
+	w.imd.Color = colornames.Orange
+	w.imd.Push(w.Char.Rect.Min, w.Char.Rect.Max)
+	w.imd.Rectangle(3)
+	w.imd.Draw(target)
 }
 
 func (w *World) ShowAnimations(imd *imdraw.IMDraw) {
@@ -258,6 +268,10 @@ func (w *World) HighlightPaths(target pixel.Target) {
 			}
 		}
 	}
+	color := colornames.Purple
+	imd.Color = color
+	imd.Push(w.Char.Rect.Min, w.Char.Rect.Max)
+	imd.Rectangle(2)
 	imd.Draw(target)
 
 }
