@@ -11,15 +11,19 @@ contributions very welcome
 
 ## keymap:
 
+  * Pause, Inventory, Char Stats: `i`
+  
   * Movement: `arrows`, `asdw`, `hjkl`
 
   * Zoom: `mouse wheel`
 
   * Identify tile: `left click`
 
-  * Attack (manastorm): `space`
+  * Attack (manastorm): `space` `right click`
 
-  * Attack (magic bullet): `B`
+  * Attack (magic bullet): `B` `left click (point/shoot)`
+
+  * Quit: ctrl+Q
 
 ## cheats:
 
@@ -29,6 +33,13 @@ contributions very welcome
 
   * Mana potion: `1`
 
+  * Health potion: `2`
+
+  * XP potion: `3`
+
+  * Speed up time: `LSHIFT`
+
+  * Slow motion: `TAB`
 
 ## roadmap:
 
