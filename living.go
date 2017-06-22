@@ -83,7 +83,8 @@ func (w *World) NewEntity(t EntityType) *Entity {
 	n := len(w.Entities)
 	var e *Entity
 	switch t {
-	default: // no default
+	default:
+		log.Println("unimplemented entity type")
 	case SKELETON, SKELETON_GUARD:
 		if w.Sheets[t] == nil || w.Anims[t] == nil {
 			log.Println("New sheet:", t)
@@ -95,10 +96,6 @@ func (w *World) NewEntity(t EntityType) *Entity {
 			w.Anims[t] = anims
 			log.Printf("New Skeleton Animation Frames: %v", len(anims[S_RUN]))
 		}
-		xp := 20
-		if t == SKELETON_GUARD {
-			xp = 200
-		}
 		e = &Entity{
 			Name: fmt.Sprintf("%s #%v", t, n),
 			w:    w,
@@ -107,7 +104,7 @@ func (w *World) NewEntity(t EntityType) *Entity {
 				Health:      255,
 				Mana:        255,
 				Strength:    2,
-				XP:          uint64(xp),
+				XP:          20,
 				MaxHealth:   255,
 				AttackSpeed: 550,
 			},
@@ -118,6 +115,12 @@ func (w *World) NewEntity(t EntityType) *Entity {
 			Rate:  0.1,
 		}
 		e.ticker = time.Tick(time.Millisecond * time.Duration(e.P.AttackSpeed))
+		if t == SKELETON_GUARD {
+			e.P.XP = 200
+			e.P.MaxHealth = 1000
+			e.P.Health = 1000
+			e.P.Strength = 2
+		}
 	}
 
 	if e == nil {
@@ -360,6 +363,7 @@ func (w *World) NewMobs(n int) {
 		npc := w.NewEntity(SKELETON_GUARD)
 		npc.Phys.RunSpeed = 10
 		npc.P.Health = 2000
+		npc.P.MaxHealth = 2000
 		// npc.CanFly = true
 		npc.Rect = npc.Rect.Moved(FindRandomTile(w.Tiles))
 

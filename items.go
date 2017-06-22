@@ -144,7 +144,7 @@ func FormatItemList(items []Item) string {
 	}
 	var s string
 	for i, item := range items {
-		if i%10 == 0 {
+		if i%4 == 0 {
 			s += "\n"
 		}
 		s += item.String() + ", "

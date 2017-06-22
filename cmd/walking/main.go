@@ -51,6 +51,12 @@ var (
 )
 
 func run() {
+	if *debug {
+		log.SetFlags(log.Lshortfile)
+	} else {
+		log.SetFlags(log.Lmicroseconds)
+
+	}
 	f, err := os.Create("p.debug")
 	if err != nil {
 		log.Fatal(err)
@@ -61,7 +67,6 @@ func run() {
 	rand.Seed(time.Now().UnixNano())
 
 	winbounds := pixel.R(0, 0, 800, 600)
-
 	fmt.Println("which screen resolution?")
 	fmt.Println("1. 800x600")
 	fmt.Println("2. 1024x768")
@@ -150,9 +155,8 @@ func run() {
 	tick := time.Tick(time.Second)
 
 	frames := 0
-	var delda float64 = 0.00
-	var camZoom = &defaultzoom
-	var dt *float64 = &delda
+	var camZoom = new(float64)
+	var dt = new(float64)
 	t1 := time.Now()
 	fontsize := 36.00
 	if win.Bounds().Max.X < 1100 {
@@ -176,6 +180,10 @@ MainLoop:
 
 			if world.Char.Health < 1 {
 				log.Println("GAME OVER")
+				log.Printf("You survived for %s.\nYou acquired %s gold", time.Now().Sub(t1), world.Char.CountGold())
+				log.Println("Inventory:", rpg.FormatItemList(world.Char.Inventory))
+				log.Printf("Skeletons killed: %v", world.Char.Stats.Kills)
+
 				break GameLoop
 			}
 			*dt = time.Since(*last).Seconds()
@@ -215,6 +223,11 @@ MainLoop:
 
 			if win.JustPressed(pixelgl.KeyEqual) {
 				*debug = !*debug
+				if *debug {
+					log.SetFlags(log.Lshortfile)
+				} else {
+					log.SetFlags(0)
+				}
 			}
 
 			dir := controlswitch(dt, world, win, buttons, win)
@@ -317,10 +330,10 @@ MainLoop:
 			}
 
 		}
-		log.Printf("You survived for %s.\nYou acquired %s gold", time.Now().Sub(t1), world.Char.CountGold())
-		log.Println("Inventory:", rpg.FormatItemList(world.Char.Inventory))
-		log.Printf("Skeletons killed: %v", world.Char.Stats.Kills)
 	}
+	log.Printf("You survived for %s.\nYou acquired %s gold", time.Now().Sub(t1), world.Char.CountGold())
+	log.Println("Inventory:", rpg.FormatItemList(world.Char.Inventory))
+	log.Printf("Skeletons killed: %v", world.Char.Stats.Kills)
 
 }
 

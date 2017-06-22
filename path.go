@@ -10,7 +10,7 @@ import (
 
 func (e *Entity) pathcalc(target pixel.Vec) {
 	var (
-		maxcost = 200.00 // 100 regular tiles away
+		maxcost = 1000.00
 	)
 	if !e.calculated.IsZero() && time.Since(e.calculated) < time.Millisecond {
 
@@ -43,10 +43,11 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 		return
 	}
 
-	if tile.PathEstimatedCost(targett) > 1000 {
+	if tile.PathEstimatedCost(targett) > 800 {
 		// too far
-		//log.Println("path too expensive, trying in 3 seconds")
+		log.Println("path too expensive, trying in 3 seconds")
 		e.calculated = time.Now().Add(3 * time.Second)
+		return
 	}
 
 	// calculate path

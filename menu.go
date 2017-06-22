@@ -72,8 +72,6 @@ func TitleMenu(win *pixelgl.Window) (breakloop bool) {
 	return true
 }
 
-var textmatrix = pixel.IM.Moved(pixel.V(10, 580))
-
 func (w *World) IsButton(buttons []Button, point pixel.Vec) (Button, func(win pixel.Target, world *World), bool) {
 
 	for _, button := range buttons {

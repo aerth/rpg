@@ -35,6 +35,9 @@ func LoadPicture(path string) (pixel.Picture, error) {
 // loadCharacterSheet returns an animated spritesheet
 func LoadCharacterSheet(sheetPath string, numframes uint8) (sheet pixel.Picture, anims map[Direction][]pixel.Rect, err error) {
 	sheet, err = LoadPicture("sprites/char.png")
+	if err != nil {
+		panic(err)
+	}
 	frameWidth := int(sheet.Bounds().Max.X/float64(numframes)) * 2
 	//log.Println(frameWidth, "width")
 	// create a array of frames inside the spritesheet
@@ -62,4 +65,37 @@ func LoadCharacterSheet(sheetPath string, numframes uint8) (sheet pixel.Picture,
 	anims[UP] = frames[12:]
 	anims[UPRIGHT] = frames[12:]
 	return sheet, anims, nil
+}
+
+func LoadNewCharacterSheet(sheetPath string) (sheet pixel.Picture, anims map[Direction][]pixel.Rect, err error) {
+	numframes := 16.00
+	sheet, err = LoadPicture(sheetPath)
+	if err != nil {
+		panic(err)
+	}
+	var frames = new([16]pixel.Rect)
+	frameWidth := sheet.Bounds().Max.X / float64(len(frames))
+
+	for i := 0.00; i < numframes; i++ {
+
+		frames[int(i)] = pixel.R(
+			(i+1.00)*frameWidth,
+			0,
+			((i+1.00)*frameWidth)+float64(frameWidth),
+			sheet.Bounds().H(),
+		)
+
+	}
+
+	anims = make(map[Direction][]pixel.Rect)
+	anims[LEFT] = frames[:4]
+	anims[UPLEFT] = frames[:4]
+	anims[RIGHT] = frames[4:8]
+	anims[DOWNRIGHT] = frames[4:8]
+	anims[DOWN] = frames[8:12]
+	anims[DOWNLEFT] = frames[8:12]
+	anims[UP] = frames[12:]
+	anims[UPRIGHT] = frames[12:]
+	return sheet, anims, nil
+
 }

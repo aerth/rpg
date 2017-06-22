@@ -43,11 +43,12 @@ func NewWorld(name string, difficulty int) *World {
 	w.Color = RandomColor()
 	w.Sheets = make(map[EntityType]pixel.Picture)
 	w.Anims = make(map[EntityType]map[EntityState]map[Direction][]pixel.Rect)
-	char := NewCharacter()
+	char := NewCharacter("char")
 	char.Inventory = []Item{MakeGold(uint64(rand.Intn(7)))} // start with some loot
 	char.W = w
 	w.Char = char
 	w.Batches = map[EntityType]*pixel.Batch{}
+
 	// create sheets, animations , batch for each sprite map
 	for _, t := range []EntityType{SKELETON, SKELETON_GUARD} {
 		sheet, anims, err := LoadEntitySheet("sprites/"+t.String()+".png", 13, 21)
