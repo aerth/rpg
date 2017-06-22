@@ -26,14 +26,25 @@ func NewTextSmooth(size float64) *text.Text {
 	return basicTxt
 }
 
-func NewText(size float64) *text.Text {
-	//	font := ttfFromBytesMust(goregular.TTF, size)
+func NewTitleText(size float64) *text.Text {
 	b, err := assets.Asset("font/admtas.ttf")
 	if err != nil {
 		panic(err)
 	}
 	font := ttfFromBytesMust(b, size)
-	// font := basicfont.Face7x13
+	basicAtlas := text.NewAtlas(font, text.ASCII, text.RangeTable(unicode.Common))
+	basicTxt := text.New(pixel.V(0, 0), basicAtlas)
+	basicTxt.Dot = pixel.V(10, 10)
+	basicTxt.Orig = pixel.V(10, 10)
+	return basicTxt
+
+}
+func NewText(size float64) *text.Text {
+	b, err := assets.Asset("font/TerminusTTF-4.40.1.ttf")
+	if err != nil {
+		panic(err)
+	}
+	font := ttfFromBytesMust(b, size)
 	basicAtlas := text.NewAtlas(font, text.ASCII, text.RangeTable(unicode.Common))
 	basicTxt := text.New(pixel.V(0, 0), basicAtlas)
 	basicTxt.Dot = pixel.V(10, 10)
@@ -69,7 +80,7 @@ func ttfFromBytesMust(b []byte, size float64) font.Face {
 func DrawScore(winbounds pixel.Rect, t *text.Text, canvas pixel.Target, format string, i ...interface{}) {
 	imd := imdraw.New(nil)
 	color := pixel.ToRGBA(colornames.Darkslategrey)
-	imd.Color = color.Scaled(0.5)
+	imd.Color = color.Scaled(0.9)
 	imd.Push(pixel.V(0, winbounds.Max.Y-50), pixel.V(winbounds.Max.XY()))
 	imd.Rectangle(0)
 	imd.Push(pixel.V(0, 0), pixel.V(winbounds.Max.X, 80))

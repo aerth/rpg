@@ -18,29 +18,31 @@ type Button struct {
 	Frame pixel.Rect
 }
 
-var version = "0.0.93"
+var version = "0.0.94"
 
 func Version() string {
 	return "AERPG " + version
 }
 
 func TitleMenu(win *pixelgl.Window) (breakloop bool) {
-	title := NewText(40)
-	text := NewText(24)
+	title := NewTitleText(64)
+	text := NewText(36)
 	dot := pixel.V(30, 400)
 	title.Dot = dot
 	title.Orig = title.Dot
-	dot = pixel.V(-100, -300)
+
+	dot = pixel.V(30, 200)
 	text.Dot = dot
 	text.Orig = text.Dot
 
-	fmt.Fprintln(text, "https://github.com/aerth/rpg")
 	fmt.Fprintf(title, "AERPG v%s\nPRESS ENTER", version)
+	fmt.Fprintln(text, "https://github.com/aerth/rpg\n\nCTRL-Q to QUIT")
 
 	win.Clear(colornames.Black)
 
 	win.SetTitle("AERPG (https://github.com/aerth/rpg)")
 	log.Println("AERPG (https://github.com/aerth/rpg)")
+	log.Println("update often")
 
 	tick := time.Tick(time.Second)
 	var frames = 0
