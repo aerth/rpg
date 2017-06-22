@@ -32,10 +32,14 @@ var (
 )
 
 const (
-	LEFT  = rpg.LEFT
-	RIGHT = rpg.RIGHT
-	UP    = rpg.UP
-	DOWN  = rpg.DOWN
+	LEFT      = rpg.LEFT
+	RIGHT     = rpg.RIGHT
+	UP        = rpg.UP
+	DOWN      = rpg.DOWN
+	UPLEFT    = rpg.UPLEFT
+	UPRIGHT   = rpg.UPRIGHT
+	DOWNLEFT  = rpg.DOWNLEFT
+	DOWNRIGHT = rpg.DOWNRIGHT
 )
 
 var (
@@ -292,7 +296,50 @@ MainLoop:
 			cursorsprite.Draw(win, pixel.IM.Scaled(pixel.ZV, 4).Moved(win.MousePosition()).Moved(pixel.V(0, -32)))
 
 			// done drawing
+			if win.Pressed(pixelgl.MouseButtonMiddle) {
+				mouseloc := win.MousePosition()
 
+				mcam := pixel.IM.Moved(win.Bounds().Center())
+				mouseloc1 := mcam.Unproject(mouseloc)
+				unit := mouseloc1.Unit()
+				//                              log.Println("unit:", unit)
+				dirmouse := rpg.UnitToDirection(unit)
+
+				//                              log.Println("direction:", dir)
+
+				switch dirmouse {
+
+				case LEFT:
+					world.Char.Phys.Vel.X = -world.Char.Phys.RunSpeed * (1 + *dt)
+					world.Char.Dir = LEFT
+				case RIGHT:
+					world.Char.Phys.Vel.X = +world.Char.Phys.RunSpeed * (1 + *dt)
+					world.Char.Dir = RIGHT
+				case UP:
+					world.Char.Phys.Vel.Y = +world.Char.Phys.RunSpeed * (1 + *dt)
+					world.Char.Dir = UP
+				case DOWN:
+					world.Char.Phys.Vel.Y = -world.Char.Phys.RunSpeed * (1 + *dt)
+					world.Char.Dir = DOWN
+				case UPLEFT:
+					world.Char.Phys.Vel.Y = +world.Char.Phys.RunSpeed * (1 + *dt)
+					world.Char.Phys.Vel.X = -world.Char.Phys.RunSpeed * (1 + *dt)
+					world.Char.Dir = UPLEFT
+				case UPRIGHT:
+					world.Char.Phys.Vel.X = +world.Char.Phys.RunSpeed * (1 + *dt)
+					world.Char.Phys.Vel.Y = +world.Char.Phys.RunSpeed * (1 + *dt)
+					world.Char.Dir = UPRIGHT
+				case DOWNLEFT:
+					world.Char.Phys.Vel.Y = -world.Char.Phys.RunSpeed * (1 + *dt)
+					world.Char.Phys.Vel.X = -world.Char.Phys.RunSpeed * (1 + *dt)
+					world.Char.Dir = DOWNLEFT
+				case DOWNRIGHT:
+					world.Char.Phys.Vel.X = +world.Char.Phys.RunSpeed * (1 + *dt)
+					world.Char.Phys.Vel.Y = -world.Char.Phys.RunSpeed * (1 + *dt)
+					world.Char.Dir = DOWNRIGHT
+				default:
+				}
+			}
 			if win.JustPressed(pixelgl.MouseButtonLeft) {
 				mouseloc := win.MousePosition()
 				if b, f, ok := world.IsButton(buttons, mouseloc); ok {
