@@ -74,6 +74,7 @@ func NewWorld(name string, difficulty int) *World {
 		return nil
 	}
 	char.Rect = char.Rect.Moved(FindRandomTile(w.Tiles))
+	w.Settings.NumEnemy = difficulty
 	return w
 }
 
@@ -306,15 +307,11 @@ func (w *World) Reset() {
 	w.Char.Health = 255
 	w.Char.Stats = DefaultStats
 	w.Char.Level = 0
-	w.Char.Mana = 0
+	w.Char.Mana = 255
 	w.Char.Inventory = []Item{createLoot()}
 	w.Char.Rect = DefaultPhys.Rect.Moved(FindRandomTile(w.Tiles))
 	w.Char.Phys.Vel = pixel.ZV
-	npc := w.NewEntity(SKELETON_GUARD)
-	npc.Rect = npc.Rect.Moved(FindRandomTile(w.Tiles))
-	npc2 := w.NewEntity(SKELETON)
-	npc2.Rect = npc.Rect.Moved(FindRandomTile(w.Tiles))
-	w.Entities = []*Entity{npc, npc2}
+	w.NewMobs(w.Settings.NumEnemy)
 	w.Animations = nil
 
 }

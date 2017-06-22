@@ -95,7 +95,10 @@ func (w *World) NewEntity(t EntityType) *Entity {
 			w.Anims[t] = anims
 			log.Printf("New Skeleton Animation Frames: %v", len(anims[S_RUN]))
 		}
-
+		xp := 20
+		if t == SKELETON_GUARD {
+			xp = 200
+		}
 		e = &Entity{
 			Name: fmt.Sprintf("%s #%v", t, n),
 			w:    w,
@@ -104,7 +107,7 @@ func (w *World) NewEntity(t EntityType) *Entity {
 				Health:      255,
 				Mana:        255,
 				Strength:    2,
-				XP:          10,
+				XP:          uint64(xp),
 				MaxHealth:   255,
 				AttackSpeed: 550,
 			},

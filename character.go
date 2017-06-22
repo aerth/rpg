@@ -85,7 +85,7 @@ func NewCharacter() *Character {
 	c.Phys = DefaultPhys
 	c.Rate = 0.1
 	c.Health = 255
-	c.Mana = uint(rand.Intn(255))
+	c.Mana = 255
 	c.Stats = DefaultStats
 	return c
 }
@@ -257,6 +257,7 @@ func (char *Character) CountGold() string {
 
 func (char *Character) ExpUp(amount uint64) {
 	char.Stats.XP += amount
+
 }
 
 func (w *World) checkLevel() {
@@ -270,7 +271,12 @@ func (w *World) checkLevel() {
 		w.Char.Health = 255
 		w.Message("LVL UP")
 		log.Printf("level up (%v)! next lvl at %v xp", w.Char.Level, nextlvl)
-		w.Char.Stats.XP = 0
+		if xp := w.Char.Stats.XP - nextlvl; xp > 0 {
+			w.Char.Stats.XP = xp
+		} else {
+			w.Char.Stats.XP = 0
+
+		}
 		switch w.Char.Level {
 		default:
 			w.Char.Stats.Intelligence += float64(10 * w.Char.Level)
