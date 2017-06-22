@@ -58,6 +58,7 @@ contributions very welcome
 ### credits
 
   * font 'Admtas' by [adem taş](http://www.dafont.com/profile.php?user=980017)
+  * font '[Terminus TTF Font](http://files.ax86.net/terminus-ttf/)' (SIL Open Font License, version 1.1)
   * [sprite generator](http://gaurav.munjal.us/Universal-LPC-Spritesheet-Character-Generator/)
   * [main character sprite](http://mmorpgmakerxb.com/p/characters-sprites-generator)
   * big thanks to the [pixel](https://github.com/faiface/pixel) library
