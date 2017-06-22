@@ -123,7 +123,7 @@ func run() {
 	currentThing := 20 // 20 is grass,  0 should be transparent sprite
 	text := rpg.NewTextSmooth(14)
 	fmt.Fprint(text, helpText)
-	cursor := rpg.GetCursor(0)
+	cursor := rpg.GetCursor(2)
 	undobuffer := []rpg.Object{}
 	var turbo = false
 	var highlight = true
@@ -135,9 +135,11 @@ func run() {
 		last = time.Now()
 		frames++
 
-		// camera
-		cam := pixel.IM.Scaled(camPos, camZoom).Moved(win.Bounds().Center().Sub(camPos))
+		//		cam := pixel.IM.Scaled(camPos, camZoom).Moved(win.Bounds().Center().Sub(camPos))
 		camZoom *= math.Pow(camZoomSpeed, win.MouseScroll().Y)
+
+		// camera
+		cam := pixel.IM.Scaled(pixel.ZV, camZoom).Moved(win.Bounds().Center()).Moved(camPos.Scaled(-camZoom))
 		win.SetMatrix(cam)
 
 		// snap to grid
@@ -145,8 +147,8 @@ func run() {
 		mouse := cam.Unproject(win.MousePosition())
 		mouse.X = float64(int(mouse.X/snap)) * snap
 		mouse.Y = float64(int(mouse.Y/snap)) * snap
-		mouse.X = mouse.X - 16
-		mouse.Y = mouse.Y - 16
+		//		mouse.X = mouse.X - 16
+		//		mouse.Y = mouse.Y - 16
 		if win.JustPressed(pixelgl.Key4) {
 			turbo = !turbo
 			log.Println("turbo:", turbo)
@@ -304,14 +306,15 @@ func run() {
 		batch.Draw(win)
 
 		// draw player spawn
-		spritemap[182].Draw(win, IM.Scaled(ZV, 2).Moved(pixel.V(16, 16))) // incorrect offset
+		spritemap[182].Draw(win, IM.Scaled(ZV, 2).Moved(pixel.V(8, 8))) // incorrect offset
 
 		// return cam
 		win.SetMatrix(IM)
 		spritemap[currentThing].Draw(win, IM.Scaled(ZV, 2).Moved(pixel.V(64, 64)).Moved(spritemap[0].Frame().Center()))
 		text.Draw(win, IM.Moved(pixel.V(10, 10)))
-		cursor.Draw(win, IM.Moved(win.MousePosition()).Moved(pixel.V(32, -32)))
+		//		cursor.Draw(win, IM.Moved(win.MousePosition()).Moved(pixel.V(32, -32)))
 
+		cursor.Draw(win, pixel.IM.Scaled(pixel.ZV, 4).Moved(win.MousePosition()).Moved(pixel.V(0, -32)))
 		win.Update()
 
 		select {
