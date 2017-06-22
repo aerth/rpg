@@ -128,7 +128,7 @@ func (w *World) Update(dt float64) {
 
 		for i, v := range w.Entities {
 			if a.rect.Contains(v.Rect.Center()) {
-				w.Message(fmt.Sprintf("%s took %v damage", v.Name, a.damage))
+				//w.Message(fmt.Sprintf("%s took %v damage", v.Name, a.damage))
 				w.Entities[i].P.Health -= a.damage
 				if w.Entities[i].P.Health <= 0 {
 					// entity damage should be function

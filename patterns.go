@@ -91,7 +91,7 @@ func (w *World) NewAnimation(loc pixel.Vec, kind string, direction Direction) {
 		a.start = time.Now()
 		a.direction = direction
 		dur := time.Duration(w.Char.Stats.Intelligence * float64(time.Millisecond) * 18)
-		log.Println(dur)
+		//	log.Println(dur)
 		a.until = time.Now().Add(dur)
 
 		w.Animations = append(w.Animations, a)

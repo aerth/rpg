@@ -233,7 +233,7 @@ func (w *World) Action(char *Character, loc pixel.Vec, t ActionType) {
 		char.Mana -= cost
 		w.NewAnimation(char.Rect.Center(), "manastorm", OUT)
 	case MagicBullet:
-		cost := uint(2)
+		cost := uint(1)
 		if char.Mana < cost {
 			w.Message("not enough mana")
 			return
@@ -267,7 +267,7 @@ func (w *World) checkLevel() {
 	nextlvl := w.Char.NextLevel()
 	if w.Char.Stats.XP > nextlvl {
 		w.Char.Level++
-		w.Char.Health = uint(255 * w.Char.Stats.Vitality / 100)
+		w.Char.Health = 255
 		w.Message("LVL UP")
 		log.Printf("level up (%v)! next lvl at %v xp", w.Char.Level, nextlvl)
 		w.Char.Stats.XP = 0

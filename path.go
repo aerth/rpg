@@ -37,8 +37,8 @@ func (e *Entity) pathcalc(target pixel.Vec) {
 	}
 
 	est := tile.PathEstimatedCost(targett)
-	if est < 100 {
-		log.Println("direct to char", e, est)
+	if est < 64 {
+		//log.Println("direct to char", e, est)
 		e.paths = []pixel.Vec{e.w.Char.Rect.Center(), e.w.Char.Rect.Center(), e.w.Char.Rect.Center()}
 		return
 	}

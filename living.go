@@ -185,7 +185,7 @@ func (e *Entity) ChangeMind(dt float64) {
 
 	r := pixel.Rect{e.Rect.Center(), e.w.Char.Rect.Center()}
 	if r.Size().Len() < e.Rect.Size().Len()/2 {
-		log.Println("in attack range", r.Size().Len())
+		//	log.Println("in attack range", r.Size().Len())
 		e.Phys.Vel = e.Rect.Center().Sub(e.w.Char.Rect.Center()).Unit().Scaled(-e.Phys.RunSpeed)
 		select {
 
