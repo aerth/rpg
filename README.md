@@ -13,13 +13,13 @@ contributions very welcome
 
   * Pause, Inventory, Char Stats: `i`
   
-  * Movement: `arrows`, `asdw`, `hjkl`
+  * Movement: `arrows`, `asdw`, `hjkl`, `hold right mouse`
 
   * Zoom: `mouse wheel`
 
   * Identify tile: `left click`
 
-  * Attack (manastorm): `space` `right click`
+  * Attack (manastorm): `space` `middle click`
 
   * Attack (magic bullet): `B` `left click (point/shoot)`
 

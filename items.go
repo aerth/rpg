@@ -5,6 +5,8 @@ import (
 	"math/rand"
 	"strconv"
 	"strings"
+
+	"github.com/faiface/pixel"
 )
 
 type Item struct {
@@ -13,6 +15,15 @@ type Item struct {
 	Properties ItemProperties
 	Effect     func(Stats) Stats
 	Quantity   uint64
+}
+
+type ItemProperties struct {
+	Weight uint8
+	Size   pixel.Vec
+}
+
+func DefaultItemProperties() ItemProperties {
+	return ItemProperties{}
 }
 
 func (i Item) String() (s string) {
@@ -57,10 +68,6 @@ func MakeGold(amount uint64) Item {
 		Type:     GOLD,
 		Quantity: amount,
 	}
-}
-
-type ItemProperties struct {
-	Weight uint8
 }
 
 func createLoot() Item {

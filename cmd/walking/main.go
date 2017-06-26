@@ -181,12 +181,18 @@ func run() {
 
 MainLoop:
 	for !win.Closed() {
+		// show title menu
 		rpg.TitleMenu(win)
-		world.Char.Health = 255
+
+		// reset world
 		world.Reset()
 	GameLoop:
 		for !win.Closed() {
 
+			*dt = time.Since(*last).Seconds()
+			*last = time.Now()
+
+			// check if ded
 			if world.Char.Health < 1 {
 				log.Println("GAME OVER")
 				log.Printf("You survived for %s.\nYou acquired %s gold", time.Now().Sub(t1), world.Char.CountGold())
@@ -195,10 +201,8 @@ MainLoop:
 
 				break GameLoop
 			}
-			*dt = time.Since(*last).Seconds()
-			*last = time.Now()
-			// zoom with mouse scroll
 
+			// zoom with mouse scroll
 			*camZoom *= math.Pow(camZoomSpeed, win.MouseScroll().Y)
 			if !*debug && *camZoom > 6.5 {
 				*camZoom = 6.5
@@ -211,9 +215,9 @@ MainLoop:
 					*camZoom = 1
 				}
 			}
+
 			// drawing
-			//win.Clear(rpg.RandomColor())
-			win.Clear(colornames.Black)
+			win.Clear(colornames.Blue)
 			animbatch.Clear()
 			// if key
 			if win.JustPressed(pixelgl.KeyQ) && win.Pressed(pixelgl.KeyLeftControl) {
@@ -222,7 +226,6 @@ MainLoop:
 			// teleport random
 			if win.JustPressed(pixelgl.Key8) {
 				world.Char.Rect = rpg.DefaultSpriteRectangle.Moved(rpg.TileNear(world.Tiles, world.Char.Rect.Center()).Loc)
-
 			}
 
 			// move all enemies (debug)
@@ -296,7 +299,7 @@ MainLoop:
 			cursorsprite.Draw(win, pixel.IM.Scaled(pixel.ZV, 4).Moved(win.MousePosition()).Moved(pixel.V(0, -32)))
 
 			// done drawing
-			if win.Pressed(pixelgl.MouseButtonMiddle) {
+			if win.Pressed(pixelgl.MouseButtonRight) {
 				mouseloc := win.MousePosition()
 
 				mcam := pixel.IM.Moved(win.Bounds().Center())
@@ -399,7 +402,7 @@ MainLoop:
 }
 
 func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, buttons []rpg.Button, buf pixel.Target) rpg.Direction {
-	if win.JustPressed(pixelgl.KeySpace) || win.JustPressed(pixelgl.MouseButtonRight) {
+	if win.JustPressed(pixelgl.KeySpace) || win.JustPressed(pixelgl.MouseButtonMiddle) {
 		if w.Char.Mana > 0 {
 			w.Action(w.Char, w.Char.Rect.Center(), rpg.ManaStorm, w.Char.Dir)
 		} else {
