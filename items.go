@@ -2,9 +2,11 @@ package rpg
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/faiface/pixel"
 )
@@ -215,4 +217,22 @@ func RandomItemEffect(t ItemType) func(Stats) Stats {
 
 	}
 	return fn
+}
+
+func (w *World) NewLoot(location pixel.Vec, items []Item) {
+	if len(items) < 1 {
+		log.Println("not enough items to drop loot")
+		return
+	}
+	if location == pixel.ZV {
+		log.Println("warning: creating loot at 0,0 coordinates")
+	}
+
+	loot := Object{
+		Loc:   location,
+		Rect:  DefaultSpriteRectangle.Moved(location),
+		Until: time.Now().Add(5 * time.Minute),
+	}
+	w.DObjects = append(w.DObjects, loot)
+
 }

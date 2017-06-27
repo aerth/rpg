@@ -17,6 +17,18 @@ import (
 
 var DefaultSpriteRectangle = pixel.R(-16, -16, 16, 16)
 
+type ObjectType int
+
+const (
+	O_NONE ObjectType = iota
+	O_TILE
+	O_BLOCK
+	O_INVISIBLE
+	O_SPECIAL
+	O_WIN
+	O_DYNAMIC // loot, doors
+)
+
 //var DefaultSpriteRectangle = pixel.R(-16, 0, 16, 32)
 //var DefaultSpriteRectangle = pixel.R(-16, 0, 16, 32)
 
@@ -32,6 +44,7 @@ type Object struct {
 	SpriteNum int              `json:"S,omitempty"`
 	Sprite    *pixel.Sprite    `json:"-"`
 	W         *World           `json:"-"`
+	Until     time.Time        `json:"-"`
 }
 
 func (o Object) String() string {
@@ -90,18 +103,18 @@ func (o Object) Draw(win pixel.Target, spritesheet pixel.Picture, sheetFrames []
 	//	if sz.X > 1000 || sz.Y > 1000 {
 	//		return
 	//	}
-	if o.Type != O_BLOCK && o.Type != O_TILE {
-		log.Println("UNKNOWN TILE", o)
-	}
 	if o.P.Invisible {
 		return
 	}
-	if o.Sprite == nil {
-		if 0 > o.SpriteNum && o.SpriteNum > len(sheetFrames) {
+	if o.Sprite == nil && o.Type != O_DYNAMIC {
+		if 0 > o.SpriteNum || o.SpriteNum > len(sheetFrames) {
 			log.Printf("unloadable sprite: %v/%v", o.SpriteNum, len(sheetFrames))
 			return
 		}
 		o.Sprite = sheetFrames[o.SpriteNum]
+	}
+	if o.Sprite == nil && o.Type == O_DYNAMIC {
+		o.Sprite = sheetFrames[0]
 	}
 	//	if o.Loc == pixel.ZV && o.Rect.Size().Y != 32 {
 	//		log.Println(o.Rect.Size(), "cool rectangle", o.SpriteNum)

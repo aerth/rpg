@@ -61,7 +61,6 @@ func NewWorld(name string, difficulty int) *World {
 		w.Batches[t] = pixel.NewBatch(&pixel.TrianglesData{}, w.Sheets[t])
 
 	}
-
 	log.Println("Loading...")
 	if e := w.LoadMap("maps/" + name + ".map"); e != nil {
 		log.Println(e)
@@ -88,6 +87,18 @@ func (w World) String() string {
 }
 func (w *World) Update(dt float64) {
 	w.checkLevel()
+	// clean dynamic objecfts
+	dobjects := []Object{}
+	for i := range w.DObjects {
+		// not game time, could be.
+		if time.Since(w.DObjects[i].Until) > time.Millisecond {
+			continue
+		}
+		dobjects = append(dobjects, w.DObjects[i])
+	}
+
+	w.DObjects = dobjects
+
 	// clean mobs
 	entities := []*Entity{}
 	for i := range w.Entities {
@@ -128,7 +139,10 @@ func (w *World) Update(dt float64) {
 			continue
 		}
 
+		// range each of the world's living things
 		for i, v := range w.Entities {
+
+			// see if they are in range
 			if a.rect.Contains(v.Rect.Center()) {
 				if a.ticker != nil {
 					select {
@@ -148,11 +162,18 @@ func (w *World) Update(dt float64) {
 					}
 					w.Entities[i].P.Health = 0
 					w.Entities[i].P.IsDead = true
+
+					// add a new dynamic object 'loot' to the world
+					w.NewLoot(v.Center(), v.P.Loot)
+
+					// increase player kill count
 					w.Char.Stats.Kills++
 
-					log.Println("Got new loot!:", FormatItemList(v.P.Loot))
-					w.Char.Inventory = StackItems(w.Char.Inventory, v.P.Loot)
+					// increase player experience
 					w.Char.ExpUp(v.P.XP)
+
+					//log.Println("Got new loot!:", FormatItemList(v.P.Loot))
+					//w.Char.Inventory = StackItems(w.Char.Inventory, v.P.Loot)
 
 				}
 

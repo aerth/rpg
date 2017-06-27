@@ -2,7 +2,6 @@ package rpg
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
@@ -23,7 +22,7 @@ func InventoryLoop(win *pixelgl.Window, world *World) {
 		}
 	}
 	imd := imdraw.New(nil)
-
+	batch := pixel.NewBatch(&pixel.TrianglesData{}, nil)
 	text.WriteString("\n\n===INVENTORY===\n" + FormatItemList(world.Char.Inventory))
 	var page = 500.00
 	for !win.Closed() {
@@ -33,17 +32,18 @@ func InventoryLoop(win *pixelgl.Window, world *World) {
 		default:
 		case win.JustPressed(pixelgl.KeyPageUp) || win.JustPressed(pixelgl.KeyUp):
 			page -= 100
-			log.Println(page)
 			if page < 500 {
 				page = 500
 			}
 		case win.JustPressed(pixelgl.KeyPageDown) || win.JustPressed(pixelgl.KeyDown):
 			page += 100
-
-			log.Println(page)
 		}
 
 		win.Clear(colornames.Black)
+		imd.Color = pixel.ToRGBA(colornames.Darkslategrey).Scaled(0.01)
+
+		imd.Push(pixel.V(0, 0), win.Bounds().Max)
+		imd.Rectangle(0)
 		imd.Color = colornames.Green
 		imd.Push(pixel.V(0, 0), win.Bounds().Max)
 		imd.Rectangle(30)
@@ -53,7 +53,6 @@ func InventoryLoop(win *pixelgl.Window, world *World) {
 		imd.Color = colornames.Red
 		imd.Push(pixel.V(0, 0), win.Bounds().Max)
 		imd.Rectangle(10)
-		imd.Draw(win)
 
 		// break loop
 		if win.Typed() != "" || win.JustPressed(pixelgl.KeyEscape) || win.JustPressed(pixelgl.KeyEnter) {
@@ -61,6 +60,8 @@ func InventoryLoop(win *pixelgl.Window, world *World) {
 		}
 
 		// draw text
+		imd.Draw(win)
+		batch.Draw(win)
 		text.Draw(win, pixel.IM.Moved(pixel.V(30, page)))
 
 		// update window

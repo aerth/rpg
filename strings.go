@@ -38,9 +38,9 @@ func (i ItemType) String() string {
 	return _ItemType_name[_ItemType_index[i]:_ItemType_index[i+1]]
 }
 
-const _ObjectType_name = "O_NONEO_TILEO_BLOCKO_INVISIBLEO_SPECIALO_WIN"
+const _ObjectType_name = "O_NONEO_TILEO_BLOCKO_INVISIBLEO_SPECIALO_WINO_DYNAMIC"
 
-var _ObjectType_index = [...]uint8{0, 6, 12, 19, 30, 39, 44}
+var _ObjectType_index = [...]uint8{0, 6, 12, 19, 30, 39, 44, 53}
 
 func (i ObjectType) String() string {
 	if i < 0 || i >= ObjectType(len(_ObjectType_index)-1) {
@@ -60,9 +60,9 @@ func (i animState) String() string {
 	return _animState_name[_animState_index[i]:_animState_index[i+1]]
 }
 
-const _ActionType_name = "TalkSlashManaStormMagicBullet"
+const _ActionType_name = "TalkSlashManaStormMagicBulletArrow"
 
-var _ActionType_index = [...]uint8{0, 4, 9, 18, 29}
+var _ActionType_index = [...]uint8{0, 4, 9, 18, 29, 34}
 
 func (i ActionType) String() string {
 	if i < 0 || i >= ActionType(len(_ActionType_index)-1) {

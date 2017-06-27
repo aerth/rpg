@@ -119,17 +119,6 @@ func (o Object) PathNeighborCost(to astar.Pather) float64 {
 	return cost
 }
 
-type ObjectType int
-
-const (
-	O_NONE ObjectType = iota
-	O_TILE
-	O_BLOCK
-	O_INVISIBLE
-	O_SPECIAL
-	O_WIN
-)
-
 // KindCosts map tile kinds to movement costs.
 
 var tileCosts = map[ObjectType]float64{
@@ -139,4 +128,5 @@ var tileCosts = map[ObjectType]float64{
 	O_SPECIAL:   0.00,
 	O_TILE:      1.00,
 	O_WIN:       0.00,
+	O_DYNAMIC:   3.00,
 }

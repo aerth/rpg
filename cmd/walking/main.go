@@ -135,6 +135,13 @@ func run() {
 	globebatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
 	animbatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
 
+	goldsheet, err := rpg.LoadPicture("sprites/loot.png")
+	if err != nil {
+		panic("need sprites/loot.png")
+	}
+	goldsprite := pixel.NewSprite(goldsheet, goldsheet.Bounds())
+	lootbatch := pixel.NewBatch(&pixel.TrianglesData{}, goldsheet)
+
 	// water world 67 wood, 114 117 182 special, 121 135 dirt, 128 blank, 20 grass
 	//	rpg.DrawPattern(batch, spritemap[53], pixel.R(-3000, -3000, 3000, 3000), 100)
 
@@ -277,6 +284,11 @@ MainLoop:
 					ob.Highlight(win, rpg.TransparentPurple)
 				}
 			}
+			lootbatch.Clear()
+			for _, dob := range world.DObjects {
+				dob.Draw(lootbatch, goldsheet, []*pixel.Sprite{goldsprite})
+			}
+			lootbatch.Draw(win)
 
 			// back to window cam
 			win.SetMatrix(pixel.IM)
@@ -385,6 +397,7 @@ MainLoop:
 
 				if *debug {
 					log.Println(frames, "frames per second")
+					log.Println(len(world.DObjects), "dynamic objects")
 					log.Println(len(world.Animations), "animations")
 					log.Println(len(world.Entities), "living entities")
 				}
