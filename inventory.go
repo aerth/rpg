@@ -24,7 +24,10 @@ func InventoryLoop(win *pixelgl.Window, world *World) {
 	imd := imdraw.New(nil)
 	batch := pixel.NewBatch(&pixel.TrianglesData{}, nil)
 	text.WriteString("\n\n===INVENTORY===\n" + FormatItemList(world.Char.Inventory))
-	var page = 500.00
+	var page = 600.00
+	if win.Bounds().Max.Y < 800 {
+		page = 500
+	}
 	for !win.Closed() {
 
 		// controls

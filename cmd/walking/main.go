@@ -78,7 +78,7 @@ func run() {
 	fmt.Println("2. 1024x768")
 	fmt.Println("3. 1280x800")
 	fmt.Println("4. 1280x800 undecorated")
-
+	fmt.Println("Hit CTRL+F during normal gameplay for full screen toggle")
 	var screenres int
 	_, err = fmt.Scanf("%d", &screenres)
 	if err != nil {
@@ -147,11 +147,12 @@ func run() {
 
 	// draw menu bar
 	menubatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
-	rpg.DrawPattern(menubatch, spritemap[67], pixel.R(0, 0, win.Bounds().W()+20, 60), 100)
-	for _, btn := range buttons {
-		spritemap[200].Draw(menubatch, IM.Moved(btn.Frame.Center()))
-	}
 
+	//	rpg.DrawPattern(menubatch, spritemap[67], pixel.R(0, 0, win.Bounds().W()+20, 60), 100)
+	/*	for _, btn := range buttons {
+			spritemap[200].Draw(menubatch, IM.Moved(btn.Frame.Center()))
+		}
+	*/
 	redrawWorld := func(w *rpg.World) {
 		globebatch.Clear()
 		// draw it on to canvasglobe
@@ -183,6 +184,7 @@ func run() {
 	// start loop
 	imd := imdraw.New(nil)
 	rand.Seed(time.Now().UnixNano())
+	var fullscreen = false
 	//var latest string
 	redrawWorld(world)
 
@@ -230,7 +232,25 @@ MainLoop:
 			if win.JustPressed(pixelgl.KeyQ) && win.Pressed(pixelgl.KeyLeftControl) {
 				break MainLoop
 			}
+			if win.JustPressed(pixelgl.KeyF) && win.Pressed(pixelgl.KeyLeftControl) {
+				fullscreen = !fullscreen
+				if fullscreen {
+					win.SetMonitor(pixelgl.PrimaryMonitor())
+				} else {
+					win.SetMonitor(nil)
+				}
+				menubatch.Clear()
+				win.Update()
+				newbounds := win.Bounds()
+				rpg.DrawPattern(menubatch, spritemap[67], pixel.R(0, 0, newbounds.Max.X+20, 60), 100)
+				for _, btn := range buttons {
+					spritemap[200].Draw(menubatch, IM.Moved(btn.Frame.Center()))
+				}
+				menubatch.Draw(win)
+
+			}
 			// teleport random
+
 			if win.JustPressed(pixelgl.Key8) {
 				world.Char.Rect = rpg.DefaultSpriteRectangle.Moved(rpg.TileNear(world.Tiles, world.Char.Rect.Center()).Loc)
 			}
@@ -300,7 +320,7 @@ MainLoop:
 			world.Char.Draw(win)
 			// draw score board
 			text.Clear()
-			rpg.DrawScore(winbounds, text, win,
+			rpg.DrawScore(win.Bounds(), text, win,
 				"%v HP · %v MP · %s GP · LVL %v · %v/%v XP · %v Kills", world.Char.Health, world.Char.Mana, world.Char.CountGold(), world.Char.Level, world.Char.Stats.XP, world.Char.NextLevel(), world.Char.Stats.Kills)
 
 			// draw menubar
