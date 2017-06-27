@@ -297,11 +297,12 @@ func TileNear(all []Object, loc pixel.Vec) Object {
 	}
 	log.Println("looking for loc:", loc)
 	for i := 0; i < len(all); i++ {
+		loc.X += radius * 16
+		loc.Y += radius * 16
 		if loc == oloc {
-			loc.X += 16
 			continue
 		}
-		//log.Println("Checking loc", loc)
+		log.Println("Checking loc", loc)
 		os := TilesAt(all, loc)
 		if len(os) > 0 {
 			if os[0].Loc == pixel.ZV || os[0].Loc == oloc {
@@ -309,7 +310,16 @@ func TileNear(all []Object, loc pixel.Vec) Object {
 			}
 			return os[0]
 		}
-		os = TilesAt(all, loc.Scaled(-2))
+		loc2 := loc
+		loc2.X = -loc.X
+		os = TilesAt(all, loc.Scaled(-1))
+		if len(os) > 0 {
+			if os[0].Loc == pixel.ZV || os[0].Loc == oloc {
+				continue
+			}
+			return os[0]
+		}
+		os = TilesAt(all, loc2.Scaled(1))
 		if len(os) > 0 {
 			if os[0].Loc == pixel.ZV || os[0].Loc == oloc {
 				continue
@@ -317,12 +327,20 @@ func TileNear(all []Object, loc pixel.Vec) Object {
 			return os[0]
 		}
 
-		loc.X += radius * 16
-		loc.Y += radius * 16
-		if i%4 == 1 {
+		os = TilesAt(all, loc2.Scaled(-1))
+		if len(os) > 0 {
+			if os[0].Loc == pixel.ZV || os[0].Loc == oloc {
+				continue
+			}
+			return os[0]
+		}
+
+		if i%4 == 0 {
 			radius++
+			loc.X += 16
 		}
 	}
+	log.Println("not found")
 	return Object{Type: O_NONE}
 
 }
