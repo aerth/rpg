@@ -55,7 +55,11 @@ contributions very welcome (see roadmap)
   
   * [ ] Text Input (cheat codes, debug, chat, user input)
 
-  * [x] Pickup, Drop 'Items' (currently just transferring if kill)
+  * [x] Pick up loot
+
+  * [ ] Drop item
+
+  * [ ] proper Inventory and Wearing
 
   * [ ] Optimization
 
