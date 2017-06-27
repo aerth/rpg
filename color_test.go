@@ -8,6 +8,9 @@ import (
 	"golang.org/x/image/colornames"
 )
 
+func init() {
+	log.SetFlags(0)
+}
 func TestAlpha(t *testing.T) {
 	color := pixel.ToRGBA(colornames.Red)
 	log.Println(color)

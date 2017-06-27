@@ -11,5 +11,8 @@ func TestMobCenter(t *testing.T) {
 	w := NewWorld("1", 1)
 	mob := w.NewEntity(SKELETON)
 	mob.Rect = mob.Rect.Moved(pixel.V(100, 100))
+	if mob.Center() != pixel.V(100, 100) {
+		t.FailNow()
+	}
 	log.Println(mob.Center())
 }
