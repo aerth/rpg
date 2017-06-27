@@ -203,6 +203,7 @@ MainLoop:
 		// reset world
 		world.Reset()
 		var message = "Welcome to the world!\nCtrl+F Full Screen\nCtrl+Q Quit\n\nInventory: 'i'\nSPACE to continue"
+		message = ""
 	GameLoop:
 		for !win.Closed() {
 
