@@ -91,7 +91,7 @@ func run() {
 		Title:       rpg.Version(),
 		Bounds:      winbounds,
 		Undecorated: false,
-		VSync:       false,
+		VSync:       true,
 	}
 
 	switch screenres {
