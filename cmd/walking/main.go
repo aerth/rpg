@@ -315,7 +315,7 @@ MainLoop:
 			cursorsprite.Draw(win, pixel.IM.Scaled(pixel.ZV, 4).Moved(win.MousePosition()).Moved(pixel.V(0, -32)))
 
 			// done drawing
-			if win.Pressed(pixelgl.MouseButtonRight) {
+			if !win.Pressed(pixelgl.KeyLeftControl) && win.Pressed(pixelgl.MouseButtonRight) {
 				mouseloc := win.MousePosition()
 
 				mcam := pixel.IM.Moved(win.Bounds().Center())
@@ -359,7 +359,7 @@ MainLoop:
 				default:
 				}
 			}
-			if win.JustPressed(pixelgl.MouseButtonLeft) {
+			if !win.Pressed(pixelgl.KeyLeftControl) && win.JustPressed(pixelgl.MouseButtonLeft) {
 				mouseloc := win.MousePosition()
 				if b, f, ok := world.IsButton(buttons, mouseloc); ok {
 					log.Println(mouseloc)
@@ -373,23 +373,21 @@ MainLoop:
 						log.Println("PICKING UP LOOT")
 						world.Char.PickUp(loot)
 					} else {
-						log.Println(cam.Unproject(mouseloc))
-					}
-
-					mcam := pixel.IM.Moved(win.Bounds().Center())
-					mouseloc1 := mcam.Unproject(mouseloc)
-					// magic bullet
-					unit := mouseloc1.Unit()
-					//				log.Println("unit:", unit)
-					dir := rpg.UnitToDirection(unit)
-					//				log.Println("direction:", dir)
-					if dir == rpg.OUT || dir == rpg.IN {
-						dir = world.Char.Dir
-					}
-					if world.Char.Mana > 0 {
-						world.Action(world.Char, world.Char.Rect.Center(), rpg.MagicBullet, dir)
-					} else {
-						log.Println("Not enough mana")
+						mcam := pixel.IM.Moved(win.Bounds().Center())
+						mouseloc1 := mcam.Unproject(mouseloc)
+						// magic bullet
+						unit := mouseloc1.Unit()
+						//				log.Println("unit:", unit)
+						dir := rpg.UnitToDirection(unit)
+						//				log.Println("direction:", dir)
+						if dir == rpg.OUT || dir == rpg.IN {
+							dir = world.Char.Dir
+						}
+						if world.Char.Mana > 0 {
+							world.Action(world.Char, world.Char.Rect.Center(), rpg.MagicBullet, dir)
+						} else {
+							log.Println("Not enough mana")
+						}
 					}
 				}
 			}
@@ -483,34 +481,36 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, buttons []rpg
 		}
 	} */
 
-	if win.Pressed(pixelgl.KeyLeft) || win.Pressed(pixelgl.KeyH) || win.Pressed(pixelgl.KeyA) {
+	if !win.Pressed(pixelgl.KeyLeftControl) && (win.Pressed(pixelgl.KeyLeft) || win.Pressed(pixelgl.KeyH) || win.Pressed(pixelgl.KeyA)) {
 		w.Char.Phys.Vel.X = -w.Char.Phys.RunSpeed * (1 + *dt)
 		dir = LEFT
 	}
-	if win.Pressed(pixelgl.KeyRight) || win.Pressed(pixelgl.KeyL) || win.Pressed(pixelgl.KeyD) {
+	if !win.Pressed(pixelgl.KeyLeftControl) && (win.Pressed(pixelgl.KeyRight) || win.Pressed(pixelgl.KeyL) || win.Pressed(pixelgl.KeyD)) {
 		w.Char.Phys.Vel.X = +w.Char.Phys.RunSpeed * (1 + *dt)
 		dir = RIGHT
 	}
-	if win.Pressed(pixelgl.KeyDown) || win.Pressed(pixelgl.KeyJ) || win.Pressed(pixelgl.KeyS) {
+	if !win.Pressed(pixelgl.KeyLeftControl) && (win.Pressed(pixelgl.KeyDown) || win.Pressed(pixelgl.KeyJ) || win.Pressed(pixelgl.KeyS)) {
 		w.Char.Phys.Vel.Y = -w.Char.Phys.RunSpeed * (1 + *dt)
 		dir = DOWN
 
 	}
-	if win.Pressed(pixelgl.KeyUp) || win.Pressed(pixelgl.KeyK) || win.Pressed(pixelgl.KeyW) {
+	if !win.Pressed(pixelgl.KeyLeftControl) && (win.Pressed(pixelgl.KeyUp) || win.Pressed(pixelgl.KeyK) || win.Pressed(pixelgl.KeyW)) {
 		w.Char.Phys.Vel.Y = +w.Char.Phys.RunSpeed * (1 + *dt)
 		dir = UP
 	}
 
-	if win.Pressed(pixelgl.KeyUp) && win.Pressed(pixelgl.KeyLeft) {
+	// TODO: fix double velocity on diag
+
+	if !win.Pressed(pixelgl.KeyLeftControl) && (win.Pressed(pixelgl.KeyUp) && win.Pressed(pixelgl.KeyLeft)) {
 		dir = rpg.UPLEFT
 	}
-	if win.Pressed(pixelgl.KeyUp) && win.Pressed(pixelgl.KeyRight) {
+	if !win.Pressed(pixelgl.KeyLeftControl) && (win.Pressed(pixelgl.KeyUp) && win.Pressed(pixelgl.KeyRight)) {
 		dir = rpg.UPRIGHT
 	}
-	if win.Pressed(pixelgl.KeyDown) && win.Pressed(pixelgl.KeyLeft) {
+	if !win.Pressed(pixelgl.KeyLeftControl) && (win.Pressed(pixelgl.KeyDown) && win.Pressed(pixelgl.KeyLeft)) {
 		dir = rpg.DOWNLEFT
 	}
-	if win.Pressed(pixelgl.KeyDown) && win.Pressed(pixelgl.KeyRight) {
+	if !win.Pressed(pixelgl.KeyLeftControl) && (win.Pressed(pixelgl.KeyDown) && win.Pressed(pixelgl.KeyRight)) {
 		dir = rpg.DOWNRIGHT
 	}
 	// restart the level on pressing enter
