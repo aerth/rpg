@@ -177,8 +177,12 @@ func RandomLoot() []Item {
 func RandomMagicItem() Item {
 	// special item
 	item := createLoot()
-	item.Name = fmt.Sprintf(GenerateItemName(), item.Type.String())
-	item.Effect = RandomItemEffect(item.Type)
+	switch item.Type {
+	case GOLD, FOOD, POTION:
+	default:
+		item.Name = fmt.Sprintf(GenerateItemName(), item.Type.String())
+		item.Effect = RandomItemEffect(item.Type)
+	}
 	return item
 
 }
