@@ -19,6 +19,8 @@ contributions very welcome (see roadmap)
 
   * Identify tile: `left click`
 
+  * Pick up loot: `left click`
+
   * Attack (manastorm): `space` `middle click`
 
   * Attack (magic bullet): `B` `left click (point/shoot)`
@@ -40,6 +42,8 @@ contributions very welcome (see roadmap)
   * Speed up time: `LSHIFT`
 
   * Slow motion: `TAB`
+
+  * Random Loot: ctrl+L (random location), ctrl+K (under mouse)
 
 ## roadmap:
 

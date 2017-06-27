@@ -237,6 +237,7 @@ MainLoop:
 					*camZoom = 1
 				}
 			}
+			cam := pixel.IM.Scaled(pixel.ZV, *camZoom).Moved(win.Bounds().Center()).Moved(world.Char.Rect.Center().Scaled(-*camZoom))
 
 			// drawing
 			win.Clear(colornames.Blue)
@@ -271,6 +272,9 @@ MainLoop:
 			if win.Pressed(pixelgl.KeyLeftControl) && win.JustPressed(pixelgl.KeyL) {
 				world.RandomLootSomewhere()
 			}
+			if win.Pressed(pixelgl.KeyLeftControl) && win.JustPressed(pixelgl.KeyK) {
+				world.NewLoot(cam.Unproject(win.MousePosition()), []rpg.Item{rpg.RandomMagicItem()})
+			}
 
 			// move all enemies (debug)
 			if win.JustPressed(pixelgl.Key9) {
@@ -302,7 +306,6 @@ MainLoop:
 			world.Clean()
 
 			// camera mode (center on player)
-			cam := pixel.IM.Scaled(pixel.ZV, *camZoom).Moved(win.Bounds().Center()).Moved(world.Char.Rect.Center().Scaled(-*camZoom))
 			win.SetMatrix(cam)
 
 			// draw map to win (tiles and blocks)
@@ -359,7 +362,7 @@ MainLoop:
 			// draw health, mana, xp bars
 			world.Char.DrawBars(win, win.Bounds())
 
-			cursorsprite.Draw(win, pixel.IM.Scaled(pixel.ZV, 4).Moved(win.MousePosition()).Moved(pixel.V(0, -32)))
+			cursorsprite.Draw(win, pixel.IM.Scaled(pixel.ZV, 4).Moved(win.MousePosition()).Moved(pixel.V(0, -16)))
 
 			// done drawing
 			if !win.Pressed(pixelgl.KeyLeftControl) && win.Pressed(pixelgl.MouseButtonRight) {
