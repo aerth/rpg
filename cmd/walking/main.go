@@ -155,11 +155,11 @@ func run() {
 	// draw menu bar
 	menubatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
 
-	//	rpg.DrawPattern(menubatch, spritemap[67], pixel.R(0, 0, win.Bounds().W()+20, 60), 100)
-	/*	for _, btn := range buttons {
-			spritemap[200].Draw(menubatch, IM.Moved(btn.Frame.Center()))
-		}
-	*/
+	rpg.DrawPattern(menubatch, spritemap[67], pixel.R(0, 0, win.Bounds().W()+20, 60), 100)
+	for _, btn := range buttons {
+		spritemap[200].Draw(menubatch, IM.Moved(btn.Frame.Center()))
+	}
+
 	redrawWorld := func(w *rpg.World) {
 		globebatch.Clear()
 		// draw it on to canvasglobe
