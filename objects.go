@@ -36,12 +36,6 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-type DObject struct {
-	Object   Object
-	Contains []Item
-	Until    time.Time `json:"-"`
-}
-
 type Object struct {
 	Loc       pixel.Vec        `json:"L"`
 	Rect      pixel.Rect       `json:"-"`

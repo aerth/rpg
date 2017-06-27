@@ -57,7 +57,7 @@ var DefaultStats = Stats{
 
 // DefaultPhys character
 var DefaultPhys = charPhys{
-	RunSpeed: 50.5,
+	RunSpeed: 60.5,
 	Rect:     pixel.R(-8, -8, 8, 8),
 	Gravity:  50.00,
 	Rate:     2,
@@ -265,9 +265,9 @@ func (c *Character) MaxHealth() uint64 {
 	return uint64(c.Health * c.Level)
 }
 
-func (c *Character) PickUp(items []Item) {
+func (c *Character) PickUp(items []Item) string {
 
 	c.Inventory = StackItems(c.Inventory, items)
-	log.Println("PICKED UP OBJECT")
+	return fmt.Sprint(items)
 
 }

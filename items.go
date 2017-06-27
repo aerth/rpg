@@ -230,6 +230,7 @@ func (w *World) NewLoot(location pixel.Vec, items []Item) {
 
 	loot := &DObject{
 		Contains: items,
+		Type:     D_LOOT,
 		Until:    time.Now().Add(5 * time.Minute),
 		Object: Object{
 			Loc:  location,

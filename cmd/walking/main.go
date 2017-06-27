@@ -123,11 +123,13 @@ func run() {
 	// load world
 	//	worldbounds = pixel.R(float64(-4000), float64(-4000), float64(4000), float64(4000))
 	cursorsprite := rpg.GetCursor(1)
+
+	// world generate
 	world := rpg.NewWorld(*flaglevel, *flagenemies)
 	if world == nil {
 		return
 	}
-	// sprite sheet
+	// world tile sprite sheet
 	spritesheet, spritemap := rpg.LoadSpriteSheet("tileset.png")
 
 	// layers (TODO: slice?)
@@ -135,11 +137,16 @@ func run() {
 	globebatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
 	animbatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
 
+	// load loot sprite
 	goldsheet, err := rpg.LoadPicture("sprites/loot.png")
 	if err != nil {
 		panic("need sprites/loot.png")
 	}
+
+	// full sprite
 	goldsprite := pixel.NewSprite(goldsheet, goldsheet.Bounds())
+
+	// loot batch
 	lootbatch := pixel.NewBatch(&pixel.TrianglesData{}, goldsheet)
 
 	// water world 67 wood, 114 117 182 special, 121 135 dirt, 128 blank, 20 grass
@@ -187,7 +194,7 @@ func run() {
 	var fullscreen = false
 	//var latest string
 	redrawWorld(world)
-
+	var statustxt string
 MainLoop:
 	for !win.Closed() {
 		// show title menu
@@ -195,6 +202,7 @@ MainLoop:
 
 		// reset world
 		world.Reset()
+		var message = "Welcome to the world!\nCtrl+F Full Screen\nCtrl+Q Quit\n\nInventory: 'i'\nSPACE to continue"
 	GameLoop:
 		for !win.Closed() {
 
@@ -211,7 +219,12 @@ MainLoop:
 				break GameLoop
 			}
 
-			// zoom with mouse scroll
+			if message != "" {
+				world.TextBox(win, message)
+				message = ""
+			}
+
+			// zoom with mouse scroll, limit when not in debug mode
 			*camZoom *= math.Pow(camZoomSpeed, win.MouseScroll().Y)
 			if !*debug && *camZoom > 6.5 {
 				*camZoom = 6.5
@@ -278,50 +291,64 @@ MainLoop:
 				}
 			}
 
-			dir := controlswitch(dt, world, win, buttons, win)
+			// get direction, velocity
+			dir := controlswitch(dt, world, win)
+
+			// check collision, move character
 			world.Char.Update(*dt, dir, world)
+
+			// update everything else (entities, DObjects)
 			world.Update(*dt)
 			world.Clean()
+
+			// camera mode (center on player)
 			cam := pixel.IM.Scaled(pixel.ZV, *camZoom).Moved(win.Bounds().Center()).Moved(world.Char.Rect.Center().Scaled(-*camZoom))
 			win.SetMatrix(cam)
 
-			// draw map (tiles and blocks) (never updated for now)
+			// draw map to win (tiles and blocks)
 			globebatch.Draw(win)
 
+			// highlight enemy paths
 			if *debug {
 				world.HighlightPaths(win)
 			}
+
 			// draw entities and objects (not tiles and blocks)
 			world.Draw(win)
 
-			// animations such as magic spells
+			// draw animations such as magic spells
 			imd.Clear()
 			world.CleanAnimations()
 			world.ShowAnimations(imd)
 			imd.Draw(win)
 
+			// highlight player tiles (left right up down and center)
 			if *debug {
-
 				for _, o := range world.Tile(world.Char.Rect.Center()).PathNeighbors() {
 					ob := o.(rpg.Object)
 					ob.W = world
 					ob.Highlight(win, rpg.TransparentPurple)
 				}
 			}
+
+			// draw all groundscores
 			lootbatch.Clear()
 			for _, dob := range world.DObjects {
 				dob.Object.Draw(lootbatch, goldsheet, []*pixel.Sprite{goldsprite})
 			}
 			lootbatch.Draw(win)
 
-			// back to window cam
+			// back to window matrix
 			win.SetMatrix(pixel.IM)
+
+			// draw player in center of screen
 			world.Char.Matrix = pixel.IM.Scaled(pixel.ZV, *camZoom).Scaled(pixel.ZV, 0.5).Moved(pixel.V(0, 0)).Moved(win.Bounds().Center())
 			world.Char.Draw(win)
+
 			// draw score board
 			text.Clear()
 			rpg.DrawScore(win.Bounds(), text, win,
-				"%v HP · %v MP · %s GP · LVL %v · %v/%v XP · %v Kills", world.Char.Health, world.Char.Mana, world.Char.CountGold(), world.Char.Level, world.Char.Stats.XP, world.Char.NextLevel(), world.Char.Stats.Kills)
+				"%v HP · %v MP · %s GP · LVL %v · %v/%v XP · %v Kills %s", world.Char.Health, world.Char.Mana, world.Char.CountGold(), world.Char.Level, world.Char.Stats.XP, world.Char.NextLevel(), world.Char.Stats.Kills, statustxt)
 
 			// draw menubar
 			menubatch.Draw(win)
@@ -390,8 +417,8 @@ MainLoop:
 
 					// pick up loot
 					if loot, ok := world.IsLoot(cam.Unproject(mouseloc)); ok {
-						log.Println("PICKING UP LOOT")
-						world.Char.PickUp(loot)
+						statustxt = world.Char.PickUp(loot)
+
 					} else {
 						mcam := pixel.IM.Moved(win.Bounds().Center())
 						mouseloc1 := mcam.Unproject(mouseloc)
@@ -433,7 +460,6 @@ MainLoop:
 					log.Println(len(world.Entities), "living entities")
 				}
 				frames = 0
-
 			}
 
 		}
@@ -445,7 +471,8 @@ MainLoop:
 
 }
 
-func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, buttons []rpg.Button, buf pixel.Target) rpg.Direction {
+func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window) rpg.Direction {
+	// Manastorm
 	if win.JustPressed(pixelgl.KeySpace) || win.JustPressed(pixelgl.MouseButtonMiddle) {
 		if w.Char.Mana > 0 {
 			w.Action(w.Char, w.Char.Rect.Center(), rpg.ManaStorm, w.Char.Dir)
@@ -453,6 +480,8 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, buttons []rpg
 			log.Println("Not enough mana")
 		}
 	}
+
+	// Magic bullet
 	if win.JustPressed(pixelgl.KeyB) {
 		if w.Char.Mana > 0 {
 			w.Action(w.Char, w.Char.Rect.Center(), rpg.MagicBullet, w.Char.Dir)
@@ -461,20 +490,24 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, buttons []rpg
 		}
 	}
 
-	// slow motion with tab
+	// Slow Cheat
 	if win.Pressed(pixelgl.KeyTab) {
 		*dt /= 8
 	}
-	// speed motion with tab
+	// Fast Cheat
 	if win.Pressed(pixelgl.KeyLeftShift) {
 		*dt *= 4
 	}
+
+	// MP Cheat
 	if win.Pressed(pixelgl.Key1) {
 		w.Char.Mana += 1
 		if w.Char.Mana > 255 {
 			w.Char.Mana = 255
 		}
 	}
+
+	// HP Cheat
 	if win.Pressed(pixelgl.Key2) {
 		w.Char.Health += 1
 		if w.Char.Health > 255 {
@@ -482,25 +515,18 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, buttons []rpg
 		}
 	}
 
+	// XP Cheat
 	if win.Pressed(pixelgl.Key3) {
 		w.Char.Stats.XP += 10
 	}
 
+	// Fly mode
 	if win.Pressed(pixelgl.KeyCapsLock) {
 		w.Char.Phys.CanFly = !w.Char.Phys.CanFly
 	}
+
+	// control character with direction and velocity (collision check elsewhere)
 	dir := w.Char.Dir
-
-	/*if win.JustPressed(pixelgl.MouseButtonLeft) {
-		mouseloc := win.MousePosition()
-		if b, f, ok := w.IsButton(buttons, mouseloc); ok {
-			log.Println(mouseloc)
-			log.Printf("Clicked button: %q", b.Name)
-			f(win, w)
-
-		}
-	} */
-
 	if !win.Pressed(pixelgl.KeyLeftControl) && (win.Pressed(pixelgl.KeyLeft) || win.Pressed(pixelgl.KeyH) || win.Pressed(pixelgl.KeyA)) {
 		w.Char.Phys.Vel.X = -w.Char.Phys.RunSpeed * (1 + *dt)
 		dir = LEFT
@@ -520,7 +546,6 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, buttons []rpg
 	}
 
 	// TODO: fix double velocity on diag
-
 	if !win.Pressed(pixelgl.KeyLeftControl) && (win.Pressed(pixelgl.KeyUp) && win.Pressed(pixelgl.KeyLeft)) {
 		dir = rpg.UPLEFT
 	}
@@ -533,10 +558,6 @@ func controlswitch(dt *float64, w *rpg.World, win *pixelgl.Window, buttons []rpg
 	if !win.Pressed(pixelgl.KeyLeftControl) && (win.Pressed(pixelgl.KeyDown) && win.Pressed(pixelgl.KeyRight)) {
 		dir = rpg.DOWNRIGHT
 	}
-	// restart the level on pressing enter
-	//	if win.JustPressed(pixelgl.KeyEnter) {
-	//		rpg.InventoryLoop(win, w)
-	//	}
 	return dir
 }
 func main() {

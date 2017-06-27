@@ -10,6 +10,7 @@ import (
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
+	"github.com/faiface/pixel/text"
 )
 
 var SpriteFrame = pixel.R(-100, -100, 100, 100)
@@ -18,6 +19,7 @@ var SpriteFrame = pixel.R(-100, -100, 100, 100)
 type World struct {
 	Name          string
 	Bounds        pixel.Rect
+	Regions       []*Region
 	DObjects      []*DObject
 	Tiles, Blocks []Object                    // sorted
 	Background    string                      // path to pic, will be repeated xy if not empty
@@ -32,6 +34,7 @@ type World struct {
 	Messages      []string
 	Settings      WorldSettings
 	imd           *imdraw.IMDraw
+	text          *text.Text
 }
 
 type WorldSettings struct {
@@ -344,7 +347,7 @@ func (w *World) IsLoot(location pixel.Vec) ([]Item, bool) {
 	var objects []*DObject
 	var found = false
 	for _, ob := range w.DObjects {
-		if !found && ob.Object.Rect.Contains(location) {
+		if !found && ob.Type == D_LOOT && ob.Object.Rect.Contains(location) {
 			got = ob.Contains
 			found = true
 

@@ -8,6 +8,7 @@ import (
 	"github.com/aerth/rpg/assets"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
+	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/colornames"
@@ -94,4 +95,31 @@ func DrawScore(winbounds pixel.Rect, t *text.Text, canvas pixel.Target, format s
 
 func (w *World) Message(s string) {
 	log.Println(s)
+}
+
+func (w *World) TextBox(win *pixelgl.Window, msg string) {
+	if w.text == nil {
+		w.text = NewText(36)
+	} else {
+		w.text.Clear()
+	}
+	imd := imdraw.New(nil)
+	color := pixel.ToRGBA(colornames.Darkslategrey)
+	imd.Color = color.Scaled(0.9)
+	winbounds := win.Bounds()
+	imd.Push(pixel.ZV, pixel.V(winbounds.Max.XY()))
+	imd.Rectangle(0)
+
+	w.text.Dot = pixel.V(10, 400)
+	w.text.Orig = w.text.Dot
+	fmt.Fprintf(w.text, msg)
+	for !win.Closed() {
+		win.Clear(colornames.Black)
+		imd.Draw(win)
+		w.text.Draw(win, pixel.IM)
+		if win.JustPressed(pixelgl.KeySpace) {
+			break
+		}
+		win.Update()
+	}
 }

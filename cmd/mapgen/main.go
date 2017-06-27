@@ -23,6 +23,7 @@ var numbers = "0123456789"
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
+	// seed or random
 	if len(os.Args) == 2 {
 		hashb := md5.Sum([]byte(os.Args[1]))
 		hash := []byte(fmt.Sprintf("%x", hashb))
@@ -44,11 +45,16 @@ func init() {
 		log.Printf("Using world seed: %q -> %v", os.Args[1], worldseed)
 		log.Printf("Hash: %q", string(hash))
 	}
-
+	// create maps dir if not exist
+	os.Mkdir("maps", 0755)
 }
 
 func main() {
-	os.Mkdir("maps", 0755)
+	olist := GenerateMap()
+	SaveMap(olist)
+}
+
+func GenerateMap() []rpg.Object {
 	var olist []rpg.Object
 	t := rpg.O_TILE
 	for i := 0; i < 100; i++ {
@@ -73,17 +79,11 @@ func main() {
 		}
 
 	}
-	/*
-		// fill in with water blocks
-		waterworld := rpg.DrawPatternObject(53, rpg.O_BLOCK, pixel.R(-BOUNDS, -BOUNDS, BOUNDS, BOUNDS), 0)
-		for _, water := range waterworld {
-			if rpg.GetObjects(olist, water.Loc) == nil {
-				olist = append(olist, water)
-			}
-		}
-	*/
+
+	// make dummy world for path finding
 	world := new(rpg.World)
 	world.Tiles = rpg.GetTiles(olist)
+
 	// detect islands, make bridges
 	oldlist := olist
 	olist = nil
@@ -105,6 +105,11 @@ func main() {
 			olist = append(olist, water)
 		}
 	}
+
+	return olist
+}
+
+func SaveMap(olist []rpg.Object) {
 
 	b, err := json.Marshal(olist)
 	if err != nil {

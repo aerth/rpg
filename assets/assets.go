@@ -540,25 +540,25 @@ func AssetNames() []string {
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
 	"font/TerminusTTF-4.40.1.ttf": fontTerminusttf4401Ttf,
-	"font/admtas.ttf": fontAdmtasTtf,
-	"font/drake_10x10.png": fontDrake_10x10Png,
-	"maps/1.map": maps1Map,
-	"maps/maze.map": mapsMazeMap,
-	"sprites/SKELETON.png": spritesSkeletonPng,
-	"sprites/SKELETON_GUARD.png": spritesSkeleton_guardPng,
-	"sprites/basictiles.png": spritesBasictilesPng,
-	"sprites/char.png": spritesCharPng,
-	"sprites/characters.png": spritesCharactersPng,
-	"sprites/credits.txt": spritesCreditsTxt,
-	"sprites/cursor1.png": spritesCursor1Png,
-	"sprites/cursor2.png": spritesCursor2Png,
-	"sprites/dead.png": spritesDeadPng,
-	"sprites/loot.png": spritesLootPng,
-	"sprites/map.png": spritesMapPng,
-	"sprites/testsprite.png": spritesTestspritePng,
-	"sprites/things.png": spritesThingsPng,
-	"sprites/tileset.png": spritesTilesetPng,
-	"stub.go": stubGo,
+	"font/admtas.ttf":             fontAdmtasTtf,
+	"font/drake_10x10.png":        fontDrake_10x10Png,
+	"maps/1.map":                  maps1Map,
+	"maps/maze.map":               mapsMazeMap,
+	"sprites/SKELETON.png":        spritesSkeletonPng,
+	"sprites/SKELETON_GUARD.png":  spritesSkeleton_guardPng,
+	"sprites/basictiles.png":      spritesBasictilesPng,
+	"sprites/char.png":            spritesCharPng,
+	"sprites/characters.png":      spritesCharactersPng,
+	"sprites/credits.txt":         spritesCreditsTxt,
+	"sprites/cursor1.png":         spritesCursor1Png,
+	"sprites/cursor2.png":         spritesCursor2Png,
+	"sprites/dead.png":            spritesDeadPng,
+	"sprites/loot.png":            spritesLootPng,
+	"sprites/map.png":             spritesMapPng,
+	"sprites/testsprite.png":      spritesTestspritePng,
+	"sprites/things.png":          spritesThingsPng,
+	"sprites/tileset.png":         spritesTilesetPng,
+	"stub.go":                     stubGo,
 }
 
 // AssetDir returns the file names below a certain
@@ -600,33 +600,34 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
+
 var _bintree = &bintree{nil, map[string]*bintree{
-	"font": &bintree{nil, map[string]*bintree{
-		"TerminusTTF-4.40.1.ttf": &bintree{fontTerminusttf4401Ttf, map[string]*bintree{}},
-		"admtas.ttf": &bintree{fontAdmtasTtf, map[string]*bintree{}},
-		"drake_10x10.png": &bintree{fontDrake_10x10Png, map[string]*bintree{}},
+	"font": {nil, map[string]*bintree{
+		"TerminusTTF-4.40.1.ttf": {fontTerminusttf4401Ttf, map[string]*bintree{}},
+		"admtas.ttf":             {fontAdmtasTtf, map[string]*bintree{}},
+		"drake_10x10.png":        {fontDrake_10x10Png, map[string]*bintree{}},
 	}},
-	"maps": &bintree{nil, map[string]*bintree{
-		"1.map": &bintree{maps1Map, map[string]*bintree{}},
-		"maze.map": &bintree{mapsMazeMap, map[string]*bintree{}},
+	"maps": {nil, map[string]*bintree{
+		"1.map":    {maps1Map, map[string]*bintree{}},
+		"maze.map": {mapsMazeMap, map[string]*bintree{}},
 	}},
-	"sprites": &bintree{nil, map[string]*bintree{
-		"SKELETON.png": &bintree{spritesSkeletonPng, map[string]*bintree{}},
-		"SKELETON_GUARD.png": &bintree{spritesSkeleton_guardPng, map[string]*bintree{}},
-		"basictiles.png": &bintree{spritesBasictilesPng, map[string]*bintree{}},
-		"char.png": &bintree{spritesCharPng, map[string]*bintree{}},
-		"characters.png": &bintree{spritesCharactersPng, map[string]*bintree{}},
-		"credits.txt": &bintree{spritesCreditsTxt, map[string]*bintree{}},
-		"cursor1.png": &bintree{spritesCursor1Png, map[string]*bintree{}},
-		"cursor2.png": &bintree{spritesCursor2Png, map[string]*bintree{}},
-		"dead.png": &bintree{spritesDeadPng, map[string]*bintree{}},
-		"loot.png": &bintree{spritesLootPng, map[string]*bintree{}},
-		"map.png": &bintree{spritesMapPng, map[string]*bintree{}},
-		"testsprite.png": &bintree{spritesTestspritePng, map[string]*bintree{}},
-		"things.png": &bintree{spritesThingsPng, map[string]*bintree{}},
-		"tileset.png": &bintree{spritesTilesetPng, map[string]*bintree{}},
+	"sprites": {nil, map[string]*bintree{
+		"SKELETON.png":       {spritesSkeletonPng, map[string]*bintree{}},
+		"SKELETON_GUARD.png": {spritesSkeleton_guardPng, map[string]*bintree{}},
+		"basictiles.png":     {spritesBasictilesPng, map[string]*bintree{}},
+		"char.png":           {spritesCharPng, map[string]*bintree{}},
+		"characters.png":     {spritesCharactersPng, map[string]*bintree{}},
+		"credits.txt":        {spritesCreditsTxt, map[string]*bintree{}},
+		"cursor1.png":        {spritesCursor1Png, map[string]*bintree{}},
+		"cursor2.png":        {spritesCursor2Png, map[string]*bintree{}},
+		"dead.png":           {spritesDeadPng, map[string]*bintree{}},
+		"loot.png":           {spritesLootPng, map[string]*bintree{}},
+		"map.png":            {spritesMapPng, map[string]*bintree{}},
+		"testsprite.png":     {spritesTestspritePng, map[string]*bintree{}},
+		"things.png":         {spritesThingsPng, map[string]*bintree{}},
+		"tileset.png":        {spritesTilesetPng, map[string]*bintree{}},
 	}},
-	"stub.go": &bintree{stubGo, map[string]*bintree{}},
+	"stub.go": {stubGo, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory
@@ -675,4 +676,3 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
-
