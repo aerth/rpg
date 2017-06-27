@@ -16,21 +16,22 @@ var SpriteFrame = pixel.R(-100, -100, 100, 100)
 
 // World holds all information about a world
 type World struct {
-	Name                    string
-	Bounds                  pixel.Rect
-	DObjects, Tiles, Blocks []Object                    // sorted
-	Background              string                      // path to pic, will be repeated xy if not empty
-	background              *pixel.Sprite               // sprite to repeat xy
-	Batches                 map[EntityType]*pixel.Batch // one batch for every spritemap
-	Color                   pixel.RGBA                  // clear window with this color
-	Entities                []*Entity
-	Sheets                  map[EntityType]pixel.Picture
-	Anims                   map[EntityType]map[EntityState]map[Direction][]pixel.Rect // frankenmap
-	Char                    *Character
-	Animations              []*Animation
-	Messages                []string
-	Settings                WorldSettings
-	imd                     *imdraw.IMDraw
+	Name          string
+	Bounds        pixel.Rect
+	DObjects      []*DObject
+	Tiles, Blocks []Object                    // sorted
+	Background    string                      // path to pic, will be repeated xy if not empty
+	background    *pixel.Sprite               // sprite to repeat xy
+	Batches       map[EntityType]*pixel.Batch // one batch for every spritemap
+	Color         pixel.RGBA                  // clear window with this color
+	Entities      []*Entity
+	Sheets        map[EntityType]pixel.Picture
+	Anims         map[EntityType]map[EntityState]map[Direction][]pixel.Rect // frankenmap
+	Char          *Character
+	Animations    []*Animation
+	Messages      []string
+	Settings      WorldSettings
+	imd           *imdraw.IMDraw
 }
 
 type WorldSettings struct {
@@ -78,17 +79,13 @@ func NewWorld(name string, difficulty int) *World {
 	return w
 }
 
-func (w *World) NewSpecial(o Object) {
-	o.Type = O_SPECIAL
-	w.DObjects = append(w.DObjects, o)
-}
 func (w World) String() string {
 	return w.Name
 }
 func (w *World) Update(dt float64) {
 	w.checkLevel()
 	// clean dynamic objecfts
-	dobjects := []Object{}
+	dobjects := []*DObject{}
 	for i := range w.DObjects {
 		// not game time, could be.
 		if time.Since(w.DObjects[i].Until) > time.Millisecond {
@@ -340,4 +337,23 @@ func (w *World) Reset() {
 	w.NewMobs(w.Settings.NumEnemy)
 	w.Animations = nil
 
+}
+
+func (w *World) IsLoot(location pixel.Vec) ([]Item, bool) {
+	var got []Item
+	var objects []*DObject
+	var found = false
+	for _, ob := range w.DObjects {
+		if !found && ob.Object.Rect.Contains(location) {
+			got = ob.Contains
+			found = true
+
+		} else {
+			objects = append(objects, ob)
+		}
+
+	}
+
+	w.DObjects = objects
+	return got, found
 }

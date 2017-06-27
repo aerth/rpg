@@ -264,3 +264,10 @@ func (c *Character) NextLevel() uint64 {
 func (c *Character) MaxHealth() uint64 {
 	return uint64(c.Health * c.Level)
 }
+
+func (c *Character) PickUp(items []Item) {
+
+	c.Inventory = StackItems(c.Inventory, items)
+	log.Println("PICKED UP OBJECT")
+
+}

@@ -235,6 +235,10 @@ MainLoop:
 				world.Char.Rect = rpg.DefaultSpriteRectangle.Moved(rpg.TileNear(world.Tiles, world.Char.Rect.Center()).Loc)
 			}
 
+			if win.Pressed(pixelgl.KeyLeftControl) && win.JustPressed(pixelgl.KeyL) {
+				world.RandomLootSomewhere()
+			}
+
 			// move all enemies (debug)
 			if win.JustPressed(pixelgl.Key9) {
 				for _, v := range world.Entities {
@@ -286,7 +290,7 @@ MainLoop:
 			}
 			lootbatch.Clear()
 			for _, dob := range world.DObjects {
-				dob.Draw(lootbatch, goldsheet, []*pixel.Sprite{goldsprite})
+				dob.Object.Draw(lootbatch, goldsheet, []*pixel.Sprite{goldsprite})
 			}
 			lootbatch.Draw(win)
 
@@ -364,8 +368,17 @@ MainLoop:
 
 				} else {
 
+					// pick up loot
+					if loot, ok := world.IsLoot(cam.Unproject(mouseloc)); ok {
+						log.Println("PICKING UP LOOT")
+						world.Char.PickUp(loot)
+					} else {
+						log.Println(cam.Unproject(mouseloc))
+					}
+
 					mcam := pixel.IM.Moved(win.Bounds().Center())
 					mouseloc1 := mcam.Unproject(mouseloc)
+					// magic bullet
 					unit := mouseloc1.Unit()
 					//				log.Println("unit:", unit)
 					dir := rpg.UnitToDirection(unit)

@@ -228,10 +228,13 @@ func (w *World) NewLoot(location pixel.Vec, items []Item) {
 		log.Println("warning: creating loot at 0,0 coordinates")
 	}
 
-	loot := Object{
-		Loc:   location,
-		Rect:  DefaultSpriteRectangle.Moved(location),
-		Until: time.Now().Add(5 * time.Minute),
+	loot := &DObject{
+		Contains: items,
+		Until:    time.Now().Add(5 * time.Minute),
+		Object: Object{
+			Loc:  location,
+			Rect: DefaultSpriteRectangle.Moved(location),
+		},
 	}
 	w.DObjects = append(w.DObjects, loot)
 
