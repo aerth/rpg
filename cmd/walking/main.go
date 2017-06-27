@@ -268,7 +268,9 @@ MainLoop:
 			if win.JustPressed(pixelgl.Key8) {
 				world.Char.Rect = rpg.DefaultSpriteRectangle.Moved(rpg.TileNear(world.Tiles, world.Char.Rect.Center()).Loc)
 			}
-
+			if win.JustPressed(pixelgl.KeyM) {
+				world.NewMobs(1)
+			}
 			if win.Pressed(pixelgl.KeyLeftControl) && win.JustPressed(pixelgl.KeyL) {
 				world.RandomLootSomewhere()
 			}

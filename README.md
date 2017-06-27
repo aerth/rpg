@@ -43,7 +43,9 @@ contributions very welcome (see roadmap)
 
   * Slow motion: `TAB`
 
-  * Random Loot: ctrl+L (random location), ctrl+K (under mouse)
+  * Random Loot: `ctrl+L` (random location), `ctrl+K` (under mouse)
+
+  * Spawn fresh mob: `M` (watch FPS go down)
 
 ## roadmap:
 

@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/aerth/rpg"
@@ -25,6 +26,14 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 	// seed or random
 	if len(os.Args) == 2 {
+		if strings.HasPrefix(os.Args[1], "-h") {
+			fmt.Println("Usage:")
+			fmt.Println("\tmapgen [seed]")
+			fmt.Println("Example:")
+			fmt.Println("\tmapgen mycoolseed")
+
+			os.Exit(111)
+		}
 		hashb := md5.Sum([]byte(os.Args[1]))
 		hash := []byte(fmt.Sprintf("%x", hashb))
 		var seed []byte
