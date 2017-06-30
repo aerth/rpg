@@ -97,7 +97,7 @@ func (o Object) Highlight(win pixel.Target, color pixel.RGBA) {
 	imd.Rectangle(1)
 	imd.Draw(win)
 }
-func (o Object) Draw(win pixel.Target, spritesheet pixel.Picture, sheetFrames []*pixel.Sprite) {
+func (o Object) Draw(win pixel.Target, spritesheet pixel.Picture, sheetFrames []*pixel.Sprite, scaled float64) {
 	//	r := pixel.Rect{o.Loc, o.w.Char.Rect.Center()}
 	//	sz := r.Size()
 	//	if sz.X > 1000 || sz.Y > 1000 {
@@ -120,6 +120,11 @@ func (o Object) Draw(win pixel.Target, spritesheet pixel.Picture, sheetFrames []
 	//		log.Println(o.Rect.Size(), "cool rectangle", o.SpriteNum)
 	//		DrawPattern(win, o.Sprite, o.Rect, 0)
 	//	} else {
+	if scaled != 0.00 {
+		o.Sprite.Draw(win, pixel.IM.Scaled(pixel.ZV, scaled).Moved(o.Loc))
+		return
+	}
+
 	o.Sprite.Draw(win, pixel.IM.Moved(o.Loc))
 	//	}
 
@@ -276,10 +281,10 @@ func (w *World) drawTiles(path string) error {
 	globebatch.Clear()
 	// draw it on to canvasglobe
 	for _, o := range w.Tiles {
-		o.Draw(globebatch, spritesheet, spritemap)
+		o.Draw(globebatch, spritesheet, spritemap, 0)
 	}
 	for _, o := range w.Blocks {
-		o.Draw(globebatch, spritesheet, spritemap)
+		o.Draw(globebatch, spritesheet, spritemap, 0)
 	}
 	w.Batches[EntityType(-1)] = globebatch
 	return nil

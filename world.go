@@ -360,3 +360,15 @@ func (w *World) IsLoot(location pixel.Vec) ([]Item, bool) {
 	w.DObjects = objects
 	return got, found
 }
+
+func (w *World) Init() *pixel.Batch {
+	spritesheet, spritemap := LoadSpriteSheet("tileset.png")
+	globebatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
+	for _, v := range w.Tiles {
+		v.Draw(globebatch, spritesheet, spritemap, 0)
+	}
+	for _, v := range w.Blocks {
+		v.Draw(globebatch, spritesheet, spritemap, 0)
+	}
+	return globebatch
+}

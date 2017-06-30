@@ -28,6 +28,7 @@ func InventoryLoop(win *pixelgl.Window, world *World) {
 	if win.Bounds().Max.Y < 800 {
 		page = 500
 	}
+	xpage := 30.00
 	for !win.Closed() {
 
 		// controls
@@ -40,6 +41,10 @@ func InventoryLoop(win *pixelgl.Window, world *World) {
 			}
 		case win.JustPressed(pixelgl.KeyPageDown) || win.JustPressed(pixelgl.KeyDown):
 			page += 100
+		case win.JustPressed(pixelgl.KeyLeft):
+			xpage += 100
+		case win.JustPressed(pixelgl.KeyRight):
+			xpage -= 100
 		}
 
 		win.Clear(colornames.Black)
@@ -65,7 +70,7 @@ func InventoryLoop(win *pixelgl.Window, world *World) {
 		// draw text
 		imd.Draw(win)
 		batch.Draw(win)
-		text.Draw(win, pixel.IM.Moved(pixel.V(30, page)))
+		text.Draw(win, pixel.IM.Moved(pixel.V(xpage, page)))
 
 		// update window
 		win.Update()

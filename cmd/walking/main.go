@@ -134,7 +134,6 @@ func run() {
 
 	// layers (TODO: slice?)
 	// batch sprite drawing
-	globebatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
 	animbatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
 
 	// load loot sprite
@@ -149,31 +148,18 @@ func run() {
 	// loot batch
 	lootbatch := pixel.NewBatch(&pixel.TrianglesData{}, goldsheet)
 
+	// Fill in with water:
 	// water world 67 wood, 114 117 182 special, 121 135 dirt, 128 blank, 20 grass
 	//	rpg.DrawPattern(batch, spritemap[53], pixel.R(-3000, -3000, 3000, 3000), 100)
 
 	// draw menu bar
 	menubatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
-
 	rpg.DrawPattern(menubatch, spritemap[67], pixel.R(0, 0, win.Bounds().W()+20, 60), 100)
 	for _, btn := range buttons {
 		spritemap[200].Draw(menubatch, IM.Moved(btn.Frame.Center()))
 	}
 
-	redrawWorld := func(w *rpg.World) {
-		globebatch.Clear()
-		// draw it on to canvasglobe
-		for _, v := range w.Tiles {
-			v.Draw(globebatch, spritesheet, spritemap)
-		}
-		for _, v := range w.Blocks {
-			v.Draw(globebatch, spritesheet, spritemap)
-		}
-
-	}
-
-	// create NPC
-
+	// create Mobs
 	world.NewMobs(*flagenemies)
 	l := time.Now()
 	var last = &l
@@ -193,7 +179,10 @@ func run() {
 	rand.Seed(time.Now().UnixNano())
 	var fullscreen = false
 	//var latest string
-	redrawWorld(world)
+	//redrawWorld(world)
+	log.Println("Reticulating Splines...")
+	globebatch := world.Init()
+
 	var statustxt string
 MainLoop:
 	for !win.Closed() {
@@ -340,7 +329,7 @@ MainLoop:
 			// draw all groundscores
 			lootbatch.Clear()
 			for _, dob := range world.DObjects {
-				dob.Object.Draw(lootbatch, goldsheet, []*pixel.Sprite{goldsprite})
+				dob.Object.Draw(lootbatch, goldsheet, []*pixel.Sprite{goldsprite}, 0.5)
 			}
 			lootbatch.Draw(win)
 
@@ -359,7 +348,7 @@ MainLoop:
 			// draw menubar
 			menubatch.Draw(win)
 			if win.JustPressed(pixelgl.Key6) {
-				redrawWorld(world)
+				//redrawWorld(world)
 			}
 
 			// draw health, mana, xp bars

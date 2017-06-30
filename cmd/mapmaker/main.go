@@ -288,7 +288,7 @@ func run() {
 		}
 
 		for i := range things {
-			things[i].Draw(batch, spritesheet, spritemap)
+			things[i].Draw(batch, spritesheet, spritemap, 0)
 			if highlight {
 				color := rpg.TransparentRed
 				if things[i].Type == rpg.O_TILE {
