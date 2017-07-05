@@ -160,10 +160,11 @@ func (char *Character) Update(dt float64, dir Direction, world *World) {
 		char.Phys.Vel = pixel.Lerp(char.Phys.Vel, pixel.ZV, 1-math.Pow(1.0/char.Phys.Gravity, dt))
 		next := char.Rect.Moved(char.Phys.Vel.Scaled(dt))
 
-		f := func(dot pixel.Vec) bool {
+		f := func(nextblock pixel.Rect) bool {
 			for _, c := range world.Blocks {
-				if c.Rect.Contains(dot) && c.Type == O_BLOCK {
-					//log.Printf("blocked by: %v at rect: %s, dot: %s", c.SpriteNum, c.Rect, dot)
+				area := c.Rect.Norm().Intersect(nextblock.Norm()).Norm().Area()
+				if area != 0 {
+					//				log.Printf("%f %s %s blocked by: %v at rect: %s", area, char.Rect, nextblock, c.SpriteNum, c.Rect)
 					return false
 				}
 			}
@@ -174,9 +175,10 @@ func (char *Character) Update(dt float64, dir Direction, world *World) {
 			return
 		}
 		// only walk on tiles
-		f2 := func(dot pixel.Vec) bool {
+		f2 := func(nexttile pixel.Rect) bool {
+
 			for _, c := range world.Tiles {
-				if c.Type == O_TILE && c.Rect.Contains(dot) {
+				if c.Type == O_TILE && c.Rect.Intersect(nexttile).Norm().Area() != 0 {
 					return true
 				}
 			}
@@ -185,7 +187,7 @@ func (char *Character) Update(dt float64, dir Direction, world *World) {
 			return false
 		}
 
-		if f(next.Center()) && f2(next.Center()) {
+		if f(next) && f2(next) {
 			//			log.Println("passed:", next)
 			char.Rect = next
 
