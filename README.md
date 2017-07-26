@@ -4,7 +4,7 @@ lets make a game
 
 contributions very welcome (see roadmap)
 
-# AERPG
+# [AERPG](https://github.com/aerth/rpg)
 
 **demo**
 
