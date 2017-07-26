@@ -8,6 +8,13 @@ contributions very welcome (see roadmap)
 
 ![screenshot](https://raw.githubusercontent.com/aerth/rpg/master/doc/screenshot.png)
 
+## tools:
+
+  * walking - test the rpg: explore map, kill skeletons, pick up loot, gain xp, collect magic items
+
+  * mapmaker - create/edit a map:  read source code for keymap  
+
+  * mapgen - generate a map: run `mapgen ______` to use specific seed such as `mapgen mycoolseed`
 
 ## keymap:
 
