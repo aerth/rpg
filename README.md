@@ -20,6 +20,18 @@ contributions very welcome (see roadmap)
 
   * mapgen - generate a map: run `mapgen ______` to use specific seed such as `mapgen mycoolseed`
 
+## compile all tools:
+
+  * install Go: [go](https://golang.org)
+
+  * install C dependencies: `apt-get install xorg-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libopenal-dev libasound2-dev`
+
+  * fetch this source code: `go get -v -d -u github.com/aerth/rpg/cmd/...`
+
+  * compile tools into pwd: `GOBIN=$PWD go install github.com/aerth/rpg/cmd/...`
+
+  * let me know how it goes
+
 ## keymap:
 
   * Pause, Inventory, Char Stats: `i`
