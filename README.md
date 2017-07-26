@@ -1,8 +1,12 @@
 lets make a game
 
-2D, top-down, pixelized RPG
+2D, top-down, pixelized magic action RPG
 
 contributions very welcome (see roadmap)
+
+# AERPG
+
+**demo**
 
 [![Build Status](https://travis-ci.org/aerth/rpg.svg?branch=master)](https://travis-ci.org/aerth/rpg)
 
