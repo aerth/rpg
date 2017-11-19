@@ -8,29 +8,30 @@ contributions very welcome (see roadmap)
 
 **demo**
 
+
 [![Build Status](https://travis-ci.org/aerth/rpg.svg?branch=master)](https://travis-ci.org/aerth/rpg)
 
 ![screenshot](https://raw.githubusercontent.com/aerth/rpg/master/doc/screenshot.png)
 
-## tools:
+## INCLUDED TOOLS
 
-  * walking - test the rpg: explore map, kill skeletons, pick up loot, gain xp, collect magic items
+  * aerpg - play the demo rpg: explore map, kill skeletons, pick up loot, gain xp, collect magic items
 
   * mapmaker - create/edit a map:  read source code for keymap  
 
   * mapgen - generate a map: run `mapgen ______` to use specific seed such as `mapgen mycoolseed`
 
-## compile all tools:
+## FETCHING DEPENDENCIES
 
   * install Go: [go](https://golang.org)
 
   * install C dependencies: `apt-get install xorg-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libopenal-dev libasound2-dev`
 
-  * fetch this source code: `go get -v -d -u github.com/aerth/rpg/cmd/...`
+  * fetch this source code and dependencies: `go get -v -d -u github.com/aerth/rpg/cmd/...`
 
-  * compile tools into pwd: `GOBIN=$PWD go install github.com/aerth/rpg/cmd/...`
+## INSTALLING AERPG GAME
 
-  * let me know how it goes
+`go install -v github.com/aerth/rpg/cmd/aerpg` (requires [Go](https://golang.org))
 
 ## keymap:
 
@@ -50,7 +51,7 @@ contributions very welcome (see roadmap)
 
   * Quit: ctrl+Q
 
-## cheats:
+## CHEATS
 
   * Toggle show enemy paths: `=`
 
@@ -70,7 +71,7 @@ contributions very welcome (see roadmap)
 
   * Spawn fresh mob: `M` (watch FPS go down)
 
-## roadmap:
+## ROADMAP
 
   * [ ] Regions (separated by doors)
 
@@ -97,6 +98,17 @@ contributions very welcome (see roadmap)
   * [ ] "Stage 1" map and missions, villages with markets, npcs, enemies, and a generated dungeon with bad guys and a boss
 
   * [ ] D2 style multiplayer co-operative and chat (no p2p)
+
+
+### questions / support / donations
+
+donations support the author and will make more frequent updates
+
+BTC: [!https://blockchain.info/address/1ANjiTNvdEM6Me3yc4EBFSkDb4db4XW6pr](https://blockchain.info/qr?data=1ANjiTNvdEM6Me3yc4EBFSkDb4db4XW6pr&size=200)
+
+PayPal Me: https://www.paypal.me/aerth
+
+questions and comments can be directed to the email address published at https://github.com/aerth
 
 
 ### credits
