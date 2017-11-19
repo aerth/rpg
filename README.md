@@ -104,7 +104,7 @@ contributions very welcome (see roadmap)
 
 donations support the author and will make more frequent updates
 
-BTC: [!https://blockchain.info/address/1ANjiTNvdEM6Me3yc4EBFSkDb4db4XW6pr](https://blockchain.info/qr?data=1ANjiTNvdEM6Me3yc4EBFSkDb4db4XW6pr&size=200)
+BTC: ![https://blockchain.info/address/1ANjiTNvdEM6Me3yc4EBFSkDb4db4XW6pr](https://blockchain.info/qr?data=1ANjiTNvdEM6Me3yc4EBFSkDb4db4XW6pr&size=200)
 
 PayPal Me: https://www.paypal.me/aerth
 
