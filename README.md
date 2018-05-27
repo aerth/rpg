@@ -31,7 +31,33 @@ contributions very welcome (see roadmap)
 
 ## INSTALLING AERPG GAME
 
-`go install -v github.com/aerth/rpg/cmd/aerpg` (requires [Go](https://golang.org))
+### Requirements
+
+If you're using Windows and having trouble building Pixel, please check [this
+guide](https://github.com/faiface/pixel/wiki/Building-Pixel-on-Windows) on the
+[wiki](https://github.com/faiface/pixel/wiki).
+
+[PixelGL](https://godoc.org/github.com/faiface/pixel/pixelgl) backend uses OpenGL to render
+graphics. Because of that, OpenGL development libraries are needed for compilation. The dependencies
+are same as for [GLFW](https://github.com/go-gl/glfw).
+
+The OpenGL version used is **OpenGL 3.3**.
+
+- On macOS, you need Xcode or Command Line Tools for Xcode (`xcode-select --install`) for required
+  headers and libraries.
+- On Ubuntu/Debian-like Linux distributions, you need `libgl1-mesa-dev` and `xorg-dev` packages.
+- On CentOS/Fedora-like Linux distributions, you need `libX11-devel libXcursor-devel libXrandr-devel
+  libXinerama-devel mesa-libGL-devel libXi-devel` packages.
+- See [here](http://www.glfw.org/docs/latest/compile.html#compile_deps) for full details.
+
+**The combination of Go 1.8, macOS and latest XCode seems to be problematic** as mentioned in issue
+[#7](https://github.com/faiface/pixel/issues/7). This issue is probably not related to Pixel.
+**Upgrading to Go 1.8.1 fixes the issue.**
+
+### Compiling
+
+```go get -v -d github.com/aerth/rpg```
+```GOBIN=$PWD go install github.com/aerth/rpg/cmd/...```
 
 ## keymap:
 
