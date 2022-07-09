@@ -1,6 +1,6 @@
-./walking
-./pdata
-./p.debug
-./mapmaker
+walking
+pdata
+p.debug
+mapmaker
 testing
-/bin/
+/bin
