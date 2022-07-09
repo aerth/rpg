@@ -8,7 +8,7 @@ import (
 	"github.com/faiface/pixel"
 )
 
-// loadPicture from assets
+// loadPicture from embedded assets
 func LoadPicture(path string) (pixel.Picture, error) {
 	b, err := assets.Asset(path)
 	if err != nil {

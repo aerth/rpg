@@ -11,7 +11,10 @@ help:
 dev: clean generate embed-assets build
 
 generate:
-	stringer -output librpg/common/strings.go -type EntityType,EntityState,ItemType,ObjectType,animState,ActionType,StatusEffect,DObjectType librpg/common
+	# stringer -output librpg/common/strings.go -type EntityType,EntityState,ItemType,ObjectType,animState,ActionType,StatusEffect,DObjectType librpg/common
+	stringer -output librpg/strings.go -type ActionType,EntityState,EntityType,ItemType,animState,StatusEffect ./librpg/
+	stringer -output librpg/common/strings.go -type ObjectType ./librpg/common
+	
 	
 
 embed-assets:
