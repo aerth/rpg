@@ -1,20 +1,14 @@
-package rpg
+package common
 
 import (
 	"image/color"
 	"log"
-	"math/rand"
-	"time"
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
 	"golang.org/x/image/colornames"
 )
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
 
 func DrawPatternObject(spritenum int, objecttype ObjectType, bounds pixel.Rect, width float64) []Object {
 	var objects []Object

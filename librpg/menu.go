@@ -8,6 +8,7 @@ import (
 
 	"golang.org/x/image/colornames"
 
+	"github.com/aerth/rpc/librpg/common"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
@@ -116,8 +117,8 @@ func (c *Character) DrawBars(target pixel.Target, bounds pixel.Rect) {
 	rect := bounds
 	rect.Min.Y = startY
 	rect.Max.Y = rect.Min.Y + barheight
-	DrawBar(imd, colornames.Red, float64(c.Health), float64(255), rect)
-	DrawBar(imd, colornames.Blue, float64(c.Mana), 255.00, rect.Moved(pixel.V(0, barheight+1)))
-	DrawBar(imd, colornames.Purple, xp, next, rect.Moved(pixel.V(0, (barheight*2)+1)))
+	common.DrawBar(imd, colornames.Red, float64(c.Health), float64(255), rect)
+	common.DrawBar(imd, colornames.Blue, float64(c.Mana), 255.00, rect.Moved(pixel.V(0, barheight+1)))
+	common.DrawBar(imd, colornames.Purple, xp, next, rect.Moved(pixel.V(0, (barheight*2)+1)))
 	imd.Draw(target)
 }

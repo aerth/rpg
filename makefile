@@ -11,7 +11,8 @@ help:
 dev: clean generate embed-assets build
 
 generate:
-	stringer -output strings.go -type EntityType,EntityState,ItemType,ObjectType,animState,ActionType,StatusEffect,DObjectType
+	stringer -output librpg/common/strings.go -type EntityType,EntityState,ItemType,ObjectType,animState,ActionType,StatusEffect,DObjectType librpg/common
+	
 
 embed-assets:
 	@test -x ${shell which go-bindata} && \
@@ -28,14 +29,7 @@ fail:
 	@printf 'build failed. please install dependencies and try again.\nlibgl1-mesa-dev and xorg-dev'
 
 clean:
-	echo cleaning 
-	test -x ${shell which gofmt} && gofmt -w -l -s . || true
-	rm *_strings.go || true
-	rm landmap || true 
-	rm pdata || true
-	rm aerpg || true
-	rm mapmaker || true
-	echo "now run 'make'"
+	rm -rf ./bin
 
 key:
 	test -f rpg.key || ssh-keygen -f rpg.key

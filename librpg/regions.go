@@ -1,12 +1,16 @@
 package rpg
 
-import "log"
+import (
+	"log"
+
+	"github.com/aerth/rpc/librpg/common"
+)
 
 type Region struct {
 	Name     string
 	ID       int
 	Portals  map[string]int // region id
-	Map      []Object
+	Map      []common.Object
 	DObjects []*DObject
 }
 
@@ -17,7 +21,7 @@ func (r Region) String() string {
 	return "region " + r.Name
 }
 
-func (w *World) NewRegion(name string, mapobjects []Object) *Region {
+func (w *World) NewRegion(name string, mapobjects []common.Object) *Region {
 	r := new(Region)
 	r.ID = len(w.Regions)
 	r.Map = mapobjects

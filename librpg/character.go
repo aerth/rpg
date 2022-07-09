@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/aerth/rpc/librpg/common"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/text"
 )
@@ -178,7 +179,7 @@ func (char *Character) Update(dt float64, dir Direction, world *World) {
 		f2 := func(nexttile pixel.Rect) bool {
 
 			for _, c := range world.Tiles {
-				if c.Type == O_TILE && c.Rect.Intersect(nexttile).Norm().Area() != 0 {
+				if c.Type == common.O_TILE && c.Rect.Intersect(nexttile).Norm().Area() != 0 {
 					return true
 				}
 			}

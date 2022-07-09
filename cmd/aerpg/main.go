@@ -14,7 +14,8 @@ import (
 
 	//	_ "image/png"
 
-	"github.com/aerth/rpg"
+	rpg "github.com/aerth/rpc/librpg"
+	"github.com/aerth/rpc/librpg/common"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
@@ -26,7 +27,8 @@ func init() {
 
 var (
 	flagenemies = flag.Int("e", 2, "number of enemies to begin with")
-	flaglevel   = flag.String("test", "1", "custom world test (filename)")
+	flaglevel   = flag.String("test", "", "custom world test (filename)")
+	flagseed    = flag.String("seed", fmt.Sprintf("%d", rand.Int63()), "new random world")
 
 	debug = flag.Bool("v", false, "extra logs")
 )
@@ -125,7 +127,7 @@ func run() {
 	cursorsprite := rpg.GetCursor(1)
 
 	// world generate
-	world := rpg.NewWorld(*flaglevel, *flagenemies)
+	world := rpg.NewWorld(*flaglevel, *flagenemies, *flagseed)
 	if world == nil {
 		return
 	}
@@ -154,7 +156,7 @@ func run() {
 
 	// draw menu bar
 	menubatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
-	rpg.DrawPattern(menubatch, spritemap[67], pixel.R(0, 0, win.Bounds().W()+20, 60), 100)
+	common.DrawPattern(menubatch, spritemap[67], pixel.R(0, 0, win.Bounds().W()+20, 60), 100)
 	for _, btn := range buttons {
 		spritemap[200].Draw(menubatch, IM.Moved(btn.Frame.Center()))
 	}
@@ -246,7 +248,7 @@ MainLoop:
 				menubatch.Clear()
 				win.Update()
 				newbounds := win.Bounds()
-				rpg.DrawPattern(menubatch, spritemap[67], pixel.R(0, 0, newbounds.Max.X+20, 60), 100)
+				common.DrawPattern(menubatch, spritemap[67], pixel.R(0, 0, newbounds.Max.X+20, 60), 100)
 				for _, btn := range buttons {
 					spritemap[200].Draw(menubatch, IM.Moved(btn.Frame.Center()))
 				}
@@ -256,7 +258,7 @@ MainLoop:
 			// teleport random
 
 			if win.JustPressed(pixelgl.Key8) {
-				world.Char.Rect = rpg.DefaultSpriteRectangle.Moved(rpg.TileNear(world.Tiles, world.Char.Rect.Center()).Loc)
+				world.Char.Rect = common.DefaultSpriteRectangle.Moved(common.TileNear(world.Tiles, world.Char.Rect.Center()).Loc)
 			}
 			if win.JustPressed(pixelgl.KeyM) {
 				world.NewMobs(1)
@@ -271,7 +273,7 @@ MainLoop:
 			// move all enemies (debug)
 			if win.JustPressed(pixelgl.Key9) {
 				for _, v := range world.Entities {
-					v.Rect = rpg.DefaultEntityRectangle.Moved(rpg.TileNear(world.Tiles, v.Rect.Center()).Loc)
+					v.Rect = rpg.DefaultEntityRectangle.Moved(common.TileNear(world.Tiles, v.Rect.Center()).Loc)
 				}
 			}
 			if win.JustReleased(pixelgl.KeyI) {
@@ -320,9 +322,9 @@ MainLoop:
 			// highlight player tiles (left right up down and center)
 			if *debug {
 				for _, o := range world.Tile(world.Char.Rect.Center()).PathNeighbors() {
-					ob := o.(rpg.Object)
+					ob := o.(common.Object)
 					ob.W = world
-					ob.Highlight(win, rpg.TransparentPurple)
+					ob.Highlight(win, common.TransparentPurple)
 				}
 			}
 

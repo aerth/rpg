@@ -1,6 +1,10 @@
 package rpg
 
-import "time"
+import (
+	"time"
+
+	"github.com/aerth/rpc/librpg/common"
+)
 
 // doors
 // loot
@@ -8,7 +12,7 @@ import "time"
 type DObjectType int
 
 type DObject struct {
-	Object   Object
+	Object   common.Object
 	Contains []Item
 	Until    time.Time `json:"-"`
 	Type     DObjectType

@@ -9,6 +9,8 @@ import (
 
 	"golang.org/x/image/colornames"
 
+	"github.com/aerth/rpc/librpg/common"
+	astar "github.com/beefsack/go-astar"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 )
@@ -36,6 +38,74 @@ type Entity struct {
 	ticker     <-chan time.Time // attack speed
 	w          *World           // to read/write world and char
 	imd        *imdraw.IMDraw   // health bar
+}
+
+func (e *Entity) pathcalc(target pixel.Vec) {
+	var (
+		maxcost = 1000.00
+	)
+	if !e.calculated.IsZero() && time.Since(e.calculated) < time.Millisecond {
+
+		return
+	}
+	e.calculated = time.Now()
+
+	// get tiles, give world
+	tile := e.w.Tile(e.Rect.Center())
+	tile.W = e.w
+	targett := e.w.Tile(target)
+	targett.W = e.w
+
+	// check
+	if tile.Type == common.O_NONE {
+		// bad spawn, respawn
+		e.P.Health = 0
+		return
+	}
+	if targett.Type == common.O_NONE {
+		// player must be flying
+		e.calculated = time.Now().Add(3 * time.Second)
+		return
+	}
+
+	est := tile.PathEstimatedCost(targett)
+	if est < 64 {
+		//log.Println("direct to char", e, est)
+		e.paths = []pixel.Vec{e.w.Char.Rect.Center(), e.w.Char.Rect.Center(), e.w.Char.Rect.Center()}
+		return
+	}
+
+	if tile.PathEstimatedCost(targett) > 400 {
+		// too far
+		//log.Println("path too expensive, trying in 3 seconds")
+		e.calculated = time.Now().Add(1 * time.Second)
+		return
+	}
+
+	// calculate path
+	path, distance, found := astar.Path(tile, targett)
+	if found {
+		if distance > maxcost { // cost path
+			e.calculated = time.Now().Add(3 * time.Second)
+			log.Println("too far")
+			e.paths = nil
+			return
+		}
+		//log.Println("distance:", distance)
+		var paths []pixel.Vec
+
+		for _, p := range path {
+
+			//log.Println(p)
+			center := p.(common.Object).Loc.Add(common.DefaultSpriteRectangle.Center())
+			paths = append(paths, center)
+		}
+
+		e.paths = paths
+
+		return
+	}
+	//log.Println(e.Name, "no path found, distance:", distance)
 }
 
 type EntityType int
@@ -164,7 +234,7 @@ func (e *Entity) Draw(t pixel.Target, w *World) {
 	rect.Max.Y = rect.Min.Y + 2
 	rect.Max.X = rect.Min.X + 30
 	if e.P.Health > 0 {
-		DrawBar(e.imd, colornames.Red, e.P.Health, e.P.MaxHealth, rect)
+		common.DrawBar(e.imd, colornames.Red, e.P.Health, e.P.MaxHealth, rect)
 		e.imd.Draw(t)
 	}
 	/* good debug square
@@ -180,7 +250,7 @@ func (e *Entity) Center() pixel.Vec {
 }
 
 func (e *Entity) ChangeMind(dt float64) {
-	if t := e.w.Tile(e.Center()); t.Type != O_TILE {
+	if t := e.w.Tile(e.Center()); t.Type != common.O_TILE {
 		e.Phys.Vel = pixel.ZV
 		return
 	}
@@ -222,9 +292,9 @@ func (e *Entity) ChangeMind(dt float64) {
 
 func (e *Entity) Update(dt float64) {
 	blk := e.w.Tile(e.Rect.Center())
-	if blk.Type != O_TILE {
+	if blk.Type != common.O_TILE {
 		old := e.Rect.Center()
-		e.Rect = DefaultEntityRectangle.Moved(TileNear(e.w.Tiles, e.Center()).Loc)
+		e.Rect = DefaultEntityRectangle.Moved(common.TileNear(e.w.Tiles, e.Center()).Loc)
 		log.Println("Moved skel:", old, "to", e.Rect.Center())
 		return
 	}
@@ -248,13 +318,13 @@ func (e *Entity) Update(dt float64) {
 	// move
 	next := e.Rect.Moved(e.Phys.Vel.Scaled(dt))
 	t := w.Tile(next.Center())
-	if t.Type == O_NONE && !e.P.CanFly {
+	if t.Type == common.O_NONE && !e.P.CanFly {
 		return
 	}
-	if !e.P.CanFly && t.Type == O_BLOCK {
+	if !e.P.CanFly && t.Type == common.O_BLOCK {
 		log.Println(e.Type, "got blocked", t.Loc)
 		next = e.Rect.Moved(e.Phys.Vel.Scaled(-dt * 10))
-		if w.Tile(next.Center()).Type != O_TILE {
+		if w.Tile(next.Center()).Type != common.O_TILE {
 			log.Println("returning")
 			return
 		}
@@ -266,7 +336,7 @@ func (e *Entity) Update(dt float64) {
 			return true
 		}
 		for _, c := range w.Blocks {
-			if c.Type == O_BLOCK && c.Rect.Contains(dot) {
+			if c.Type == common.O_BLOCK && c.Rect.Contains(dot) {
 				return false
 			}
 		}
@@ -278,7 +348,7 @@ func (e *Entity) Update(dt float64) {
 			return true
 		}
 		for _, c := range w.Tiles {
-			if c.Type == O_TILE && c.Rect.Contains(dot) {
+			if c.Type == common.O_TILE && c.Rect.Contains(dot) {
 				return true
 			}
 
@@ -359,11 +429,11 @@ func (w *World) NewMobs(n int) {
 		npc.P.Health = 2000
 		npc.P.MaxHealth = 2000
 		// npc.CanFly = true
-		npc.Rect = npc.Rect.Moved(FindRandomTile(w.Tiles))
+		npc.Rect = npc.Rect.Moved(common.FindRandomTile(w.Tiles))
 
 		for i := 1; i < n; i++ {
 			npc = w.NewEntity(SKELETON)
-			npc.Rect = npc.Rect.Moved(FindRandomTile(w.Tiles))
+			npc.Rect = npc.Rect.Moved(common.FindRandomTile(w.Tiles))
 		}
 
 	}

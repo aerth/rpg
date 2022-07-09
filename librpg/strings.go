@@ -38,16 +38,6 @@ func (i ItemType) String() string {
 	return _ItemType_name[_ItemType_index[i]:_ItemType_index[i+1]]
 }
 
-const _ObjectType_name = "O_NONEO_TILEO_BLOCKO_INVISIBLEO_SPECIALO_WINO_DYNAMIC"
-
-var _ObjectType_index = [...]uint8{0, 6, 12, 19, 30, 39, 44, 53}
-
-func (i ObjectType) String() string {
-	if i < 0 || i >= ObjectType(len(_ObjectType_index)-1) {
-		return fmt.Sprintf("ObjectType(%d)", i)
-	}
-	return _ObjectType_name[_ObjectType_index[i]:_ObjectType_index[i+1]]
-}
 
 const _animState_name = "IdleRunning"
 

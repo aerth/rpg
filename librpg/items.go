@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aerth/rpc/librpg/common"
 	"github.com/faiface/pixel"
 )
 
@@ -232,9 +233,9 @@ func (w *World) NewLoot(location pixel.Vec, items []Item) {
 		Contains: items,
 		Type:     D_LOOT,
 		Until:    time.Now().Add(5 * time.Minute),
-		Object: Object{
+		Object: common.Object{
 			Loc:  location,
-			Rect: DefaultSpriteRectangle.Moved(location),
+			Rect: common.DefaultSpriteRectangle.Moved(location),
 		},
 	}
 	w.DObjects = append(w.DObjects, loot)

@@ -14,7 +14,8 @@ import (
 
 	"golang.org/x/image/colornames"
 
-	"github.com/aerth/rpg"
+	rpg "github.com/aerth/rpc/librpg"
+	"github.com/aerth/rpc/librpg/common"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 )
@@ -83,24 +84,24 @@ func run() {
 	if err != nil {
 		panic(err)
 	}
-	var oldthings = []rpg.Object{}
+	var oldthings = []common.Object{}
 	if b, err := ioutil.ReadFile(LEVEL); err == nil {
 		err = json.Unmarshal(b, &oldthings)
 		if err != nil {
 			panic(err)
 		}
 	}
-	var things []rpg.Object
+	var things []common.Object
 	for _, v := range oldthings {
 		if *convert {
 			log.Println("Converting")
-			v.Type = rpg.O_TILE
-			if v.SpriteNum == 53 && v.Type == rpg.O_TILE {
-				v.Type = rpg.O_BLOCK
+			v.Type = common.O_TILE
+			if v.SpriteNum == 53 && v.Type == common.O_TILE {
+				v.Type = common.O_BLOCK
 			}
 		}
 
-		v.Rect = rpg.DefaultSpriteRectangle.Moved(v.Loc)
+		v.Rect = common.DefaultSpriteRectangle.Moved(v.Loc)
 
 		things = append(things, v)
 
@@ -124,7 +125,7 @@ func run() {
 	text := rpg.NewTextSmooth(14)
 	fmt.Fprint(text, helpText)
 	cursor := rpg.GetCursor(2)
-	undobuffer := []rpg.Object{}
+	undobuffer := []common.Object{}
 	var turbo = false
 	var highlight = true
 	var box pixel.Rect
@@ -177,8 +178,8 @@ func run() {
 			}
 		}
 
-		deleteThing := func(loc pixel.Vec) []rpg.Object {
-			var newthings []rpg.Object
+		deleteThing := func(loc pixel.Vec) []common.Object {
+			var newthings []common.Object
 			for _, thing := range things {
 				if thing.Rect.Contains(mouse) {
 					log.Println("deleting:", thing)
@@ -203,7 +204,7 @@ func run() {
 		} else {
 			if win.Pressed(pixelgl.KeyLeftShift) && win.Pressed(pixelgl.MouseButtonRight) ||
 				win.JustPressed(pixelgl.MouseButtonRight) {
-				thing := rpg.NewBlock(mouse)
+				thing := common.NewBlock(mouse)
 				thing.SpriteNum = currentThing
 				log.Println("Stamping Block", mouse, thing.SpriteNum)
 				if replace {
@@ -216,7 +217,7 @@ func run() {
 			}
 			if win.Pressed(pixelgl.KeyLeftShift) && win.Pressed(pixelgl.MouseButtonLeft) ||
 				win.JustPressed(pixelgl.MouseButtonLeft) {
-				thing := rpg.NewTile(mouse)
+				thing := common.NewTile(mouse)
 				thing.SpriteNum = currentThing
 				log.Println("Stamping Tile", mouse, thing.SpriteNum)
 				if replace {
@@ -275,13 +276,13 @@ func run() {
 					box.Max = mouse
 					box = box.Norm()
 					log.Println("drawing rectangle:", box, currentThing)
-					things = append(DeleteThings(things, box), rpg.DrawPatternObject(currentThing, rpg.O_TILE, box, 100)...)
+					things = append(DeleteThings(things, box), common.DrawPatternObject(currentThing, common.O_TILE, box, 100)...)
 				}
 				if win.JustReleased(pixelgl.MouseButtonRight) {
 					box.Max = mouse
 					box = box.Norm()
 					log.Println("drawing rectangle:", box, currentThing)
-					things = append(DeleteThings(things, box), rpg.DrawPatternObject(currentThing, rpg.O_BLOCK, box, 100)...)
+					things = append(DeleteThings(things, box), common.DrawPatternObject(currentThing, common.O_BLOCK, box, 100)...)
 
 				}
 			}
@@ -290,14 +291,14 @@ func run() {
 		for i := range things {
 			things[i].Draw(batch, spritesheet, spritemap, 0)
 			if highlight {
-				color := rpg.TransparentRed
-				if things[i].Type == rpg.O_TILE {
-					color = rpg.TransparentBlue
+				color := common.TransparentRed
+				if things[i].Type == common.O_TILE {
+					color = common.TransparentBlue
 				}
 				things[i].Highlight(batch, color)
 			}
 			if things[i].Rect.Contains(mouse) {
-				things[i].Highlight(batch, rpg.TransparentPurple)
+				things[i].Highlight(batch, common.TransparentPurple)
 
 			}
 
@@ -334,8 +335,8 @@ func main() {
 	pixelgl.Run(run)
 }
 
-func DeleteThings(from []rpg.Object, at pixel.Rect) []rpg.Object {
-	var cleaned []rpg.Object
+func DeleteThings(from []common.Object, at pixel.Rect) []common.Object {
+	var cleaned []common.Object
 	for _, o := range from {
 		if !at.Contains(o.Loc) {
 			cleaned = append(cleaned, o)

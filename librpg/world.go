@@ -8,6 +8,8 @@ import (
 
 	"golang.org/x/image/colornames"
 
+	"github.com/aerth/rpc/librpg/common"
+	"github.com/aerth/rpc/librpg/maps"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/text"
@@ -21,7 +23,7 @@ type World struct {
 	Bounds        pixel.Rect
 	Regions       []*Region
 	DObjects      []*DObject
-	Tiles, Blocks []Object                    // sorted
+	Tiles, Blocks []common.Object             // sorted
 	Background    string                      // path to pic, will be repeated xy if not empty
 	background    *pixel.Sprite               // sprite to repeat xy
 	Batches       map[EntityType]*pixel.Batch // one batch for every spritemap
@@ -41,9 +43,15 @@ type WorldSettings struct {
 	NumEnemy int
 }
 
-func NewWorld(name string, difficulty int) *World {
+func NewWorld(name string, difficulty int, seed string) *World {
 	w := new(World)
 	w.Name = name
+	if name == "" && seed == "" {
+		seed = fmt.Sprintf("%d", rand.Int63())
+	}
+	if name == "" {
+		w.Name = fmt.Sprintf("world seed %d", seed)
+	}
 	w.Color = RandomColor()
 	w.Sheets = make(map[EntityType]pixel.Picture)
 	w.Anims = make(map[EntityType]map[EntityState]map[Direction][]pixel.Rect)
@@ -65,11 +73,20 @@ func NewWorld(name string, difficulty int) *World {
 		w.Batches[t] = pixel.NewBatch(&pixel.TrianglesData{}, w.Sheets[t])
 
 	}
-	log.Println("Loading...")
-	if e := w.LoadMap("maps/" + name + ".map"); e != nil {
-		log.Println(e)
-		if e = w.LoadMapFile(name); e != nil {
+	if name != "" {
+		log.Println("Loading map", name)
+		if e := w.LoadMap("maps/" + name + ".map"); e != nil {
 			log.Println(e)
+			if e = w.LoadMapFile(name); e != nil {
+				log.Println(e)
+				return nil
+			}
+		}
+	} else {
+		log.Println("generating map with seed:", seed)
+		omap := maps.GenerateMap(seed)
+		if e := w.injectMap(omap); e != nil {
+			log.Println("injekcting mapL:", e)
 			return nil
 		}
 	}
@@ -77,7 +94,7 @@ func NewWorld(name string, difficulty int) *World {
 		log.Println("Invalid map. No objects found")
 		return nil
 	}
-	char.Rect = char.Rect.Moved(FindRandomTile(w.Tiles))
+	char.Rect = char.Rect.Moved(common.FindRandomTile(w.Tiles))
 	w.Settings.NumEnemy = difficulty
 	return w
 }
@@ -117,10 +134,10 @@ func (w *World) Update(dt float64) {
 			continue
 		}
 		npc := w.NewEntity(SKELETON_GUARD)
-		npc.Rect = npc.Rect.Moved(FindRandomTile(w.Tiles))
+		npc.Rect = npc.Rect.Moved(common.FindRandomTile(w.Tiles))
 		entities = append(entities, npc)
 		npc = w.NewEntity(SKELETON)
-		npc.Rect = npc.Rect.Moved(FindRandomTile(w.Tiles))
+		npc.Rect = npc.Rect.Moved(common.FindRandomTile(w.Tiles))
 		entities = append(entities, npc)
 	}
 	w.Entities = entities
@@ -191,15 +208,15 @@ func (w *World) DrawEntity(n int) {
 }
 
 // Tile scans tiles and returns the first tile located at dot
-func (w *World) Tile(dot pixel.Vec) Object {
+func (w *World) Tile(dot pixel.Vec) common.Object {
 	if w.Tiles == nil {
 		log.Println("nil tiles!")
-		return Object{W: w, Type: O_BLOCK}
+		return common.Object{W: w, Type: common.O_BLOCK}
 	}
 
 	if len(w.Tiles) == 0 {
 		log.Println("no tiles to look in")
-		return Object{W: w, Type: O_BLOCK}
+		return common.Object{W: w, Type: common.O_BLOCK}
 	}
 	for i := len(w.Tiles) - 1; i >= 0; i-- {
 		if w.Tiles[i].Rect.Contains(dot) {
@@ -210,21 +227,21 @@ func (w *World) Tile(dot pixel.Vec) Object {
 	}
 	//	log.Println("no tiles found at location:", dot)
 	//	panic("bug")
-	return Object{W: w, Type: O_BLOCK}
+	return common.Object{W: w, Type: common.O_BLOCK}
 }
 
 // Block scans blocks and returns the first block located at dot
-func (w *World) Block(dot pixel.Vec) Object {
+func (w *World) Block(dot pixel.Vec) common.Object {
 	for i := range w.Blocks {
 		if w.Blocks[i].Rect.Contains(dot) {
 			return w.Blocks[i]
 		}
 	}
-	return Object{}
+	return common.Object{}
 }
 
 // Object at location
-func (w *World) Object(dot pixel.Vec) Object {
+func (w *World) Object(dot pixel.Vec) common.Object {
 	if w.Blocks != nil {
 		for _, v := range w.Blocks {
 			if v.Rect.Contains(dot) {
@@ -237,7 +254,7 @@ func (w *World) Object(dot pixel.Vec) Object {
 			return v
 		}
 	}
-	return Object{Type: O_NONE}
+	return common.Object{Type: common.O_NONE}
 
 }
 
@@ -291,7 +308,7 @@ func (w *World) ShowAnimations(imd *imdraw.IMDraw) {
 func (w *World) HighlightPaths(target pixel.Target) {
 	imd := imdraw.New(nil)
 	for i := range w.Entities {
-		color := TransparentRed
+		color := common.TransparentRed
 		if len(w.Entities[i].paths) != 0 {
 			for _, vv := range w.Entities[i].paths {
 				//color = color.Scaled(0.3)
@@ -334,7 +351,7 @@ func (w *World) Reset() {
 	w.Char.Level = 0
 	w.Char.Mana = 255
 	w.Char.Inventory = []Item{createLoot()}
-	w.Char.Rect = DefaultPhys.Rect.Moved(FindRandomTile(w.Tiles))
+	w.Char.Rect = DefaultPhys.Rect.Moved(common.FindRandomTile(w.Tiles))
 	w.Char.Phys.Vel = pixel.ZV
 	w.Entities = nil
 	w.NewMobs(w.Settings.NumEnemy)
@@ -371,4 +388,24 @@ func (w *World) Init() *pixel.Batch {
 		v.Draw(globebatch, spritesheet, spritemap, 0)
 	}
 	return globebatch
+}
+
+func (w *World) drawTiles(path string) error {
+	spritesheet, spritemap := LoadSpriteSheet(path)
+	// layers (TODO: slice?)
+	// batch sprite drawing
+	globebatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
+	// water world 67 wood, 114 117 182 special, 121 135 dirt, 128 blank, 20 grass
+	//      rpg.DrawPattern(batch, spritemap[53], pixel.R(-3000, -3000, 3000, 3000), 100)
+
+	globebatch.Clear()
+	// draw it on to canvasglobe
+	for _, o := range w.Tiles {
+		o.Draw(globebatch, spritesheet, spritemap, 0)
+	}
+	for _, o := range w.Blocks {
+		o.Draw(globebatch, spritesheet, spritemap, 0)
+	}
+	w.Batches[EntityType(-1)] = globebatch
+	return nil
 }
