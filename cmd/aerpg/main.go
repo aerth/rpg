@@ -124,7 +124,7 @@ func run() {
 	//world.Char.Rect = world.Char.Rect.Moved(V(33, 33))
 	// load world
 	//	worldbounds = pixel.R(float64(-4000), float64(-4000), float64(4000), float64(4000))
-	cursorsprite := rpg.GetCursor(1)
+	cursorsprite := common.GetCursor(1)
 
 	// world generate
 	world := rpg.NewWorld(*flaglevel, *flagenemies, *flagseed)
@@ -139,7 +139,7 @@ func run() {
 	animbatch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
 
 	// load loot sprite
-	goldsheet, err := rpg.LoadPicture("sprites/loot.png")
+	goldsheet, err := common.LoadPicture("sprites/loot.png")
 	if err != nil {
 		panic("need sprites/loot.png")
 	}

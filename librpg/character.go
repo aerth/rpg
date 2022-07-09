@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"math/rand"
 	"strconv"
 	"time"
 
@@ -12,10 +11,6 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/text"
 )
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
 
 type Character struct {
 	Phys      charPhys // properties

@@ -42,7 +42,7 @@ var (
 var helpText = "ENTER=save LEFT=block RIGHT=tile SHIFT=batch SPACE=del CAPS=highlight U=undo R=redo 4=turbo B=dontreplace"
 
 func loadSpriteSheet() (pixel.Picture, []*pixel.Sprite) {
-	spritesheet, err := rpg.LoadPicture("sprites/tileset.png")
+	spritesheet, err := common.LoadPicture("sprites/tileset.png")
 	/* 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
 	 * 1
 	 * 2
@@ -124,7 +124,7 @@ func run() {
 	currentThing := 20 // 20 is grass,  0 should be transparent sprite
 	text := rpg.NewTextSmooth(14)
 	fmt.Fprint(text, helpText)
-	cursor := rpg.GetCursor(2)
+	cursor := common.GetCursor(2)
 	undobuffer := []common.Object{}
 	var turbo = false
 	var highlight = true

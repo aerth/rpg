@@ -162,31 +162,6 @@ func LoadTTF(path string, size float64) (font.Face, error) {
 		GlyphCacheEntries: 1,
 	}), nil
 }
-func LoadSpriteSheet(path string) (pixel.Picture, []*pixel.Sprite) {
-	spritesheet, err := LoadPicture("sprites/" + path)
-	/* 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
-	         * 1
-		          * 2
-			           * ...
-				            * 16
-	*/
-	if err != nil {
-		panic(err)
-	}
-	var sheetFrames []pixel.Rect
-	for x := spritesheet.Bounds().Min.X; x < spritesheet.Bounds().Max.X; x += 32 {
-		for y := spritesheet.Bounds().Min.Y; y < spritesheet.Bounds().Max.Y; y += 32 {
-			sheetFrames = append(sheetFrames, pixel.R(x, y, x+32, y+32))
-		}
-	}
-	var spritemap = []*pixel.Sprite{}
-	for i := 0; i < len(sheetFrames); i++ {
-		x := i
-		spritemap = append(spritemap, pixel.NewSprite(spritesheet, sheetFrames[x]))
-	}
-	//log.Println(len(spritemap), "sprites loaded")
-	return spritesheet, spritemap
-}
 
 // Distance between two vectors
 func Distance(v1, v2 pixel.Vec) float64 {

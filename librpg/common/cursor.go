@@ -1,4 +1,4 @@
-package rpg
+package common
 
 import (
 	"strconv"
