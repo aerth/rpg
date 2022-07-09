@@ -3,8 +3,7 @@ RED=\e[31m
 RST=\e[0m
 
 build:
-	go get -v -d ./...
-	GOBIN=${PWD} go install ./cmd/...
+	GOBIN=${PWD}/bin/ go install ./cmd/...
 	@${MAKE} success
 help:
 	@echo 'debian: install libgl1-mesa-dev and xorg-dev packages'
