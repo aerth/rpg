@@ -2,8 +2,6 @@ package maps
 
 import (
 	"crypto/md5"
-	"encoding/json"
-	"io/ioutil"
 	"log"
 	"math"
 	"math/big"
@@ -113,26 +111,6 @@ func GenerateMap(seed string) []common.Object {
 	}
 
 	return olist
-}
-
-func SaveMap(olist []common.Object) {
-
-	b, err := json.Marshal(olist)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	f, err := ioutil.TempFile("maps", "map")
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	_, err = f.Write(b)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	log.Println("saved file:", f.Name())
 }
 
 func randfloat() float64 {

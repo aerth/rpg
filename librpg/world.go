@@ -50,7 +50,7 @@ func NewWorld(name string, difficulty int, seed string) *World {
 		seed = fmt.Sprintf("%d", rand.Int63())
 	}
 	if name == "" {
-		w.Name = fmt.Sprintf("world seed %d", seed)
+		w.Name = fmt.Sprintf("world seed %q", seed)
 	}
 	w.Color = RandomColor()
 	w.Sheets = make(map[EntityType]pixel.Picture)
@@ -76,9 +76,9 @@ func NewWorld(name string, difficulty int, seed string) *World {
 	if name != "" {
 		log.Println("Loading map", name)
 		if e := w.LoadMap("maps/" + name + ".map"); e != nil {
-			log.Println(e)
-			if e = w.LoadMapFile(name); e != nil {
-				log.Println(e)
+			// log.Println(e)
+			if e2 := w.LoadMapFile(name); e2 != nil {
+				log.Println("fatal:", e2)
 				return nil
 			}
 		}

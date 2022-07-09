@@ -56,6 +56,7 @@ func NewGame(win *pixelgl.Window, difficulty int, leveltest string, worldseed st
 	os.Exit(111)
 }
 
+// LoadMapFile from disk
 func (w *World) LoadMapFile(path string) error {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -63,6 +64,8 @@ func (w *World) LoadMapFile(path string) error {
 	}
 	return w.loadmap(b)
 }
+
+// LoadMap from embedded assets
 func (w *World) LoadMap(path string) error {
 	b, err := assets.Asset(path)
 	if err != nil {
